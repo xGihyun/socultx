@@ -1,7 +1,8 @@
 <script>
 	// import { onMount } from 'svelte';
-	import { userInfo } from '../../lib/store';
+	// import { userInfo } from '../../lib/store';
 
+	export let data;
 	// onMount(() => {
 	// 	const savedState = localStorage.getItem('userStuff');
 	// 	if (savedState) {
@@ -11,4 +12,5 @@
 	// });
 </script>
 
-<div>Hello World! Welcome {$userInfo.username}</div>
+<div>Hello World! Welcome {data.user.username}</div>
+

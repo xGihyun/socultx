@@ -1,7 +1,6 @@
 <script>
-	import { userInfo } from '../lib/store';
+	// import { userInfo } from '../lib/store';
 	import { app, db, auth } from '../lib/firebase';
-	import { onMount } from 'svelte';
 	import {
 		GoogleAuthProvider,
 		browserLocalPersistence,
@@ -14,24 +13,21 @@
 		signInWithRedirect
 	} from 'firebase/auth';
 
-	// export let data;
+	/** @type {import('./$types').LayoutData} */
+	export let data;
 
-	// Get user info if available in localstorage
-	// onMount(() => {
-	// 	const savedState = localStorage.getItem('userStuff');
-	// 	if (savedState) {
-	// 		userInfo.set(JSON.parse(savedState));
-	// 	}
-	// 	console.log($userInfo);
-	// });
+	// Handle user stuff
+	$: isLoggedIn = data.user?.isLoggedIn || false;
+	$: username = data.user?.username || '' || null;
+	$: email = data.user?.email || '' || null;
 
-	async function test() {
-		// Persist in session
-		// https://firebase.google.com/docs/auth/web/auth-state-persistence
-		setPersistence(auth, browserSessionPersistence).then(() => {
-			return googleAuthPopup();
-		});
-	}
+	// Persist in session function, may or may not need
+	// async function test() {
+	// 	// https://firebase.google.com/docs/auth/web/auth-state-persistence
+	// 	setPersistence(auth, browserSessionPersistence).then(() => {
+	// 		return googleAuthPopup();
+	// 	});
+	// }
 
 	// It will login via a popup window, might not be good for mobile
 	async function googleAuthPopup() {
@@ -42,12 +38,11 @@
 			const token = credential?.accessToken;
 			const user = result.user;
 
-			userInfo.set({
-				email: user?.email,
-				username: user?.displayName,
-				isLoggedIn: true,
-			});
+			username = user.displayName;
+			email = user.email;
+			isLoggedIn = true;
 
+			// DO NOT REMOVE
 			// let dataToStore;
 
 			// const docRef = doc(db, 'users', user.uid);
@@ -72,11 +67,20 @@
 			// }
 
 			// This will set a session cookie
-			// setCookie('userUID', user.uid, 7);
+			setCookie('userUID', user.uid, 7);
 			// This will show the stuff
 
 			// Save username in localstorage
-			// setCookie('userStuff', JSON.stringify($userInfo), 7);
+			setCookie(
+				'userStuff',
+				// JSON.stringify(data.user),
+				JSON.stringify({
+					username: user.displayName,
+					email: user.email,
+					isLoggedIn: true
+				}),
+				7
+			);
 		} catch (error) {
 			// Handle Errors here.
 			console.error(error);
@@ -84,7 +88,7 @@
 	}
 
 	async function getMyUserName() {
-		console.log('Username from session: ' + $userInfo.username);
+		console.log('Username from session: ' + data);
 	}
 
 	/**
@@ -92,22 +96,21 @@
 	 * @param {string | number | boolean} value
 	 * @param {number} expirationDays
 	 */
-	// function setCookie(name, value, expirationDays) {
-	// 	const expirationDate = new Date();
-	// 	expirationDate.setDate(expirationDate.getDate() + expirationDays);
+	function setCookie(name, value, expirationDays) {
+		const expirationDate = new Date();
+		expirationDate.setDate(expirationDate.getDate() + expirationDays);
 
-	// 	const cookieValue =
-	// 		encodeURIComponent(value) + '; expires=' + expirationDate.toUTCString() + '; path=/';
-	// 	document.cookie = name + '=' + cookieValue;
-	// }
+		const cookieValue = value + '; expires=' + expirationDate.toUTCString() + '; path=/';
+		document.cookie = name + '=' + cookieValue + ';secure=true';
+	}
 </script>
 
-{#if $userInfo.isLoggedIn}
+{#if isLoggedIn}
 	<button on:click={getMyUserName}>What's my username</button>
-	<p>Hello {$userInfo.username}</p>
+	<p>Hello {username}</p>
 	<a href="/profile">Go to profile</a>
 {:else}
-	<button on:click={test}>Log In</button>
+	<button on:click={googleAuthPopup}>Log In</button>
 {/if}
 
 <button on:click={getMyUserName}>Test</button>

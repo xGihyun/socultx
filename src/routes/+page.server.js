@@ -2,13 +2,18 @@
 // import { userInfo } from '$lib/store';
 // import { redirect } from '@sveltejs/kit';
 
+// import { redirect } from '@sveltejs/kit';
+
 // /** @type {import('./$types').PageServerLoad} */
-// export async function load() {
+// export async function load({ cookies }) {
 // 	// Save user info from "store" variable after auth state changes
-// 	auth.onAuthStateChanged(async (user) => {
-// 		// console.log('Before: ' + testUsername);
-// 		// testUsername = user?.displayName;
-// 		// isUserLoggedIn = true;
-// 		// console.log('After: ' + testUsername);
-// 	});
+// 	let userUIDCookie = cookies.get('userUID');
+// 	let userStuffCookie = cookies.get('userStuff');
 // }
+
+// /** @type {import('./$types').Actions} */
+// export const actions = {
+// 	default: async () => {
+// 		throw redirect(302, '/profile');
+// 	}
+// };
