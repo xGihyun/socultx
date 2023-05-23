@@ -1,116 +1,99 @@
 <script>
-	// import { userInfo } from '../lib/store';
-	import { app, db, auth } from '../lib/firebase';
-	import {
-		GoogleAuthProvider,
-		browserLocalPersistence,
-		browserSessionPersistence,
-		getAuth,
-		getRedirectResult,
-		indexedDBLocalPersistence,
-		setPersistence,
-		signInWithPopup,
-		signInWithRedirect
-	} from 'firebase/auth';
+	import { doc, getDoc, setDoc } from 'firebase/firestore';
+	import { db } from '../lib/firebase/firebase';
+	import { googleAuthPopup } from '$lib/firebase/auth';
 
-	/** @type {import('./$types').LayoutData} */
 	export let data;
 
 	// Handle user stuff
 	$: isLoggedIn = data.user?.isLoggedIn || false;
 	$: username = data.user?.username || '' || null;
 	$: email = data.user?.email || '' || null;
+	$: userUID = data.uid || '' || null;
+	let posts = data.posts || [];
 
-	// Persist in session function, may or may not need
-	// async function test() {
-	// 	// https://firebase.google.com/docs/auth/web/auth-state-persistence
-	// 	setPersistence(auth, browserSessionPersistence).then(() => {
-	// 		return googleAuthPopup();
-	// 	});
-	// }
+	/**
+	 * The user data on the database
+	 * @type {{email: string | null; posts: string[]}}
+	 */
+	 let dataToStore = {
+		email: email,
+		posts: posts
+	};
 
-	// It will login via a popup window, might not be good for mobile
-	async function googleAuthPopup() {
-		const provider = new GoogleAuthProvider();
-		try {
-			const result = await signInWithPopup(auth, provider);
-			const credential = GoogleAuthProvider.credentialFromResult(result);
-			const token = credential?.accessToken;
-			const user = result.user;
+	// After logging in, take the data that the current user has, including their posts
+	async function login() {
+		const user = await googleAuthPopup();
 
-			username = user.displayName;
-			email = user.email;
-			isLoggedIn = true;
+		if (!user) return;
 
-			// DO NOT REMOVE
-			// let dataToStore;
-
-			// const docRef = doc(db, 'users', user.uid);
-			// const docSnap = await getDoc(docRef);
-
-			// if (!docSnap.exists()) {
-			// 	// Get reference to the user path where the users will be stored (?)
-			// 	const userRef = doc(db, 'user', user.uid);
-
-			// 	// The data that you wanna store
-
-			// 	dataToStore = {
-			// 		email: user.email,
-			// 		posts: ['Hello, World']
-			// 	};
-
-			// 	// Store data to db
-			// 	await setDoc(userRef, dataToStore, { merge: true });
-			// } else {
-			// 	const userData = docSnap.data();
-			// 	dataToStore = userData;
-			// }
-
-			// This will set a session cookie
-			setCookie('userUID', user.uid, 7);
-			// This will show the stuff
-
-			// Save username in localstorage
-			setCookie(
-				'userStuff',
-				// JSON.stringify(data.user),
-				JSON.stringify({
-					username: user.displayName,
-					email: user.email,
-					isLoggedIn: true
-				}),
-				7
-			);
-		} catch (error) {
-			// Handle Errors here.
-			console.error(error);
-		}
-	}
-
-	async function getMyUserName() {
-		console.log('Username from session: ' + data);
+		isLoggedIn = user.isLoggedIn;
+		email = user.email;
+		username = user.username;
+		userUID = user.uid;
+		dataToStore.posts = user.posts;
 	}
 
 	/**
-	 * @param {string} name
-	 * @param {string | number | boolean} value
-	 * @param {number} expirationDays
+	 * The value from the input
+	 * @type {string}
 	 */
-	function setCookie(name, value, expirationDays) {
-		const expirationDate = new Date();
-		expirationDate.setDate(expirationDate.getDate() + expirationDays);
+	let inputText;
 
-		const cookieValue = value + '; expires=' + expirationDate.toUTCString() + '; path=/';
-		document.cookie = name + '=' + cookieValue + ';secure=true';
+	async function postBlog() {
+		if (!userUID) {
+			console.log('No user!');
+			return;
+		}
+
+		console.log('Posting...');
+
+		const docRef = doc(db, 'users', userUID);
+		const docSnap = await getDoc(docRef);
+		const userData = docSnap.data();
+
+		dataToStore = JSON.parse(JSON.stringify(userData));
+
+		// Only allow to push posts if there is an input
+		if (!inputText) {
+			console.log('Must input text!');
+			return;
+		}
+
+		// This might seem too repetitive, I'm too lazy
+		dataToStore.posts.push(inputText);
+
+		// Store data to database
+		await setDoc(docRef, dataToStore, { merge: true });
+
+		console.log('Posted!');
 	}
+
+	// async function getMyUserName() {
+	// 	console.log('Username from session: ' + data.user.username);
+	// }
 </script>
 
 {#if isLoggedIn}
-	<button on:click={getMyUserName}>What's my username</button>
-	<p>Hello {username}</p>
-	<a href="/profile">Go to profile</a>
+	<!-- <button class="text-white" on:click={getMyUserName}>What's my username</button> -->
+	<div class="flex flex-col items-center justify-center">
+		<p class="mb-10 text-5xl text-white">Hello {username}</p>
+		<div class="mb-10">
+			<form title="Post Blog">
+				<input class="p-2" bind:value={inputText} />
+				<button class="bg-blue-600 p-2 text-white" on:click={postBlog}>Post Test</button>
+			</form>
+		</div>
+		<span class="text-3xl text-white">Posts</span>
+		{#each dataToStore.posts as post, idx (idx)}
+			<div>
+				<p class="text-white">Post #{idx + 1}: {post}</p>
+			</div>
+		{/each}
+		<a class="bg-neutral-700 p-2 text-white" type="button" href="/profile">Go to profile</a>
+	</div>
 {:else}
-	<button on:click={googleAuthPopup}>Log In</button>
+	<button class="bg-neutral-700 p-2 text-white" on:click={login}>Log In</button>
 {/if}
 
-<button on:click={getMyUserName}>Test</button>
+<!-- <button on:click={getMyUserName}>Test</button> -->

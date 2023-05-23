@@ -1,19 +1,33 @@
-// import { auth } from '$lib/firebase';
-// import { userInfo } from '$lib/store';
-// import { redirect } from '@sveltejs/kit';
+import { db } from '$lib/firebase/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
-// import { redirect } from '@sveltejs/kit';
+/** @type {import('./$types').PageServerLoad} */
 
-// /** @type {import('./$types').PageServerLoad} */
-// export async function load({ cookies }) {
-// 	// Save user info from "store" variable after auth state changes
-// 	let userUIDCookie = cookies.get('userUID');
-// 	let userStuffCookie = cookies.get('userStuff');
-// }
+export async function load({ locals }) {
+	const userStuff = locals.userStuff;
+	const userUID = locals.userUID;
 
-// /** @type {import('./$types').Actions} */
-// export const actions = {
-// 	default: async () => {
-// 		throw redirect(302, '/profile');
-// 	}
-// };
+	if (!userUID) {
+		return;
+	}
+
+	const docRef = doc(db, 'users', userUID);
+	const docSnap = await getDoc(docRef);
+	const userData = docSnap.data();
+
+	/**
+	 * The user data to store
+	 * @type {{email: string | null; posts: string[]}}
+	 */
+	let dataToStore = JSON.parse(JSON.stringify(userData));
+
+	// console.log('User UID Cookie: ' + userUID);
+	// console.log('User Stuff Cookie: ' + userStuff);
+	console.log('User posts: ' + dataToStore.posts);
+
+	return {
+		user: userStuff,
+		uid: userUID,
+    posts: dataToStore.posts
+	};
+}

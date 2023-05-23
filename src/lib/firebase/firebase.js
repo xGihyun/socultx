@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApps, getApp, deleteApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
+import { GoogleAuthProvider, getAuth, signInWithPopup } from 'firebase/auth';
 import {
 	PUBLIC_FIREBASE_API_KEY,
 	PUBLIC_FIREBASE_AUTH_DOMAIN,

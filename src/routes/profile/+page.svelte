@@ -3,14 +3,13 @@
 	// import { userInfo } from '../../lib/store';
 
 	export let data;
-	// onMount(() => {
-	// 	const savedState = localStorage.getItem('userStuff');
-	// 	if (savedState) {
-	// 		userInfo.set(JSON.parse(savedState));
-	// 	}
-	// 	console.log($userInfo);
-	// });
+	
+	const username = data.user.username;
 </script>
 
-<div>Hello World! Welcome {data.user.username}</div>
+<div>
+	<h1 class="text-white text-5xl">
+		Hello World! Welcome {username}
+	</h1>
+</div>
 
