@@ -2,21 +2,22 @@
 	import { doc, getDoc, setDoc } from 'firebase/firestore';
 	import { db } from '../lib/firebase/firebase';
 	import { googleAuthPopup } from '$lib/firebase/auth';
+	import { uid } from 'uid';
 
 	export let data;
 
 	// Handle user stuff
-	$: isLoggedIn = data.user?.isLoggedIn || false;
-	$: username = data.user?.username || '' || null;
-	$: email = data.user?.email || '' || null;
-	$: userUID = data.uid || '' || null;
+	let isLoggedIn = data.user?.isLoggedIn || false;
+	let username = data.user?.username || null;
+	let email = data.user?.email || null;
+	let userUID = data.uid || null;
 	let posts = data.posts || [];
 
 	/**
-	 * The user data on the database
-	 * @type {{email: string | null; posts: string[]}}
+	 * The user data to store
+	 * @type {import('$lib/types').PostData}
 	 */
-	 let dataToStore = {
+	let dataToStore = {
 		email: email,
 		posts: posts
 	};
@@ -51,6 +52,7 @@
 		const docRef = doc(db, 'users', userUID);
 		const docSnap = await getDoc(docRef);
 		const userData = docSnap.data();
+		const postID = uid(32);
 
 		dataToStore = JSON.parse(JSON.stringify(userData));
 
@@ -61,7 +63,12 @@
 		}
 
 		// This might seem too repetitive, I'm too lazy
-		dataToStore.posts.push(inputText);
+		dataToStore.posts.push({
+			content: inputText,
+			userUID: userUID,
+			user: username || '',
+			id: postID
+		});
 
 		// Store data to database
 		await setDoc(docRef, dataToStore, { merge: true });
@@ -69,27 +76,60 @@
 		console.log('Posted!');
 	}
 
-	// async function getMyUserName() {
-	// 	console.log('Username from session: ' + data.user.username);
-	// }
+	/**
+	 * Delete blog based on the unique identifier of the post
+	 * @param {string} id
+	 */
+	async function deleteBlog(id) {
+		if (!userUID) {
+			console.log('No user!');
+			return;
+		}
+
+		console.log('Deleting...');
+		console.log(id);
+
+		const docRef = doc(db, 'users', userUID);
+		const docSnap = await getDoc(docRef);
+		const userData = docSnap.data();
+
+		dataToStore = JSON.parse(JSON.stringify(userData));
+
+		// Find the index of the post with the specified ID
+		const index = dataToStore.posts.findIndex((post) => post.id === id);
+
+		// Remove the post from the array
+		if (index !== -1) {
+			dataToStore.posts.splice(index, 1);
+		}
+
+		// Store data to database
+		await setDoc(docRef, dataToStore, { merge: true });
+
+		console.log('Deleted!');
+	}
 </script>
 
 {#if isLoggedIn}
-	<!-- <button class="text-white" on:click={getMyUserName}>What's my username</button> -->
 	<div class="flex flex-col items-center justify-center">
 		<p class="mb-10 text-5xl text-white">Hello {username}</p>
 		<div class="mb-10">
 			<form title="Post Blog">
 				<input class="p-2" bind:value={inputText} />
-				<button class="bg-blue-600 p-2 text-white" on:click={postBlog}>Post Test</button>
+				<button class="bg-blue-600 p-2 text-white" on:click={postBlog}>Post</button>
 			</form>
 		</div>
 		<span class="text-3xl text-white">Posts</span>
-		{#each dataToStore.posts as post, idx (idx)}
-			<div>
-				<p class="text-white">Post #{idx + 1}: {post}</p>
-			</div>
-		{/each}
+		<div class="h-80 w-full max-w-3xl overflow-y-scroll px-10">
+			{#each dataToStore.posts as post, idx (idx)}
+				<div class="mb-2 flex justify-between gap-2">
+					<p class="text-white">Post #{idx + 1}: {post.content}</p>
+					<button class="bg-red-600 p-2 text-white" on:click={() => deleteBlog(post.id)}
+						>Delete</button
+					>
+				</div>
+			{/each}
+		</div>
 		<a class="bg-neutral-700 p-2 text-white" type="button" href="/profile">Go to profile</a>
 	</div>
 {:else}

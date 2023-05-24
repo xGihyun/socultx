@@ -10,6 +10,7 @@ declare global {
 				email: string,
 				isLoggedIn: boolean,
 			}
+			// isLoggedIn: boolean,
 		}
 		// interface PageData {}
 		// interface Platform {}

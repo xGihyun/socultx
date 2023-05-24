@@ -3,8 +3,8 @@
 	// import { userInfo } from '../../lib/store';
 
 	export let data;
-	
-	const username = data.user.username;
+
+	let username = data.user?.username;
 </script>
 
 <div>

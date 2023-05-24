@@ -1,6 +1,6 @@
 import { setCookie } from '$lib/cookie';
 import { auth, db } from '$lib/firebase/firebase';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 // It will login via a popup window, might not be good for mobile
@@ -15,7 +15,7 @@ export async function googleAuthPopup() {
 		// Database stuff
 		/**
 		 * The user data to store
-		 * @type {{email: string | null; posts: string[]}}
+		 * @type {import('$lib/types').PostData}
 		 */
 		let dataToStore;
 
@@ -41,8 +41,6 @@ export async function googleAuthPopup() {
 			dataToStore = JSON.parse(JSON.stringify(userData));
 		}
 
-		console.log(dataToStore);
-
 		// This will set a session cookie
 		setCookie('userUID', user.uid, 7);
 		setCookie(
@@ -67,4 +65,13 @@ export async function googleAuthPopup() {
 		// Handle Errors here.
 		console.error(error);
 	}
+}
+
+// It works but for some reason 'auth' variable is always undefined on server side files (x.server.js)
+export async function logout() {
+	console.log('Logging out...');
+	console.log(auth.currentUser?.displayName)
+	await signOut(auth);
+	console.log('User has logged out.');
+	console.log(auth.currentUser?.displayName)
 }

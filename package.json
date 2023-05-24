@@ -30,6 +30,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"firebase": "^9.22.0"
+		"firebase": "^9.22.0",
+		"uid": "^2.0.2"
 	}
 }

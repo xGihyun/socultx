@@ -2,19 +2,16 @@
 
 export async function load({ locals }) {
 	
-	let userStuff = locals.userStuff;
-	let userUID = locals.userUID;
+	const userStuff = locals.userStuff;
+	const userUID = locals.userUID;
 
-	// let userUIDCookie = cookies.get('userUID');
-	// let userStuffCookie = cookies.get('userStuff');
-
-	if (userStuff && userUID) {
-		console.log('User UID Cookie: ' + userUID);
-		console.log('User Stuff Cookie: ' + userStuff);
-	}
+	// if (userUID) {
+	// 	console.log('User logged in (layout.server.js): ' + locals.userStuff.isLoggedIn);
+	// 	console.log('User Stuff Cookie: ' + userStuff);
+	// }
 
 	return {
 		user: userStuff,
-		uid: userUID
+		uid: userUID,
 	};
 }
