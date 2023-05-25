@@ -133,6 +133,10 @@
 		<a class="bg-neutral-700 p-2 text-white" type="button" href="/profile">Go to profile</a>
 	</div>
 {:else}
+	<!-- Testing out tailwind lol :D -->
+	<div>
+		<span class="text-4xl px-8 py-3 rounded-full bg-indigo-500 text-white font-semibold">SOCULT</span>
+	</div>
 	<button class="bg-neutral-700 p-2 text-white" on:click={login}>Log In</button>
 {/if}
 

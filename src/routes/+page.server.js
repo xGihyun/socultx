@@ -1,5 +1,5 @@
-import { auth, db } from '$lib/firebase/firebase';
-import { redirect } from '@sveltejs/kit';
+import { db } from '$lib/firebase/firebase';
+// import { redirect } from '@sveltejs/kit';
 import { doc, getDoc } from 'firebase/firestore';
 
 /** @type {import('./$types').PageServerLoad} */
@@ -33,25 +33,27 @@ export async function load({ locals }) {
 	};
 }
 
-/** @type {import('./$types').Actions} */
-export const actions = {
-	default: async ({ cookies, locals }) => {
-		const allCookies = cookies.getAll();
+// Added actions specifically on /logout route, check /logout/+page.js and /logout/+page.svelte
 
-		// Doesn't work, undefined for some reason
-		// console.log(auth.currentUser?.displayName);
-		// await auth.signOut();
+// /** @type {import('./$types').Actions} */
+// export const actions = {
+// 	default: async ({ cookies, locals }) => {
+// 		const allCookies = cookies.getAll();
 
-		allCookies.forEach((cookie) => {
-			cookies.delete(cookie.name);
-		});
+// 		// Doesn't work, undefined for some reason
+// 		// console.log(auth.currentUser?.displayName);
+// 		// await auth.signOut();
 
-		// Reset locals
-		locals.userUID = undefined
-		locals.userStuff = {
-			username: '',
-			email: '',
-			isLoggedIn: false,
-		}
-	}
-};
+// 		allCookies.forEach((cookie) => {
+// 			cookies.delete(cookie.name);
+// 		});
+
+// 		// Reset locals
+// 		locals.userUID = undefined
+// 		locals.userStuff = {
+// 			username: '',
+// 			email: '',
+// 			isLoggedIn: false,
+// 		}
+// 	}
+// };

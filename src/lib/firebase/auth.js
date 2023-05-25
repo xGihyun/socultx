@@ -6,6 +6,10 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 // It will login via a popup window, might not be good for mobile
 export async function googleAuthPopup() {
 	const provider = new GoogleAuthProvider();
+	// Add prompt for user to select an account before log in/register
+	provider.setCustomParameters({
+		prompt: 'select_account'
+	})
 	try {
 		const result = await signInWithPopup(auth, provider);
 		// const credential = GoogleAuthProvider.credentialFromResult(result);
@@ -68,10 +72,10 @@ export async function googleAuthPopup() {
 }
 
 // It works but for some reason 'auth' variable is always undefined on server side files (x.server.js)
-export async function logout() {
-	console.log('Logging out...');
-	console.log(auth.currentUser?.displayName)
-	await signOut(auth);
-	console.log('User has logged out.');
-	console.log(auth.currentUser?.displayName)
-}
+// export async function logout() {
+// 	console.log('Logging out...');
+// 	console.log(auth.currentUser?.displayName)
+// 	await signOut(auth);
+// 	console.log('User has logged out.');
+// 	console.log(auth.currentUser?.displayName)
+// }
