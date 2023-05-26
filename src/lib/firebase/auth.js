@@ -9,7 +9,7 @@ export async function googleAuthPopup() {
 	// Add prompt for user to select an account before log in/register
 	provider.setCustomParameters({
 		prompt: 'select_account'
-	})
+	});
 	try {
 		const result = await signInWithPopup(auth, provider);
 		// const credential = GoogleAuthProvider.credentialFromResult(result);
@@ -19,7 +19,7 @@ export async function googleAuthPopup() {
 		// Database stuff
 		/**
 		 * The user data to store
-		 * @type {import('$lib/types').PostData}
+		 * @type {import('$lib/types').UserData}
 		 */
 		let dataToStore;
 
@@ -33,7 +33,10 @@ export async function googleAuthPopup() {
 
 			// The initial data to store
 			dataToStore = {
+				username: user.displayName,
+				uid: user.uid,
 				email: user.email,
+				isLoggedIn: true,
 				posts: []
 			};
 

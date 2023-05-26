@@ -1,4 +1,5 @@
 <script>
+	import { enhance } from '$app/forms';
 	import { doc, getDoc, setDoc } from 'firebase/firestore';
 	import { db } from '../lib/firebase/firebase';
 	import { googleAuthPopup } from '$lib/firebase/auth';
@@ -12,13 +13,17 @@
 	let email = data.user?.email || null;
 	let userUID = data.uid || null;
 	let posts = data.posts || [];
+	$: allUsers = data.users || [];
 
 	/**
 	 * The user data to store
-	 * @type {import('$lib/types').PostData}
+	 * @type {import('$lib/types').UserData}
 	 */
 	let dataToStore = {
+		username: username,
+		uid: userUID,
 		email: email,
+		isLoggedIn: isLoggedIn,
 		posts: posts
 	};
 
@@ -76,38 +81,40 @@
 		console.log('Posted!');
 	}
 
-	/**
-	 * Delete blog based on the unique identifier of the post
-	 * @param {string} id
-	 */
-	async function deleteBlog(id) {
-		if (!userUID) {
-			console.log('No user!');
-			return;
-		}
+	// /**
+	//  * Delete blog based on the unique identifier of the post
+	//  * @param {string} id
+	//  */
+	// async function deleteBlog(id) {
+	// 	if (!userUID) {
+	// 		console.log('No user!');
+	// 		return;
+	// 	}
 
-		console.log('Deleting...');
-		console.log(id);
+	// 	console.log(`Deleting post... ${id}`);
 
-		const docRef = doc(db, 'users', userUID);
-		const docSnap = await getDoc(docRef);
-		const userData = docSnap.data();
+	// 	const docRef = doc(db, 'users', userUID);
+	// 	const docSnap = await getDoc(docRef);
+	// 	const userData = docSnap.data();
 
-		dataToStore = JSON.parse(JSON.stringify(userData));
+	// 	dataToStore = JSON.parse(JSON.stringify(userData));
 
-		// Find the index of the post with the specified ID
-		const index = dataToStore.posts.findIndex((post) => post.id === id);
+	// 	// Find the index of the post with the specified ID
+	// 	const index = dataToStore.posts.findIndex(
+	// 		(/** @type {{ id: string; }} */ post) => post.id === id
+	// 	);
+	// 	// dataToStore.posts
 
-		// Remove the post from the array
-		if (index !== -1) {
-			dataToStore.posts.splice(index, 1);
-		}
+	// 	// Remove the post from the array
+	// 	if (index !== -1) {
+	// 		dataToStore.posts.splice(index, 1);
+	// 	}
 
-		// Store data to database
-		await setDoc(docRef, dataToStore, { merge: true });
+	// 	// Store data to database
+	// 	await setDoc(docRef, dataToStore, { merge: true });
 
-		console.log('Deleted!');
-	}
+	// 	console.log('Deleted!');
+	// }
 </script>
 
 {#if isLoggedIn}
@@ -121,12 +128,19 @@
 		</div>
 		<span class="text-3xl text-white">Posts</span>
 		<div class="h-80 w-full max-w-3xl overflow-y-scroll px-10">
-			{#each dataToStore.posts as post, idx (idx)}
-				<div class="mb-2 flex justify-between gap-2">
-					<p class="text-white">Post #{idx + 1}: {post.content}</p>
-					<button class="bg-red-600 p-2 text-white" on:click={() => deleteBlog(post.id)}
-						>Delete</button
-					>
+			{#each allUsers as user, idx (idx)}
+				<div class="my-5 flex flex-col gap-2">
+					{#each user.posts as post, idx (idx)}
+						<p class="font-bold text-white">{user.username}</p>
+						<div class="flex gap-2 items-center">
+							<p class="text-white">{post.content}</p>
+							{#if user.uid === userUID}
+								<form action={`/delete-post?id=${post.id}`} method="post" use:enhance>
+									<button class="bg-red-600 p-2 text-white w-fit">Delete</button>
+								</form>
+							{/if}
+						</div>
+					{/each}
 				</div>
 			{/each}
 		</div>
@@ -135,9 +149,7 @@
 {:else}
 	<!-- Testing out tailwind lol :D -->
 	<div>
-		<span class="text-4xl px-8 py-3 rounded-full bg-indigo-500 text-white font-semibold">SOCULT</span>
+		<span class="rounded-full bg-indigo-500 px-8 py-3 text-4xl font-semibold text-white">SOCULT</span>
 	</div>
 	<button class="bg-neutral-700 p-2 text-white" on:click={login}>Log In</button>
 {/if}
-
-<!-- <button on:click={getMyUserName}>Test</button> -->
