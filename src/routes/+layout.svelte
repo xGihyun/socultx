@@ -7,7 +7,8 @@
 	<form method="post" action="/logout">
 		<button class="bg-white p-2">Log Out</button>
 	</form>
-	<!-- <button class="bg-white p-2" on:click={logout}>Log Out</button> -->
+	<a class="mx-20 bg-neutral-700 p-2 text-white" type="button" href="/">Listen</a>
+	<a class="bg-neutral-700 p-2 text-white" type="button" href="/chat">Chat</a>
 </nav>
 <main class="px-20 py-5">
 	<slot />
