@@ -39,10 +39,11 @@ export async function load({ locals }) {
 	 * The user data to store
 	 * @type {import('$lib/types').UserData}
 	 */
+
 	let dataToStore = JSON.parse(JSON.stringify(userData));
 
 	// console.log('User UID Cookie: ' + userUID);
-	// console.log('\nUser logged in (page.server.js): ' + locals.isLoggedIn); // console.log('User posts: ' + dataToStore.posts);
+	// console.logA'\nUser logged in (page.server.js): ' + locals.isLoggedIn); // console.log('User posts: ' + dataToStore.posts);
 
 	return {
 		users: docData,
