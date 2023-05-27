@@ -8,13 +8,14 @@
 	export let data;
 
 	// Handle user stuff
-	let isLoggedIn = data.user?.isLoggedIn || false;
+	$: isLoggedIn = data.user?.isLoggedIn || false;
 	let username = data.user?.username || null;
 	let email = data.user?.email || null;
 	let userUID = data.uid || null;
 	let posts = data.posts || [];
+	let photoURL = data.user?.photoURL || null;
 	$: allUsers = data.users || [];
-
+	
 	/**
 	 * The user data to store
 	 * @type {import('$lib/types').UserData}
@@ -24,7 +25,8 @@
 		uid: userUID,
 		email: email,
 		isLoggedIn: isLoggedIn,
-		posts: posts
+		posts: posts,
+		photoURL: null
 	};
 
 	// After logging in, take the data that the current user has, including their posts
@@ -40,6 +42,7 @@
 		dataToStore.posts = user.posts;
 	}
 
+	// TODO: ONSNAPSHOT
 	const unsub = onSnapshot(collection(db, 'users'), (snapshot) => {
 		/**
 		 * @type {import("@firebase/firestore").DocumentData[]}
@@ -50,9 +53,10 @@
 		})
 		
 		allUsers = test;
-		console.log("Test snapshot")
-		console.log(test)
+		// console.log("Test snapshot")
+		// console.log(test)
 	});
+
 </script>
 
 {#if isLoggedIn}

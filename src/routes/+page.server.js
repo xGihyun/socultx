@@ -13,8 +13,8 @@ export async function load({ locals }) {
 	}
 
 	// Document of the current user only
-	const docRef = doc(db, 'users', userUID);
-	const docSnap = await getDoc(docRef);
+	const userRef = doc(db, 'users', userUID);
+	const docSnap = await getDoc(userRef);
 	const userData = docSnap.data();
 
 	// Get all of the documents
@@ -52,28 +52,3 @@ export async function load({ locals }) {
 		posts: dataToStore.posts,
 	};
 }
-
-// Added actions specifically on /logout route, check /logout/+page.js and /logout/+page.svelte
-
-// /** @type {import('./$types').Actions} */
-// export const actions = {
-// 	default: async ({ cookies, locals }) => {
-// 		const allCookies = cookies.getAll();
-
-// 		// Doesn't work, undefined for some reason
-// 		// console.log(auth.currentUser?.displayName);
-// 		// await auth.signOut();
-
-// 		allCookies.forEach((cookie) => {
-// 			cookies.delete(cookie.name);
-// 		});
-
-// 		// Reset locals
-// 		locals.userUID = undefined
-// 		locals.userStuff = {
-// 			username: '',
-// 			email: '',
-// 			isLoggedIn: false,
-// 		}
-// 	}
-// };

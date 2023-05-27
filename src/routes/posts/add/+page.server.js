@@ -4,10 +4,10 @@ import { uid } from 'uid';
 
 /** @type {import('./$types').Actions} */
 export const actions = {
-  default: async ({ request, locals }) => { 
-        const formData = await request.formData();
-        const inputText = formData.get('content');
-        const userUID = locals.userUID;
+	default: async ({ request, locals }) => {
+		const formData = await request.formData();
+		const inputText = formData.get('content');
+		const userUID = locals.userUID;
 
 		if (!userUID) {
 			console.log('No user!');
@@ -16,11 +16,11 @@ export const actions = {
 
 		console.log('Posting...');
 
-		const docRef = doc(db, 'users', userUID);
-		const docSnap = await getDoc(docRef);
+		const userRef = doc(db, 'users', userUID);
+		const docSnap = await getDoc(userRef);
 		const userData = docSnap.data();
 		const postID = uid(32);
-        const username = locals.userStuff.username;
+		const username = locals.userStuff.username;
 
 		let dataToStore = JSON.parse(JSON.stringify(userData));
 
@@ -39,9 +39,8 @@ export const actions = {
 		});
 
 		// Store data to database
-		await setDoc(docRef, dataToStore, { merge: true });
+		await setDoc(userRef, dataToStore, { merge: true });
 
 		console.log('Posted!');
-
-  }
+	}
 };

@@ -18,34 +18,30 @@ export async function googleAuthPopup() {
 
 		// Database stuff
 		/**
-		 * The user data to store
+		 * The (initial) user data to store
 		 * @type {import('$lib/types').UserData}
 		 */
-		let dataToStore;
+		let dataToStore = {
+			username: user.displayName,
+			uid: user.uid,
+			email: user.email,
+			photoURL: user.photoURL,
+			isLoggedIn: true,
+			posts: []
+		};
 
-		const docRef = doc(db, 'users', user.uid);
-		const docSnap = await getDoc(docRef);
+		const userRef = doc(db, 'users', user.uid);
+		const docSnap = await getDoc(userRef);
 
 		// Check if a document exists
 		if (!docSnap.exists()) {
 			// Get reference to the user path where the users will be stored
-			const userRef = doc(db, 'users', user.uid);
-
-			// The initial data to store
-			dataToStore = {
-				username: user.displayName,
-				uid: user.uid,
-				email: user.email,
-				isLoggedIn: true,
-				posts: []
-			};
+			const newUserRef = doc(db, 'users', user.uid);
 
 			// Store data to database
-			await setDoc(userRef, dataToStore, { merge: true });
+			await setDoc(newUserRef, dataToStore, { merge: true });
 		} else {
-			// If document already exists, just set dataToStore to the current document data
-			const userData = docSnap.data();
-			dataToStore = JSON.parse(JSON.stringify(userData));
+			await setDoc(userRef, { isLoggedIn: true }, { merge: true });
 		}
 
 		// This will set a session cookie
@@ -56,7 +52,8 @@ export async function googleAuthPopup() {
 				uid: user.uid,
 				username: user.displayName,
 				email: user.email,
-				isLoggedIn: true
+				isLoggedIn: true,
+				photoURL: user.photoURL
 			}),
 			7
 		);

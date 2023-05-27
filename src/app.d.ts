@@ -7,6 +7,8 @@ declare global {
 			userUID: string | undefined,
 			userStuff: {
 				username: string,
+				uid: string,
+				photoURL: string,
 				email: string,
 				isLoggedIn: boolean,
 			}
