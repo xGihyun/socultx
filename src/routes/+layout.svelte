@@ -13,9 +13,8 @@
 
 	export let data;
 
-	const user = data.user;
-
-	// console.log(data)
+	const users = data.users || [];
+	const isLoggedIn = data.user?.isLoggedIn || false;
 </script>
 
 <!-- Log out WIP -->
@@ -36,19 +35,20 @@
 <AppShell>
 	<svelte:fragment slot="header">
 		<nav class="fixed flex h-20 w-full bg-black px-20 py-5">
-			<!-- Get user profile -->
-			<!-- {#if user.isLoggedIn} -->
+			{#if isLoggedIn}
 				<form method="post" action="/logout">
 					<button class="bg-white p-2">Log Out</button>
 				</form>
-			<!-- {/if} -->
-			<a class="mx-20 bg-neutral-700 p-2 text-white" type="button" href="/">Listen</a>
-			<a class="bg-neutral-700 p-2 text-white" type="button" href="/chat">Chat</a>
+				<a class="mx-20 bg-neutral-700 p-2 text-white" type="button" href="/">Listen</a>
+				<a class="bg-neutral-700 p-2 text-white" type="button" href="/chat">Chat</a>
+			{/if}
 		</nav>
 	</svelte:fragment>
 	<!-- (sidebarLeft) -->
 	<svelte:fragment slot="sidebarRight">
-		<Sidebar users={data.users} />
+		{#if isLoggedIn}
+			<Sidebar {users} />
+		{/if}
 	</svelte:fragment>
 	<!-- (pageHeader) -->
 	<!-- Router Slot -->
@@ -59,5 +59,3 @@
 	<!-- <svelte:fragment slot="pageFooter">Page Footer</svelte:fragment> -->
 	<!-- (footer) -->
 </AppShell>
-
-<!-- Sidebar -->
