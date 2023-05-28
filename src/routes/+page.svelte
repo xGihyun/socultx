@@ -13,6 +13,7 @@
 	let email = data.user?.email || null;
 	let userUID = data.uid || null;
 	let posts = data.posts || [];
+	let inbox = data.inbox || [];
 	let photoURL = data.user?.photoURL || null;
 	$: allUsers = data.users || [];
 	
@@ -26,7 +27,8 @@
 		email: email,
 		isLoggedIn: isLoggedIn,
 		posts: posts,
-		photoURL: null
+		inbox: inbox,
+		photoURL: photoURL
 	};
 
 	// After logging in, take the data that the current user has, including their posts
@@ -43,19 +45,19 @@
 	}
 
 	// TODO: ONSNAPSHOT
-	const unsub = onSnapshot(collection(db, 'users'), (snapshot) => {
-		/**
-		 * @type {import("@firebase/firestore").DocumentData[]}
-		 */
-		let test = []
-		snapshot.forEach((doc) => {
-			test.push(doc.data())
-		})
+	// const unsub = onSnapshot(collection(db, 'users'), (snapshot) => {
+	// 	/**
+	// 	 * @type {import("@firebase/firestore").DocumentData[]}
+	// 	 */
+	// 	let test = []
+	// 	snapshot.forEach((doc) => {
+	// 		test.push(doc.data())
+	// 	})
 		
-		allUsers = test;
-		// console.log("Test snapshot")
-		// console.log(test)
-	});
+	// 	allUsers = test;
+	// 	// console.log("Test snapshot")
+	// 	// console.log(test)
+	// });
 
 </script>
 
@@ -90,8 +92,9 @@
 	</div>
 {:else}
 	<!-- Testing out tailwind lol :D -->
+	<p class="p-5">DElete thissss</p>
 	<div>
 		<span class="rounded-full bg-indigo-500 px-8 py-3 text-4xl font-semibold text-white">SOCULT</span>
+		<button class="bg-neutral-700 p-2 text-white" on:click={login}>Log In</button>
 	</div>
-	<button class="bg-neutral-700 p-2 text-white" on:click={login}>Log In</button>
 {/if}

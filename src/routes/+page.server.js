@@ -1,5 +1,4 @@
 import { db } from '$lib/firebase/firebase';
-// import { redirect } from '@sveltejs/kit';
 import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 
 /** @type {import('./$types').PageServerLoad} */
@@ -50,5 +49,6 @@ export async function load({ locals }) {
 		user: userStuff,
 		uid: userUID,
 		posts: dataToStore.posts,
+		inbox: dataToStore.inbox,
 	};
 }

@@ -12,6 +12,7 @@ declare global {
 				email: string,
 				isLoggedIn: boolean,
 			}
+			users: array
 			// isLoggedIn: boolean,
 		}
 		// interface PageData {}
@@ -19,4 +20,4 @@ declare global {
 	}
 }
 
-export {};
+export { };

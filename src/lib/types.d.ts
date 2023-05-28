@@ -5,6 +5,7 @@ export type UserData = {
   isLoggedIn: boolean,
   uid: string | null,
   posts: Post[],
+  inbox: Inbox[]
 }
 
 type Post = {
@@ -12,4 +13,9 @@ type Post = {
   content: string,
   userUID: string,
   user: string,
+}
+
+type Inbox = {
+  chat_id: string,
+  chat_name: string
 }

@@ -27,7 +27,8 @@ export async function googleAuthPopup() {
 			email: user.email,
 			photoURL: user.photoURL,
 			isLoggedIn: true,
-			posts: []
+			posts: [],
+			inbox: []
 		};
 
 		const userRef = doc(db, 'users', user.uid);
@@ -63,19 +64,11 @@ export async function googleAuthPopup() {
 			username: user.displayName,
 			email: user.email,
 			isLoggedIn: true,
-			posts: dataToStore.posts
+			posts: dataToStore.posts,
+			inbox: dataToStore.inbox
 		};
 	} catch (error) {
 		// Handle Errors here.
 		console.error(error);
 	}
 }
-
-// It works but for some reason 'auth' variable is always undefined on server side files (x.server.js)
-// export async function logout() {
-// 	console.log('Logging out...');
-// 	console.log(auth.currentUser?.displayName)
-// 	await signOut(auth);
-// 	console.log('User has logged out.');
-// 	console.log(auth.currentUser?.displayName)
-// }

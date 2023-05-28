@@ -24,6 +24,7 @@ export async function load({ locals }) {
 		// There is no map() in docs apparently
 		docData.push(doc.data());
 	});
+	// TODO: REFACTOR THIS USE QUERY INSTEAD TO GET THE LATEST DATA!
 
 	return {
 		user: userStuff,

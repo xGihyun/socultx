@@ -2,58 +2,80 @@ import { db } from '$lib/firebase/firebase';
 import { addDoc, collection, doc, getDoc, getDocs, query, setDoc, where } from 'firebase/firestore';
 import { uid } from 'uid';
 
+
+
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ locals, params }) {
 	const userStuff = locals.userStuff;
 	const userUID = userStuff.uid;
 	const receiverId = params.chatId;
+	// console.log(userStuff)
+	// console.log('-------');
+	// console.log(userUID);
+	// console.log('--------');
+	// console.log(receiverId);
 
-	const user2 = (await getDoc(doc(db, `users/${receiverId}`))).data();
-
-	// Current user (sender)
-	const userMessages = await getDocs(
-		collection(db, `users/${userUID}/conversations/${receiverId}/messages`)
-	);
-
-	/**
-	 * @type {import("@firebase/firestore").DocumentData[]}
-	 */
-	let docUserMessages = [];
-
-	userMessages.forEach((message) => {
-		docUserMessages.push(JSON.parse(JSON.stringify(message.data())));
-	});
-
-	// Receiver
-	const receiverMessages = await getDocs(
-		collection(db, `users/${receiverId}/conversations/${userUID}/messages`)
-	);
-
-	/**
-	 * @type {import("@firebase/firestore").DocumentData[]}
-	 */
-	let docReceiverMessages = [];
-
-	receiverMessages.forEach((message) => {
-		docReceiverMessages.push(JSON.parse(JSON.stringify(message.data())));
-	});
-
-	const messages = docUserMessages;
-
-	docReceiverMessages.forEach((message) => {
-		messages.push(message);
-	});
-
-	messages.sort((a, b) => a.timestamp.seconds - b.timestamp.seconds);
-
-	// we should probably do this client side
-
+	// Just return the id of the receiver to the clientside
 	return {
-		receiverUID: receiverId,
-		userUID: userUID,
-		messages: messages
-	};
+		receiverId: receiverId
+	}
+
 }
+
+
+
+/** @type {import('./$types').PageServerLoad} */
+// export async function load({ locals, params }) {
+// 	const userStuff = locals.userStuff;
+// 	const userUID = userStuff.uid;
+// 	const receiverId = params.chatId;
+
+// 	const user2 = (await getDoc(doc(db, `users/${receiverId}`))).data();
+
+// 	// Current user (sender)
+// 	const userMessages = await getDocs(
+// 		collection(db, `users/${userUID}/conversations/${receiverId}/messages`)
+// 	);
+
+// 	/**
+// 	 * @type {import("@firebase/firestore").DocumentData[]}
+// 	 */
+// 	let docUserMessages = [];
+
+// 	userMessages.forEach((message) => {
+// 		docUserMessages.push(JSON.parse(JSON.stringify(message.data())));
+// 	});
+
+// 	// Receiver
+// 	const receiverMessages = await getDocs(
+// 		collection(db, `users/${receiverId}/conversations/${userUID}/messages`)
+// 	);
+
+// 	/**
+// 	 * @type {import("@firebase/firestore").DocumentData[]}
+// 	 */
+// 	let docReceiverMessages = [];
+
+// 	receiverMessages.forEach((message) => {
+// 		docReceiverMessages.push(JSON.parse(JSON.stringify(message.data())));
+// 	});
+
+// 	const messages = docUserMessages;
+
+// 	docReceiverMessages.forEach((message) => {
+// 		messages.push(message);
+// 	});
+
+// 	messages.sort((a, b) => a.timestamp.seconds - b.timestamp.seconds);
+
+// 	// we should probably do this client side
+
+// 	return {
+// 		receiverUID: receiverId,
+// 		userUID: userUID,
+// 		messages: messages
+// 	};
+// }
 
 /** @type {import('./$types').Actions} */
 export const actions = {
@@ -116,7 +138,7 @@ export const actions = {
 
 		const testDocSnap = await getDoc(testDocRef);
 
-		if(!testDocSnap.exists()){
+		if (!testDocSnap.exists()) {
 			await addDoc(collection(db, 'chats'), members)
 		}
 
