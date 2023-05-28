@@ -1,5 +1,5 @@
 import { db } from '$lib/firebase/firebase';
-import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, QuerySnapshot, where } from 'firebase/firestore';
 
 /** @type {import('./$types').LayoutServerLoad} */
 export async function load({ params, locals }) {
@@ -41,9 +41,13 @@ export async function load({ params, locals }) {
     //     console.log(doc.data())
     // })
 
+    // Grab the user's inbox no need to fetch to database, 
+
+
     // APPARENTLY U NEED `+layout.server.js` in order to retrieve or return the latest `users` so that you can use it in the `chat/[chatId]`
+    // THIS WILL JUST OVERRIDE THE `users` property with the latest one
+    // HOWEVER THE PROPERTIES FOR THE OTHERS WON'T UPDATE AFTER WE NAVIGATE OR CLICK AN ANCHOR TAG
     return {
-        test: 'test chat layout',
-        latestUsers: querySnapshot.docs.map((doc) => doc.data()),
+        users: querySnapshot.docs.map((doc) => doc.data()),
     };
 }

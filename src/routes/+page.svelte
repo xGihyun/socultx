@@ -16,7 +16,7 @@
 	let inbox = data.inbox || [];
 	let photoURL = data.user?.photoURL || null;
 	$: allUsers = data.users || [];
-	
+
 	/**
 	 * The user data to store
 	 * @type {import('$lib/types').UserData}
@@ -53,12 +53,11 @@
 	// 	snapshot.forEach((doc) => {
 	// 		test.push(doc.data())
 	// 	})
-		
+
 	// 	allUsers = test;
 	// 	// console.log("Test snapshot")
 	// 	// console.log(test)
 	// });
-
 </script>
 
 {#if isLoggedIn}
@@ -66,7 +65,7 @@
 		<p class="mb-10 text-5xl text-white">Hello {username}</p>
 		<div class="mb-10">
 			<form title="Add Post" action="/posts/add" method="post" use:enhance>
-				<input class="p-2" name="content"/>
+				<input class="p-2" name="content" />
 				<button class="bg-blue-600 p-2 text-white">Post</button>
 			</form>
 		</div>
@@ -76,11 +75,16 @@
 				<div class="my-5 flex flex-col gap-2">
 					{#each user.posts as post, idx (idx)}
 						<p class="font-bold text-white">{user.username}</p>
-						<div class="flex gap-2 items-center">
+						<div class="flex items-center gap-2">
 							<p class="text-white">{post.content}</p>
 							{#if user.uid === userUID}
-								<form title="Delete Post" action={`/posts/delete?id=${post.id}`} method="post" use:enhance>
-									<button class="bg-red-600 p-2 text-white w-fit">Delete</button>
+								<form
+									title="Delete Post"
+									action={`/posts/delete?id=${post.id}`}
+									method="post"
+									use:enhance
+								>
+									<button class="w-fit bg-red-600 p-2 text-white">Delete</button>
 								</form>
 							{/if}
 						</div>
@@ -94,7 +98,9 @@
 	<!-- Testing out tailwind lol :D -->
 	<p class="p-5">DElete thissss</p>
 	<div>
-		<span class="rounded-full bg-indigo-500 px-8 py-3 text-4xl font-semibold text-white">SOCULT</span>
+		<span class="rounded-full bg-indigo-500 px-8 py-3 text-4xl font-semibold text-white"
+			>SOCULT</span
+		>
 		<button class="bg-neutral-700 p-2 text-white" on:click={login}>Log In</button>
 	</div>
 {/if}

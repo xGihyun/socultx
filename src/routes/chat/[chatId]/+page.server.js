@@ -2,8 +2,6 @@ import { db } from '$lib/firebase/firebase';
 import { addDoc, collection, doc, getDoc, getDocs, query, setDoc, where } from 'firebase/firestore';
 import { uid } from 'uid';
 
-
-
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ locals, params }) {
 	const userStuff = locals.userStuff;
@@ -82,14 +80,21 @@ export const actions = {
 	add: async ({ request, locals, params }) => {
 		const formData = await request.formData();
 		const inputText = formData.get('content');
+		const chatID = formData.get('chatID');
 		const userUID = locals.userUID;
 		const username = locals.userStuff.username;
 		const email = locals.userStuff.email;
 		const photoURL = locals.userStuff.photoURL;
-		const receiverId = params.chatId;
+		// const receiverId = params.chatId;
 
 		if (!userUID) {
 			console.log('No user!');
+			return;
+		}
+
+		// Only allow to push posts if there is an input
+		if (!inputText) {
+			console.log('Must input text!');
 			return;
 		}
 
@@ -106,41 +111,40 @@ export const actions = {
 			timestamp: date
 		};
 
-		const user2 = await getDoc(doc(db, `users/${receiverId}`));
 
-		/**
-		 * @type {string}
-		 */
-		const receiver = user2.data()?.username;
+		// Add message data to database
+		await addDoc(collection(db, `chats/${chatID}/messages`), messageData);
 
-		/**
-		 * @type {string}
-		 */
-		const receiverPhotoUrl = user2.data()?.photoURL;
 
-		const conversationData = {
-			type: 'dm',
-			photo_url: receiverPhotoUrl,
-			name: receiver,
-			members: [userUID, receiverId]
-		};
+		// const user2 = await getDoc(doc(db, `users/${receiverId}`));
 
-		// Only allow to push posts if there is an input
-		if (!inputText) {
-			console.log('Must input text!');
-			return;
-		}
+		// /**
+		//  * @type {string}
+		//  */
+		// const receiver = user2.data()?.username;
 
-		const members = [userUID, receiverId];
-		const testUid = uid(32);
+		// /**
+		//  * @type {string}
+		//  */
+		// const receiverPhotoUrl = user2.data()?.photoURL;
 
-		const testDocRef = doc(db, 'chats', testUid)
+		// const conversationData = {
+		// 	type: 'dm',
+		// 	photo_url: receiverPhotoUrl,
+		// 	name: receiver,
+		// 	members: [userUID, receiverId]
+		// };
 
-		const testDocSnap = await getDoc(testDocRef);
+		// const members = [userUID, receiverId];
+		// const testUid = uid(32);
 
-		if (!testDocSnap.exists()) {
-			await addDoc(collection(db, 'chats'), members)
-		}
+		// const testDocRef = doc(db, 'chats', )
+
+		// const testDocSnap = await getDoc(testDocRef);
+
+		// if (!testDocSnap.exists()) {
+		// 	await addDoc(collection(db, 'chats'), members)
+		// }
 
 		// const docRef = doc(db, `chats/${userUID}/conversations/${receiverId}`);
 		// const docSnap = await getDoc(docRef);
