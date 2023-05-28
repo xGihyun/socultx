@@ -1,17 +1,52 @@
 <script>
-  export let user;
+	import { Avatar } from '@skeletonlabs/skeleton';
+
+	/**
+	 * @type {string}
+	 */
+	export let username;
+
+	/**
+	 * @type {string}
+	 */
+	export let message;
+
+	/**
+	 * @type {string}
+	 */
+	export let uid;
+
+	/**
+	 * @type {string}
+	 */
+	export let senderId;
+
+	/**
+	 * @type {string}
+	 */
+	export let photoURL;
+
+	$: isCurrentUser = uid === senderId;
 </script>
 
-<div class="flex justify-start">
-  <div class="grid grid-cols-[auto_1fr] gap-2">
-      <!-- <Avatar src="https://i.pravatar.cc/?img={bubble.avatar}" width="w-12" /> -->
-      <span class="text-white">Icon</span>
-      <div class="card p-4 bg-neutral-400 rounded-tl-none space-y-2">
-          <header class="flex justify-between items-center">
-              <p class="font-bold">Other user's name</p>
-              <!-- <small class="opacity-50">timestamp</small> -->
-          </header>
-          <p>their message</p>
-      </div>
-  </div>
+<!-- Other user -->
+<div class={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
+	<div class={`grid gap-2 ${isCurrentUser ? 'grid-cols-[1fr_auto]' : 'grid-cols-[auto_1fr]'}`}>
+		{#if !isCurrentUser}
+			<Avatar src={photoURL} width="w-12" />
+		{/if}
+		<!-- <span class="text-white">Icon</span> -->
+		<div
+			class={`card space-y-2 p-4 ${
+				isCurrentUser ? 'rounded-tr-none bg-blue-800' : 'rounded-tl-none bg-neutral-400'
+			}`}
+		>
+			<header class="flex items-center justify-between">
+				<p class={`font-bold ${isCurrentUser ? 'text-white' : 'text-black'}`}>{username}</p>
+				<!-- <small class="opacity-50">timestamp</small> -->
+			</header>
+			<p class={`${isCurrentUser ? 'text-white' : 'text-black'}`}>{message}</p>
+		</div>
+	</div>
 </div>
+

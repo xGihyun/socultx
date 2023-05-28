@@ -11,7 +11,7 @@
 	// })
 </script>
 
-<ul class="list mt-20 flex min-h-screen flex-col gap-2 bg-blue-900 p-10">
+<ul class="list py-32 flex min-h-screen flex-col gap-2 bg-blue-900 px-10">
 	{#each users as user, idx (idx)}
 		<a href={`/chat/${user.uid}`}>
 			<li>

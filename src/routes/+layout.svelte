@@ -52,7 +52,7 @@
 	</svelte:fragment>
 	<!-- (pageHeader) -->
 	<!-- Router Slot -->
-	<main class="mt-20 px-20 py-5">
+	<main>
 		<slot />
 	</main>
 	<!-- ---- / ---- -->
