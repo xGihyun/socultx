@@ -1,102 +1,40 @@
 <script>
-	import { enhance } from '$app/forms';
-	import { doc, getDoc, setDoc, onSnapshot, collection } from 'firebase/firestore';
-	import { db } from '../lib/firebase/firebase';
 	import { googleAuthPopup } from '$lib/firebase/auth';
-	import { uid } from 'uid';
+	import { currentUser } from '$lib/store';
+	import { getContext } from 'svelte';
 
-	export let data;
+	$: userContext = getContext('user');
 
-	// Handle user stuff
-	$: isLoggedIn = data.user?.isLoggedIn || false;
-	let username = data.user?.username || null;
-	let email = data.user?.email || null;
-	let userUID = data.uid || null;
-	let posts = data.posts || [];
-	let inbox = data.inbox || [];
-	let photoURL = data.user?.photoURL || null;
-	$: allUsers = data.users || [];
-
-	/**
-	 * The user data to store
-	 * @type {import('$lib/types').UserData}
-	 */
-	let dataToStore = {
-		username: username,
-		uid: userUID,
-		email: email,
-		isLoggedIn: isLoggedIn,
-		posts: posts,
-		inbox: inbox,
-		photoURL: photoURL
-	};
-
-	// After logging in, take the data that the current user has, including their posts
 	async function login() {
 		const user = await googleAuthPopup();
 
 		if (!user) return;
 
-		isLoggedIn = user.isLoggedIn;
-		email = user.email;
-		username = user.username;
-		userUID = user.uid;
-		dataToStore.posts = user.posts;
+		console.log('Setting stores...');
+
+		// Update the current store
+		currentUser.update(
+			(val) =>
+				(val = {
+					email: user.username || '',
+					is_logged_in: user.is_logged_in || false,
+					photo_url: user.photo_url || '',
+					uid: user.uid || '',
+					username: user.username || ''
+				})
+		);
+
+		console.log('Stores set!');
 	}
-
-	// TODO: ONSNAPSHOT
-	// const unsub = onSnapshot(collection(db, 'users'), (snapshot) => {
-	// 	/**
-	// 	 * @type {import("@firebase/firestore").DocumentData[]}
-	// 	 */
-	// 	let test = []
-	// 	snapshot.forEach((doc) => {
-	// 		test.push(doc.data())
-	// 	})
-
-	// 	allUsers = test;
-	// 	// console.log("Test snapshot")
-	// 	// console.log(test)
-	// });
 </script>
 
-{#if isLoggedIn}
+{#if $userContext.is_logged_in}
 	<div class="flex flex-col items-center justify-center">
-		<p class="mb-10 text-5xl text-white">Hello {username}</p>
-		<div class="mb-10">
-			<form title="Add Post" action="/posts/add" method="post" use:enhance>
-				<input class="p-2" name="content" />
-				<button class="bg-blue-600 p-2 text-white">Post</button>
-			</form>
-		</div>
-		<span class="text-3xl text-white">Posts</span>
-		<div class="h-96 w-full max-w-3xl overflow-y-scroll px-10">
-			{#each allUsers as user, idx (idx)}
-				<div class="my-5 flex flex-col gap-2">
-					{#each user.posts as post, idx (idx)}
-						<p class="font-bold text-white">{user.username}</p>
-						<div class="flex items-center gap-2">
-							<p class="text-white">{post.content}</p>
-							{#if user.uid === userUID}
-								<form
-									title="Delete Post"
-									action={`/posts/delete?id=${post.id}`}
-									method="post"
-									use:enhance
-								>
-									<button class="w-fit bg-red-600 p-2 text-white">Delete</button>
-								</form>
-							{/if}
-						</div>
-					{/each}
-				</div>
-			{/each}
-		</div>
+		<p class="mb-10 text-5xl text-white">Hello {$userContext.username} {$userContext.is_logged_in}</p>
 		<a class="bg-neutral-700 p-2 text-white" type="button" href="/profile">Go to profile</a>
 	</div>
 {:else}
 	<!-- Testing out tailwind lol :D -->
-	<p class="p-5">DElete thissss</p>
 	<div>
 		<span class="rounded-full bg-indigo-500 px-8 py-3 text-4xl font-semibold text-white"
 			>SOCULT</span

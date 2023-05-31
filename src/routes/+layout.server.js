@@ -1,53 +1,35 @@
 import { db } from '$lib/firebase/firebase';
-import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 
 /** @type {import('./$types').LayoutServerLoad} */
 export async function load({ locals }) {
-	const userStuff = locals.userStuff;
-	const userUID = locals.userUID;
-
-	if (!userUID) {
+	if (!locals.userStuff) {
 		return;
 	}
 
-	// Document of the current user only
-	const userRef = doc(db, 'users', userUID);
-	const docSnap = await getDoc(userRef);
-	const userData = docSnap.data();
-
 	// Get all of the documents
-	const docCollection = collection(db, 'users');
-	const docs = await getDocs(docCollection);
+	const usersCollection = collection(db, 'users');
+	const usersDocs = await getDocs(usersCollection);
 
-	// I guess this works???
-	/**
-	 * @type {import("@firebase/firestore").DocumentData[]}
-	 */
+	/** @type {import('$lib/types').UserData[]} */
 	let docData = [];
 
-	docs.forEach((doc) => {
-		// There is no map() in docs apparently
-		docData.push(doc.data())
-	})
+	usersDocs.forEach((doc) => {
+		docData.push(/** @type {import('$lib/types').UserData} */ (doc.data()));
+	});
 
-	console.log('Run')
-	// console.log(docData);
+	// /**
+	//  * @type {{ id: string; user: { uid: string | null; }; }[]}
+	//  */
+	// let userInbox = [];
 
-	/**
-	 * The user data to store
-	 * @type {import('$lib/types').UserData}
-	 */
+	// const userInboxCollection = collection(db, `users/${locals.userStuff.uid}/inbox`);
+	// const userInboxDocs = await getDocs(userInboxCollection);
 
-	let dataToStore = JSON.parse(JSON.stringify(userData));
-
-	// console.log('User UID Cookie: ' + userUID);
-	// console.logA'\nUser logged in (page.server.js): ' + locals.isLoggedIn); // console.log('User posts: ' + dataToStore.posts);
+	// TODO: The inbox / list of users you've talked too
 
 	return {
 		users: docData,
-		user: userStuff,
-		uid: userUID,
-		posts: dataToStore.posts,
-		inbox: dataToStore.inbox,
+		user: locals.userStuff
 	};
 }

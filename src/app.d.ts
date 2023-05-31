@@ -4,15 +4,15 @@ declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			userUID: string | undefined,
+			userUID: string | undefined;
 			userStuff: {
-				username: string,
-				uid: string,
-				photoURL: string,
-				email: string,
-				isLoggedIn: boolean,
-			}
-			users: array
+				username: string | null;
+				email: string | null;
+				photo_url: string | null;
+				is_logged_in: boolean;
+				uid: string | null;
+			};
+			users: array;
 			// isLoggedIn: boolean,
 		}
 		// interface PageData {}
@@ -20,4 +20,4 @@ declare global {
 	}
 }
 
-export { };
+export {};

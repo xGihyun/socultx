@@ -1,1 +1,0 @@
-<div>Deleting a post!</div>

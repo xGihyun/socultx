@@ -1,15 +1,11 @@
 <script>
-	// import { onMount } from 'svelte';
-	// import { userInfo } from '../../lib/store';
+	import { getContext } from 'svelte';
 
-	export let data;
-
-	let username = data.user?.username;
+	const currentUser = getContext('user');
 </script>
 
 <div>
-	<h1 class="text-white text-5xl">
-		Hello World! Welcome {username}
+	<h1 class="text-5xl text-white">
+		Hello World! Welcome {$currentUser.username}
 	</h1>
 </div>
-

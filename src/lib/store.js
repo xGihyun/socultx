@@ -1,11 +1,17 @@
-import { writable } from "svelte/store";
+import { writable } from 'svelte/store';
 
 /**
- * @type {import("svelte/store").Writable<{ email: string | null | undefined; uid: string | null | undefined; username: string | null | undefined; isLoggedIn: boolean }>}
+ * @type {import("svelte/store").Writable<import('$lib/types').UserData>}
  */
-export const userInfo = writable({
-  email: '',
-  username: '',
-  uid: '',
-  isLoggedIn: false,
+export const currentUser = writable({
+	email: '',
+	username: '',
+	uid: '',
+	is_logged_in: false,
+	photo_url: ''
 });
+
+/**
+ * @type {import("svelte/store").Writable<import('$lib/types').UserData[]>}
+ */
+export const allUsers = writable([]);

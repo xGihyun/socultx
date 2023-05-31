@@ -1,7 +1,8 @@
 import { setCookie } from '$lib/cookie';
 import { auth, db } from '$lib/firebase/firebase';
-import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { allUsers } from '$lib/store';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { collection, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
 
 // It will login via a popup window, might not be good for mobile
 export async function googleAuthPopup() {
@@ -10,6 +11,7 @@ export async function googleAuthPopup() {
 	provider.setCustomParameters({
 		prompt: 'select_account'
 	});
+
 	try {
 		const result = await signInWithPopup(auth, provider);
 		// const credential = GoogleAuthProvider.credentialFromResult(result);
@@ -25,10 +27,8 @@ export async function googleAuthPopup() {
 			username: user.displayName,
 			uid: user.uid,
 			email: user.email,
-			photoURL: user.photoURL,
-			isLoggedIn: true,
-			posts: [],
-			inbox: []
+			photo_url: user.photoURL,
+			is_logged_in: true
 		};
 
 		const userRef = doc(db, 'users', user.uid);
@@ -42,19 +42,34 @@ export async function googleAuthPopup() {
 			// Store data to database
 			await setDoc(newUserRef, dataToStore, { merge: true });
 		} else {
-			await setDoc(userRef, { isLoggedIn: true }, { merge: true });
+			await setDoc(userRef, { is_logged_in: true }, { merge: true });
 		}
 
+		// Get the collection for all the users
+		// Responsible for making the sidebar show all users reactively
+		const docCollection = collection(db, 'users');
+		const docs = await getDocs(docCollection);
+
+		/**
+		 * @type {import("@firebase/firestore").DocumentData[]}
+		 */
+		let docData = [];
+
+		docs.forEach((doc) => {
+			docData.push(doc.data());
+		});
+
+		allUsers.update((val) => (val = /** @type {import('$lib/types').UserData[]} */ (docData)));
+
 		// This will set a session cookie
-		setCookie('userUID', user.uid, 7);
 		setCookie(
 			'userStuff',
 			JSON.stringify({
 				uid: user.uid,
 				username: user.displayName,
 				email: user.email,
-				isLoggedIn: true,
-				photoURL: user.photoURL
+				is_logged_in: true,
+				photo_url: user.photoURL
 			}),
 			7
 		);
@@ -63,9 +78,8 @@ export async function googleAuthPopup() {
 			uid: user.uid,
 			username: user.displayName,
 			email: user.email,
-			isLoggedIn: true,
-			posts: dataToStore.posts,
-			inbox: dataToStore.inbox
+			is_logged_in: true,
+			photo_url: user.photoURL
 		};
 	} catch (error) {
 		// Handle Errors here.

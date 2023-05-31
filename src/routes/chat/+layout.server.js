@@ -1,53 +1,59 @@
 import { db } from '$lib/firebase/firebase';
-import { collection, doc, getDoc, getDocs, query, QuerySnapshot, where } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 
+// TODO: Make allUsers reactive, when someone logs in, the green circle appears; when a new user appears, they will appear on the sidebar, etc.
 /** @type {import('./$types').LayoutServerLoad} */
-export async function load({ params, locals }) {
-    // const userStuff = locals.userStuff;
-    // const userUID = userStuff.uid;
-    // const receiverId = params.chatId;
+export async function load({ locals }) {
+	// const q = query(
+	// 	collection(db, 'chats'),
+	// 	where('members_uid', 'array-contains', locals.userStuff.uid)
+	// );
 
-    // Query to get all conversations the current user is a part of
-    // const q = query(
-    //     collection(db, `users/${userUID}/conversations`),
-    //     where('members', 'array-contains', userUID)
-    // );
+	// /**
+	//  * @type {any[]}
+	//  */
+	// let allInboxes = [];
 
-    // const querySnapshot = await getDocs(q);
+	// /**
+	//  * @type {any[]}
+	//  */
+	// let receivers = [];
 
-    // /**
-    //  * @type {{ docID: string; docData: import("@firebase/firestore").DocumentData; }[]}
-    //  */
-    // let test = [];
+	// const querySnapshot = await getDocs(q);
 
-    // querySnapshot.forEach((doc) => {
-    //     // doc.data() is never undefined for query doc snapshots
-    //     // console.log(doc.id, ' => ', doc.data());
-    //     test.push({
-    //         docID: doc.id,
-    //         docData: doc.data()
-    //     });
-    // });
+	// // Maybe it could be better?
+	// querySnapshot.forEach((e) => {
+	// 	// Would be useful for getting messages later
+	// 	// const inboxRef = collection(db, `chats/${e.id}/messages`);
+	// 	// const messages = await getDocs(inboxRef);
+	// 	// messages.forEach((message) =>
+	// 	// 	test.push(/** @type {import('$lib/types').Message} */ (message.data()))
+	// 	// );
+	// 	allInboxes.push({
+	// 		id: e.id,
+	// 		data: e.data()
+	// 	});
+	// });
 
-    const q = query(
-        collection(db, `users`)
-    )
+	// allInboxes.forEach((inbox) => {
+	// 	inbox.data.members.forEach((/** @type {{ uid: string | null; }} */ user) => {
+	// 		// We only need the other user (receiver)
+	// 		if (user.uid !== locals.userStuff.uid) {
+	// 			receivers.push({
+	// 				id: inbox.id,
+	// 				data: user
+	// 			});
+	// 		}
 
-    // let test = []
+	// 		// Unless you want to talk to yourself as well...
+	// 		// receivers.push({
+	// 		// 	id: inbox.id,
+	// 		// 	data: user
+	// 		// });
+	// 	});
+	// });
 
-    const querySnapshot = await getDocs(q);
-    // querySnapshot.forEach((doc) => {
-    //     console.log(`SOOOOOOOOOOOOOOOoo`)
-    //     console.log(doc.data())
-    // })
-
-    // Grab the user's inbox no need to fetch to database, 
-
-
-    // APPARENTLY U NEED `+layout.server.js` in order to retrieve or return the latest `users` so that you can use it in the `chat/[chatId]`
-    // THIS WILL JUST OVERRIDE THE `users` property with the latest one
-    // HOWEVER THE PROPERTIES FOR THE OTHERS WON'T UPDATE AFTER WE NAVIGATE OR CLICK AN ANCHOR TAG
-    return {
-        users: querySnapshot.docs.map((doc) => doc.data()),
-    };
+	return {
+		inboxes: []
+	};
 }
