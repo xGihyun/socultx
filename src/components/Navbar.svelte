@@ -11,7 +11,7 @@
 	>
 		<a href="/" class="font-gt-walsheim-pro-medium text-4xl uppercase text-white">socult</a>
 		<div class="flex gap-5">
-			<a class="bg-neutral-700 p-2 text-white rounded-md" type="button" href="/">Listen</a>
+			<a class="bg-neutral-700 p-2 text-white rounded-md" type="button" href="/listen">Listen</a>
 			<a class="bg-neutral-700 p-2 text-white rounded-md" type="button" href="/chat">Chat</a>
 			<form method="post" action="/logout">
 				<button class="bg-white p-2 rounded-md">Log Out</button>
