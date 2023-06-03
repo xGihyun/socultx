@@ -1,11 +1,14 @@
+import { browser } from '$app/environment';
 import { db } from '$lib/firebase/firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, doc, getDocs, setDoc } from 'firebase/firestore';
 
 /** @type {import('./$types').LayoutServerLoad} */
 export async function load({ locals }) {
 	if (!locals.userStuff) {
 		return;
 	}
+
+	
 
 	// Get all of the documents
 	const usersCollection = collection(db, 'users');

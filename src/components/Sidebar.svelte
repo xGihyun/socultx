@@ -1,15 +1,26 @@
 <script>
-	import { Avatar } from "@skeletonlabs/skeleton";
+	import { db } from '$lib/firebase/firebase';
+	import { Avatar } from '@skeletonlabs/skeleton';
+	import { collection, onSnapshot } from 'firebase/firestore';
+	import { getContext, onDestroy } from 'svelte';
 
-	/**
-	 * @type {any}
-	 */
-	export let users;
+	const users = getContext('users');
+
+	const usersCollection = collection(db, 'users');
+
+	const unsubUsers = onSnapshot(usersCollection, (snapshot) => {
+		$users = snapshot.docs.map((doc) => doc.data());
+	});
+
+	onDestroy(() => unsubUsers());
 </script>
 
-<ul class="list flex min-h-screen flex-col gap-2 bg-blue-900 px-10 py-32">
-	{#each users as user, idx (idx)}
-		<a href={`/chat/${user.uid}`}>
+<ul class="list flex min-h-screen flex-col gap-2 bg-black px-5 py-32">
+	{#each $users as user, idx (idx)}
+		<a
+			href={`/chat/${user.uid}`}
+			class="rounded-md p-2 transition-colors duration-200 hover:bg-neutral-800"
+		>
 			<li>
 				<div class="relative h-10 w-10">
 					<Avatar src={user.photo_url} width="w-10" />

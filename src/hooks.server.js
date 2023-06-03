@@ -1,7 +1,9 @@
 /** @type {import('@sveltejs/kit').Handle} */
 
-import { currentUser } from '$lib/store';
+import { browser } from '$app/environment';
+import { db } from '$lib/firebase/firebase';
 import { redirect } from '@sveltejs/kit';
+import { doc, setDoc } from 'firebase/firestore';
 
 // https://kit.svelte.dev/docs/hooks
 export async function handle({ event, resolve }) {
@@ -11,11 +13,15 @@ export async function handle({ event, resolve }) {
 		event.locals.userStuff = JSON.parse(userStuffCookie);
 	}
 
-	// Redirects to login page if an unknown user tries to access other pages
-	// if (event.url.pathname === '/' && userStuffCookie) {
-	// 	console.log(`${event.locals.userStuff.username} is currently logged in`);
-	// 	throw redirect(302, '/dashboard');
+	// TODO: set is_logged_in to 'false' when the app is not running in the browser (pls help)
+	// if (!browser) {
+	// 	const userRef = doc(db, 'users', event.locals.userStuff.uid || '');
+
+	// 	// Set login to false in the database
+	// 	await setDoc(userRef, { is_logged_in: false }, { merge: true });
 	// }
+
+	// Redirects to login page if an unknown user tries to access other pages
 	if (event.url.pathname !== '/' && !userStuffCookie) {
 		console.log('Access Denied');
 		throw redirect(307, '/');

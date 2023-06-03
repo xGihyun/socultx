@@ -9,7 +9,7 @@
 </script>
 
 <div class="flex h-full">
-	<ul class="list flex h-full max-w-xs flex-col gap-2 bg-indigo-900 px-10 py-32">
+	<!-- <ul class="list flex h-full max-w-xs flex-col gap-2 bg-indigo-900 px-10 py-32">
 		{#each inboxes as inbox, idx (idx)}
 			<a href={`/chat/${inbox.id}`}>
 				<li>
@@ -23,6 +23,6 @@
 				</li>
 			</a>
 		{/each}
-	</ul>
+	</ul> -->
 	<slot />
 </div>

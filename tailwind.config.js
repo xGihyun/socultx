@@ -8,10 +8,15 @@ module.exports = {
 		require('path').join(require.resolve('@skeletonlabs/skeleton'), '../**/*.{html,js,svelte,ts}')
 	],
 	theme: {
-		extend: {}
+		extend: {
+			fontFamily: {
+				'gt-walsheim-pro-medium': 'gt-walsheim-pro-medium, sans-serif'
+			}
+		}
 	},
 	plugins: [
 		// 3. Append the Skeleton plugin to the end of this list
-		...require('@skeletonlabs/skeleton/tailwind/skeleton.cjs')()
+		...require('@skeletonlabs/skeleton/tailwind/skeleton.cjs')(),
+		require('@tailwindcss/forms')
 	]
 };

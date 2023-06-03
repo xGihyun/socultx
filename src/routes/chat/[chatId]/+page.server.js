@@ -1,5 +1,14 @@
 import { db } from '$lib/firebase/firebase';
-import { addDoc, collection, doc, getDoc, getDocs, orderBy, query } from 'firebase/firestore';
+import {
+	addDoc,
+	collection,
+	doc,
+	getDoc,
+	getDocs,
+	limitToLast,
+	orderBy,
+	query
+} from 'firebase/firestore';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ params, locals }) {
@@ -9,7 +18,8 @@ export async function load({ params, locals }) {
 		db,
 		`users/${locals.userStuff.uid}/inbox/${chatId}/messages`
 	);
-
+	
+	// TODO: Limit the number of messages fetched with limitToLast()
 	// I don't even know if this works
 	const q = query(userMessageCollection, orderBy('timestamp'));
 
@@ -26,8 +36,8 @@ export async function load({ params, locals }) {
 		});
 	}
 
-	console.log('Chat history: ');
-	console.log(chatHistory);
+	// console.log('Chat history:');
+	// console.log(chatHistory);
 
 	return {
 		chatId: chatId,
@@ -60,7 +70,7 @@ export const actions = {
 		const receiverDoc = await getDoc(receiverRef);
 		const receiver = /** @type {import('$lib/types').UserData} */ (receiverDoc.data());
 
-		const currentDate = new Date().toUTCString();
+		const currentDate = new Date();
 
 		/** @type {import('$lib/types').Message} */
 		const messageData = {
@@ -84,7 +94,7 @@ export const actions = {
 			db,
 			`users/${locals.userStuff.uid}/inbox/${params.chatId}/messages`
 		);
-		
+
 		// Check if user is talking to themselves to not duplicate the sent message
 		if (userUID === receiver.uid) {
 			await addDoc(senderMessageCollection, messageData);

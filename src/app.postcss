@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+*,
+*::before,
+*::after {
+	font-family: gt-walsheim-pro, sans-serif;
+}
+
 body {
-  background: rgb(30, 30, 30);
+  background: rgb(20, 20, 20);
+}
+
+@font-face {
+	font-family: gt-walsheim-pro;
+	src: url('./assets/fonts/gt-walsheim-pro/GTWalsheimPro-Regular.ttf');
+	font-display: swap;
+}
+
+@font-face {
+	font-family: gt-walsheim-pro-medium;
+	src: url('./assets/fonts/gt-walsheim-pro/GTWalsheimPro-Medium.ttf');
+	font-display: swap;
 }
