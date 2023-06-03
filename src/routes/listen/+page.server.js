@@ -1,26 +1,27 @@
-/** @type {import('./$types').Actions} */
-export const actions = {
-    default: async ({ request }) => {
-        const form = await request.formData();
-        const query = form.get('q');
-        console.log(`User searched for : ${query}`);
+import YTMusic from 'ytmusic-api'
+/** @type {import('./$types').PageServerLoad} */
+export async function load({ url }) {
+    const query = url.searchParams.get('q')
+    if (!query) {
         return {
-            success: "true",
-            query: query
+            didUserSearch: false,
+            query: null,
+            results: []
         }
     }
-};
 
-// /** @type {import('./$types').PageServerLoad} */
-// export async function load({ request }) {
-//     const form = await request.formData();
-//     // if (!form) {
-//     //     return;
-//     // }
-//     // const query = form.get('q');
-//     // console.log(`User searched for : ${query}`);
-//     // return {
-//     //     success: "true",
-//     //     query: query
-//     // }
-// }
+    // Use yt-music api
+    const ytmusic = await new YTMusic().initialize()
+    const results = await ytmusic.searchSongs(query)
+    return {
+        didUserSearch: true,
+        query: query,
+        results: results
+    }
+    // ytmusic.search()
+    // ytmusic.search("Lilac").then(results => {
+    //     console.log(results)
+    // })
+
+
+}
