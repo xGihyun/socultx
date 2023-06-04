@@ -24,14 +24,16 @@
 	<h5 class="h5 m-2 text-white">
 		Search results for: <span class="font-bold">{data?.query}</span>
 	</h5>
-	<div class="overflow flex h-screen flex-wrap justify-around overflow-y-auto">
-		{#each data?.results as { type, videoId, name, thumbnails }, i}
-			<div class="card h-42 mx-2 my-6 w-48 p-2">
-				<div>
-					<img src={thumbnails[0].url} alt="cover" />
-					<p class="truncate p-2 font-semibold">
-						{name}
-					</p>
+	<!-- experimenting for now idk what im doing geez -->
+	<div class="overflow flex h-screen flex-wrap justify-around">
+		{#each data?.results as { type, videoId, name, thumbnails, artists }, i}
+			<div class="card mx-2 my-6 w-48 overflow-hidden">
+				<div class="flex">
+					<img class="-translate-x-8" src={thumbnails[1].url} alt="cover" />
+					<div class="-translate-x-8 truncate p-2">
+						<p class="truncate font-semibold">{name}</p>
+						<p>{artists.map((e) => e.name).join(', ')}</p>
+					</div>
 				</div>
 			</div>
 		{/each}
