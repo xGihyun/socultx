@@ -34,6 +34,7 @@
 	"type": "module",
 	"dependencies": {
 		"firebase": "^9.22.0",
-		"uid": "^2.0.2"
+		"uid": "^2.0.2",
+		"ytmusic-api": "^4.1.0"
 	}
 }
