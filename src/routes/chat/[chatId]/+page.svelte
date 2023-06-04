@@ -22,9 +22,9 @@
 
 	/**
 	 * Scroll to bottom
-	 * @type {HTMLElement}
+	 * @type {HTMLElement | null}
 	 */
-	let elemChat;
+	let elemChat = document.getElementById('page');
 
 	/**
 	 * Skeleton UI's scroll-to-bottom function
@@ -32,8 +32,10 @@
 	 */
 	function scrollChatBottom(behavior) {
 		setTimeout(() => {
-			elemChat.scrollTo({ top: elemChat.scrollHeight, behavior });
-			console.log('scrolling...');
+			if (elemChat) {
+				elemChat.scrollTo({ top: elemChat.scrollHeight, behavior });
+				console.log('scrolling...');
+			}
 		}, 0);
 	}
 
@@ -55,52 +57,46 @@
 	afterNavigate(() => scrollChatBottom('smooth'));
 </script>
 
-<div class="relative flex w-full flex-col">
-	<div bind:this={elemChat} class="flex h-full flex-col gap-5 overflow-y-scroll px-5 py-10">
-		{#each chatHistory as message}
-			<ChatMessage
-				username={message.sender_username}
-				message={message.content}
-				uid={$userContext.uid || ''}
-				senderId={message.sender_uid}
-				photoURL={message.sender_photo_url}
+<div class="h-full space-y-4 overflow-y-auto px-5 py-10">
+	{#each chatHistory as message}
+		<ChatMessage
+			username={message.sender_username}
+			message={message.content}
+			uid={$userContext.uid || ''}
+			senderId={message.sender_uid}
+			photoURL={message.sender_photo_url}
+		/>
+	{/each}
+</div>
+<div class="sticky bottom-10 left-1/2 w-full max-w-3xl -translate-x-1/2">
+	<form
+		class="contents"
+		title="Send message"
+		action={`/chat/${data.chatId}?/send`}
+		method="post"
+		use:enhance
+	>
+		<div class="input-group input-group-divider rounded-container-token grid-cols-[1fr_auto]">
+			<textarea
+				bind:value={currentMessage}
+				class="w-full resize-none border-0 bg-transparent outline-none ring-0"
+				name="content"
+				id="content"
+				placeholder="Aa"
+				rows="1"
+				aria-label="send message"
+				on:keydown={(event) => {
+					if (event.key === 'Enter' && !event.shiftKey) {
+						event.preventDefault();
+						chatSend.click();
+					}
+				}}
 			/>
-		{/each}
-	</div>
-	<!-- <div class="fixed bottom-10 left-1/2 -translate-x-1/2 lg:absolute"> -->
-	<div class="relative mx-10 flex justify-center">
-		<form
-			class="contents"
-			title="Send message"
-			action={`/chat/${data.chatId}?/send`}
-			method="post"
-			use:enhance
-		>
-			<div
-				class="input-group input-group-divider rounded-container-token w-full max-w-3xl grid-cols-[1fr_auto]"
+			<button
+				class="variant-filled-primary max-w-fit"
+				on:click={() => scrollChatBottom('smooth')}
+				bind:this={chatSend}>Send</button
 			>
-				<!-- <button class="input-group-shim">+</button> -->
-				<textarea
-					bind:value={currentMessage}
-					class="w-full resize-none border-0 bg-transparent outline-none ring-0"
-					name="content"
-					id="content"
-					placeholder="Aa"
-					rows="1"
-					aria-label="send message"
-					on:keydown={(event) => {
-						if (event.key === 'Enter' && !event.shiftKey) {
-							event.preventDefault();
-							chatSend.click();
-						}
-					}}
-				/>
-				<button
-					class="variant-filled-primary max-w-fit"
-					on:click={() => scrollChatBottom('smooth')}
-					bind:this={chatSend}>Send</button
-				>
-			</div>
-		</form>
-	</div>
+		</div>
+	</form>
 </div>

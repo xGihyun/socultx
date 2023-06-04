@@ -2,24 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
-*,
-*::before,
-*::after {
-	font-family: gt-walsheim-pro, sans-serif;
-}
-
+html,
 body {
-  background: rgb(20, 20, 20);
+	@apply h-full overflow-hidden;
 }
 
 @font-face {
 	font-family: gt-walsheim-pro;
-	src: url('./assets/fonts/gt-walsheim-pro/GTWalsheimPro-Regular.ttf');
+	src: url('/fonts/GTWalsheimPro-Regular.ttf');
 	font-display: swap;
 }
 
 @font-face {
 	font-family: gt-walsheim-pro-medium;
-	src: url('./assets/fonts/gt-walsheim-pro/GTWalsheimPro-Medium.ttf');
+	src: url('/fonts/GTWalsheimPro-Medium.ttf');
 	font-display: swap;
+}
+
+/* Manually set skeleton UI styles */
+.dark ::-webkit-scrollbar-thumb {
+	background-color: rgb(100, 100, 100);
 }

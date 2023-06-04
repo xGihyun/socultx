@@ -15,11 +15,11 @@
 	onDestroy(() => unsubUsers());
 </script>
 
-<ul class="list flex min-h-screen flex-col gap-2 bg-black px-5 py-32">
+<ul class="list flex min-h-screen flex-col gap-2 bg-black px-5 py-10">
 	{#each $users as user, idx (idx)}
 		<a
 			href={`/chat/${user.uid}`}
-			class="rounded-md p-2 transition-colors duration-200 hover:bg-neutral-800"
+			class="hover:bg-secondary-900 rounded-md p-2 transition-colors duration-200 hover:bg-opacity-40"
 		>
 			<li>
 				<div class="relative h-10 w-10">

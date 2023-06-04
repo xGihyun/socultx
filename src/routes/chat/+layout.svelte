@@ -1,4 +1,4 @@
-<script>
+<!-- <script>
 	export let data;
 
 	// This is nothing for now
@@ -6,10 +6,10 @@
 	 * @type {any[]}
 	 */
 	$: inboxes = data.inboxes || [];
-</script>
+</script> -->
 
-<div class="flex h-full">
-	<!-- <ul class="list flex h-full max-w-xs flex-col gap-2 bg-indigo-900 px-10 py-32">
+<!-- <div class="flex h-full"> -->
+<!-- <ul class="list flex h-full max-w-xs flex-col gap-2 bg-indigo-900 px-10 py-32">
 		{#each inboxes as inbox, idx (idx)}
 			<a href={`/chat/${inbox.id}`}>
 				<li>
@@ -24,5 +24,5 @@
 			</a>
 		{/each}
 	</ul> -->
-	<slot />
-</div>
+<!-- </div> -->
+<slot />

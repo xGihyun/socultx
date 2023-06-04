@@ -38,14 +38,14 @@
 		<!-- <span class="text-white">Icon</span> -->
 		<div
 			class={`card space-y-2 p-4 ${
-				isCurrentUser ? 'rounded-tr-none bg-blue-800' : 'rounded-tl-none bg-neutral-400'
+				isCurrentUser ? 'rounded-tr-none variant-soft-primary' : 'rounded-tl-none variant-soft-secondary'
 			}`}
 		>
 			<header class="flex items-center justify-between">
-				<p class={`font-bold ${isCurrentUser ? 'text-white' : 'text-black'}`}>{username}</p>
+				<p class={`font-bold`}>{username}</p>
 				<!-- <small class="opacity-50">timestamp</small> -->
 			</header>
-			<p class={`${isCurrentUser ? 'text-white' : 'text-black'}`}>{message}</p>
+			<p class={``}>{message}</p>
 		</div>
 	</div>
 </div>
