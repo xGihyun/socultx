@@ -10,8 +10,10 @@ module.exports = {
 	theme: {
 		extend: {
 			fontFamily: {
-				'gt-walsheim-pro-medium': 'gt-walsheim-pro-medium, sans-serif'
-			}
+				'gt-walsheim-pro-medium': ['gt-walsheim-pro-medium', 'sans-serif'],
+				'gt-walsheim-pro-light': ['gt-walsheim-pro-light', 'sans-serif'],
+				'gt-walsheim-pro-thin': ['gt-walsheim-pro-thin', 'sans-serif'],
+			},
 		}
 	},
 	plugins: [

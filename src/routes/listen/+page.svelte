@@ -1,6 +1,14 @@
 <script>
+	import '../../app.postcss';
 	export let data;
-	console.log(data);
+
+	$: isSongPlaying = false;
+	$: audioSrc = '';
+
+	async function playAudioStream(/** @type {any} */ songId) {
+		audioSrc = `/listen/play/${songId}`;
+		isSongPlaying = true;
+	}
 </script>
 
 <form action="/listen">
@@ -20,22 +28,32 @@
 	</div>
 </form>
 
+<!-- TODO: Place this tag somewhere in the root +layout.svelte -->
+{#if isSongPlaying}
+	<audio controls autoplay src={audioSrc}>
+		Your browser does not support the <code>audio</code> element.
+	</audio>
+{/if}
+
 {#if data?.didUserSearch}
 	<h5 class="h5 m-2 text-white">
 		Search results for: <span class="font-bold">{data?.query}</span>
 	</h5>
-	<!-- experimenting for now idk what im doing geez -->
-	<div class="overflow flex h-screen flex-wrap justify-around">
+	<div class="overflow flex h-screen flex-wrap justify-evenly">
 		{#each data?.results as { type, videoId, name, thumbnails, artists }, i}
-			<div class="card mx-2 my-6 w-48 overflow-hidden">
-				<div class="flex">
-					<img class="-translate-x-8" src={thumbnails[1].url} alt="cover" />
-					<div class="-translate-x-8 truncate p-2">
-						<p class="truncate font-semibold">{name}</p>
-						<p>{artists.map((e) => e.name).join(', ')}</p>
+			<button type="button" class="btn m-0 p-0" on:click={playAudioStream(videoId)}>
+				<div class="card h-[60px] w-96 overflow-hidden">
+					<div class="flex">
+						<img src={thumbnails[0].url} alt="cover" />
+						<div class="mx-2 my-auto flex flex-col items-start truncate">
+							<p class="truncate font-gt-walsheim-pro-medium">{name}</p>
+							<p class="truncate font-gt-walsheim-pro-thin">
+								{artists.map((e) => e.name).join(', ')}
+							</p>
+						</div>
 					</div>
 				</div>
-			</div>
+			</button>
 		{/each}
 	</div>
 {/if}

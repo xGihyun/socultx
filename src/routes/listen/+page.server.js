@@ -1,4 +1,5 @@
 import YTMusic from 'ytmusic-api'
+
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ url }) {
     const query = url.searchParams.get('q')
