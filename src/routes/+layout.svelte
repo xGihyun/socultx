@@ -11,8 +11,7 @@
 
 	import { allUsers, currentUser } from '$lib/store';
 	import { getContext, setContext } from 'svelte';
-	import { Sidebar } from '../components';
-	import { AppShell, AppBar, Avatar } from '@skeletonlabs/skeleton';
+	import { Navbar, Sidebar } from '../components';
 
 	export let data;
 
@@ -33,37 +32,14 @@
 	$: userContext = getContext('user');
 </script>
 
-<AppShell>
-	<svelte:fragment slot="header">
-		<AppBar padding="px-20 py-5" border="border-b-[1px] border-neutral-800">
-			<svelte:fragment slot="lead">
-				<a href="/" class="font-heading-token text-4xl uppercase">socult</a>
-			</svelte:fragment>
-
-			<svelte:fragment slot="trail">
-				<a class="variant-filled-secondary rounded-md p-2" type="button" href="/listen">Listen</a>
-				<a
-					class="variant-filled-secondary rounded-md bg-neutral-700 p-2 text-white"
-					type="button"
-					href="/chat">Chat</a
-				>
-				<form method="post" action="/logout">
-					<button class="variant-filled-primary rounded-md bg-white p-2">Log Out</button>
-				</form>
-				<a href="/profile">
-					<Avatar src={$userContext.photo_url} width="w-10" />
-				</a>
-			</svelte:fragment>
-		</AppBar>
-	</svelte:fragment>
-
-	<svelte:fragment slot="sidebarRight">
+<div class="flex h-screen flex-col">
+	<Navbar />
+	<div class="flex w-full flex-1 overflow-hidden">
+		<main class="flex-1 overflow-y-auto relative">
+			<slot />
+		</main>
 		{#if $userContext.is_logged_in}
 			<Sidebar />
 		{/if}
-	</svelte:fragment>
-
-	<div class="h-full py-10">
-		<slot />
 	</div>
-</AppShell>
+</div>

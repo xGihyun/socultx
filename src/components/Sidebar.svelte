@@ -15,7 +15,7 @@
 	onDestroy(() => unsubUsers());
 </script>
 
-<ul class="list flex min-h-screen flex-col gap-2 bg-black px-5 py-10">
+<ul class="list flex flex-col gap-2 px-5 py-10 overflow-y-auto">
 	{#each $users as user, idx (idx)}
 		<a
 			href={`/chat/${user.uid}`}
@@ -31,8 +31,8 @@
 					{/if}
 				</div>
 				<div class="flex flex-col">
-					<span class="flex-auto text-white">{user.username}</span>
-					<span class="text-sm text-neutral-300">status</span>
+					<span class="flex-auto line-clamp-1">{user.username}</span>
+					<span class="text-sm opacity-75">status</span>
 				</div>
 			</li>
 		</a>
