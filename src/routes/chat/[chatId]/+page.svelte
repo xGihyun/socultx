@@ -22,9 +22,9 @@
 
 	/**
 	 * Scroll to bottom
-	 * @type {HTMLElement | null}
+	 * @type {HTMLElement}
 	 */
-	let elemChat = document.getElementById('page');
+	let elemChat;
 
 	/**
 	 * Skeleton UI's scroll-to-bottom function
@@ -57,7 +57,7 @@
 	afterNavigate(() => scrollChatBottom('smooth'));
 </script>
 
-<div class="h-full space-y-4 overflow-y-auto px-5 py-10">
+<div bind:this={elemChat} class="h-full space-y-4 overflow-y-auto px-5 py-10">
 	{#each chatHistory as message}
 		<ChatMessage
 			username={message.sender_username}
@@ -67,8 +67,9 @@
 			photoURL={message.sender_photo_url}
 		/>
 	{/each}
+	<div class="h-32" />
 </div>
-<div class="sticky bottom-10 left-1/2 w-full max-w-3xl -translate-x-1/2">
+<div class="absolute bottom-10 left-1/2 w-full max-w-3xl -translate-x-1/2">
 	<form
 		class="contents"
 		title="Send message"
