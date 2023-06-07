@@ -1,3 +1,5 @@
+import type { Timestamp } from "firebase/firestore";
+
 export type UserData = {
 	username: string | null;
 	email: string | null;
@@ -34,5 +36,5 @@ type Message = {
 	receiver_username: string;
 	receiver_photo_url: string;
 	receiver_email: string;
-	timestamp: any;
+	timestamp: Timestamp;
 };

@@ -1,12 +1,22 @@
 <script>
 	import { enhance } from '$app/forms';
-	import { getContext, onDestroy } from 'svelte';
+	import { getContext, onDestroy, onMount } from 'svelte';
 	import ChatMessage from '../components/ChatMessage.svelte';
-	import { collection, onSnapshot } from 'firebase/firestore';
+	import {
+		QuerySnapshot,
+		collection,
+		getDocs,
+		limit,
+		onSnapshot,
+		orderBy,
+		query,
+		startAfter,
+		Timestamp,
+		limitToLast
+	} from 'firebase/firestore';
 	import { db } from '$lib/firebase/firebase';
-	import { afterNavigate } from '$app/navigation';
 
-	const userContext = getContext('user');
+	const user = getContext('user');
 
 	export let data;
 
@@ -24,47 +34,128 @@
 	 * Scroll to bottom
 	 * @type {HTMLElement}
 	 */
-	let elemChat;
+	let chatElem;
 
 	/**
 	 * Skeleton UI's scroll-to-bottom function
 	 * @param {ScrollBehavior} behavior
 	 */
-	function scrollChatBottom(behavior) {
+	function scrollChatToBottom(behavior) {
 		setTimeout(() => {
-			if (elemChat) {
-				elemChat.scrollTo({ top: elemChat.scrollHeight, behavior });
+			if (chatElem) {
+				chatElem.scrollTo({ top: chatElem.scrollHeight, behavior });
 				console.log('scrolling...');
 			}
 		}, 0);
 	}
 
-	const userMessageCollection = collection(
-		db,
-		`users/${$userContext.uid}/inbox/${data.chatId}/messages`
-	);
+	// It works but it's not that smooth
+	function maintainScrollPosition() {
+		const scrollDifference = chatElem.scrollHeight - chatElem.clientHeight;
+
+		console.log(scrollDifference);
+		console.log('Client height: ' + chatElem.clientHeight);
+		console.log('Scroll height: ' + chatElem.scrollHeight);
+		console.log('Scroll top: ' + chatElem.scrollTop);
+
+		if (scrollDifference > 0) {
+			const currentPosition = chatElem.scrollTop;
+			const newScrollPosition = currentPosition + scrollDifference;
+			chatElem.scrollTop = newScrollPosition;
+			console.log('Scroll top new: ' + chatElem.scrollTop);
+		}
+	}
+
+	let loadingMore = false;
+
+	function loadMessagesOnScroll() {
+		if (chatElem.scrollTop === 0 && !loadingMore) {
+			console.log('Loading past messages...');
+			loadMoreMessages();
+		}
+	}
+
+	async function loadMoreMessages() {
+		loadingMore = true;
+
+		const lastMessage = chatHistory[0];
+		const querySnapshot = await getOlderMessages(lastMessage.timestamp);
+
+		// Don't do anything if there are no more messages to be loaded
+		if (querySnapshot.empty) {
+			loadingMore = false;
+			return;
+		}
+
+		// Append the newly loaded messages to the existing chat messages
+		const newMessages = querySnapshot.docs.map(
+			(doc) => /** @type {import('$lib/types').Message} */ (JSON.parse(JSON.stringify(doc.data())))
+		);
+
+		console.log(newMessages);
+
+		chatHistory = [...newMessages, ...chatHistory];
+
+		maintainScrollPosition();
+
+		loadingMore = false;
+	}
+
+	/**
+	 * @param {Timestamp} startAfterTimestamp
+	 * @returns {Promise<QuerySnapshot<import('firebase/firestore').DocumentData>>}
+	 */
+	async function getOlderMessages(startAfterTimestamp) {
+		console.log(startAfterTimestamp);
+		const userMessageCollection = collection(
+			db,
+			`users/${$user.uid}/inbox/${data.chatId}/messages`
+		);
+
+		// Construct the query to get older messages
+		const q = query(
+			userMessageCollection,
+			orderBy('timestamp'),
+			startAfter(startAfterTimestamp),
+			limit(5)
+		);
+
+		const querySnapshot = await getDocs(q);
+
+		return querySnapshot;
+	}
+
+	const userMessageCollection = collection(db, `users/${$user.uid}/inbox/${data.chatId}/messages`);
+	const q = query(userMessageCollection, orderBy('timestamp'), limitToLast(10));
 
 	// TODO: Is this the best way to do snapshots? (reassigning chatHistory over and over again...)
-	const unsubChat = onSnapshot(userMessageCollection, (snapshot) => {
+	const unsubChat = onSnapshot(q, (snapshot) => {
 		chatHistory = snapshot.docs.map(
 			(doc) => /** @type {import('$lib/types').Message} */ (doc.data())
 		);
 		chatHistory.sort((a, b) => a.timestamp.seconds - b.timestamp.seconds);
-		scrollChatBottom('smooth');
+		maintainScrollPosition();
 	});
 
 	onDestroy(() => unsubChat());
-	afterNavigate(() => scrollChatBottom('smooth'));
+	onMount(() => {
+		scrollChatToBottom('smooth');
+	});
 </script>
 
-<div bind:this={elemChat} class="h-full space-y-4 overflow-y-auto px-5 py-10">
+<div
+	class="h-full space-y-4 overflow-y-auto px-5 py-10"
+	bind:this={chatElem}
+	on:scroll={loadMessagesOnScroll}
+>
 	{#each chatHistory as message}
 		<ChatMessage
 			username={message.sender_username}
 			message={message.content}
-			uid={$userContext.uid || ''}
+			uid={$user.uid || ''}
 			senderId={message.sender_uid}
 			photoURL={message.sender_photo_url}
+			timestamp={message.timestamp}
 		/>
 	{/each}
 	<div class="h-32" />
@@ -95,7 +186,7 @@
 			/>
 			<button
 				class="variant-filled-primary max-w-fit"
-				on:click={() => scrollChatBottom('smooth')}
+				on:click={() => scrollChatToBottom('smooth')}
 				bind:this={chatSend}>Send</button
 			>
 		</div>

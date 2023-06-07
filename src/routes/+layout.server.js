@@ -8,8 +8,6 @@ export async function load({ locals }) {
 		return;
 	}
 
-	
-
 	// Get all of the documents
 	const usersCollection = collection(db, 'users');
 	const usersDocs = await getDocs(usersCollection);

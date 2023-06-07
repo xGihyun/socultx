@@ -1,4 +1,5 @@
 <script>
+	import { browser } from '$app/environment';
 	import { db } from '$lib/firebase/firebase';
 	import { Avatar } from '@skeletonlabs/skeleton';
 	import { collection, onSnapshot } from 'firebase/firestore';

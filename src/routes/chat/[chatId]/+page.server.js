@@ -1,10 +1,12 @@
 import { db } from '$lib/firebase/firebase';
 import {
+	Timestamp,
 	addDoc,
 	collection,
 	doc,
 	getDoc,
 	getDocs,
+	limit,
 	limitToLast,
 	orderBy,
 	query
@@ -18,10 +20,10 @@ export async function load({ params, locals }) {
 		db,
 		`users/${locals.userStuff.uid}/inbox/${chatId}/messages`
 	);
-	
+
 	// TODO: Limit the number of messages fetched with limitToLast()
 	// I don't even know if this works
-	const q = query(userMessageCollection, orderBy('timestamp'));
+	const q = query(userMessageCollection, orderBy('timestamp'), limitToLast(10));
 
 	const userMessageDocs = await getDocs(q);
 
@@ -36,8 +38,8 @@ export async function load({ params, locals }) {
 		});
 	}
 
-	// console.log('Chat history:');
-	// console.log(chatHistory);
+	console.log('Chat history:');
+	console.log(chatHistory);
 
 	return {
 		chatId: chatId,
@@ -83,7 +85,7 @@ export const actions = {
 			receiver_photo_url: receiver.photo_url || '',
 			receiver_uid: receiver.uid || '',
 			receiver_username: receiver.username || '',
-			timestamp: currentDate
+			timestamp: Timestamp.fromDate(currentDate)
 		};
 
 		const receiverMessageCollection = collection(

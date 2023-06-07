@@ -26,6 +26,11 @@
 	 */
 	export let photoURL;
 
+	/**
+	 * @type {import('firebase/firestore').Timestamp}
+	 */
+	export let timestamp;
+
 	$: isCurrentUser = uid === senderId;
 </script>
 
@@ -38,15 +43,16 @@
 		<!-- <span class="text-white">Icon</span> -->
 		<div
 			class={`card space-y-2 p-4 ${
-				isCurrentUser ? 'rounded-tr-none variant-soft-primary' : 'rounded-tl-none variant-soft-secondary'
+				isCurrentUser
+					? 'variant-soft-primary rounded-tr-none'
+					: 'variant-soft-secondary rounded-tl-none'
 			}`}
 		>
 			<header class="flex items-center justify-between">
 				<p class={`font-bold`}>{username}</p>
 				<!-- <small class="opacity-50">timestamp</small> -->
 			</header>
-			<p class={``}>{message}</p>
+			<p title={timestamp.seconds.toString()}>{message}</p>
 		</div>
 	</div>
 </div>
-
