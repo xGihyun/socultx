@@ -1,6 +1,6 @@
 <script>
 	import { enhance } from '$app/forms';
-	import { getContext, onDestroy, onMount } from 'svelte';
+	import { getContext, onDestroy } from 'svelte';
 	import ChatMessage from '../components/ChatMessage.svelte';
 	import {
 		QuerySnapshot,
@@ -15,6 +15,7 @@
 		limitToLast
 	} from 'firebase/firestore';
 	import { db } from '$lib/firebase/firebase';
+	import { afterNavigate } from '$app/navigation';
 
 	const user = getContext('user');
 
@@ -25,65 +26,64 @@
 	let currentMessage = '';
 
 	/**
-	 * Scroll to bottom
+	 * Send button that is used to be clicked manually or with code after `enter` since we are using `textbox` instead of `input`
 	 * @type {HTMLButtonElement}
 	 */
 	let chatSend;
 
 	/**
-	 * Scroll to bottom
+	 * Element used to scroll to bottom
 	 * @type {HTMLElement}
 	 */
 	let chatElem;
+	let chatElemHeight = 0;
+	let loadingMessages = false;
+	let historyEmpty = false;
 
 	/**
-	 * Skeleton UI's scroll-to-bottom function
+	 * Skeleton UI's scroll-to-bottom function. Runs after the user sends a message.
 	 * @param {ScrollBehavior} behavior
 	 */
 	function scrollChatToBottom(behavior) {
 		setTimeout(() => {
 			if (chatElem) {
 				chatElem.scrollTo({ top: chatElem.scrollHeight, behavior });
-				console.log('scrolling...');
 			}
 		}, 0);
 	}
 
-	// It works but it's not that smooth
 	function maintainScrollPosition() {
-		const scrollDifference = chatElem.scrollHeight - chatElem.clientHeight;
-
-		console.log(scrollDifference);
-		console.log('Client height: ' + chatElem.clientHeight);
-		console.log('Scroll height: ' + chatElem.scrollHeight);
-		console.log('Scroll top: ' + chatElem.scrollTop);
-
-		if (scrollDifference > 0) {
-			const currentPosition = chatElem.scrollTop;
-			const newScrollPosition = currentPosition + scrollDifference;
-			chatElem.scrollTop = newScrollPosition;
-			console.log('Scroll top new: ' + chatElem.scrollTop);
+		if (historyEmpty) {
+			return;
+		} else if (loadingMessages) {
+			chatElem.scrollTop = chatElem.scrollHeight - chatElemHeight;
+		} else {
+			chatElem.scrollTop = chatElem.scrollHeight;
 		}
 	}
 
-	let loadingMore = false;
-
-	function loadMessagesOnScroll() {
-		if (chatElem.scrollTop === 0 && !loadingMore) {
+	async function loadMessagesOnScroll() {
+		if (chatElem.scrollTop === 0 && !loadingMessages && !historyEmpty) {
 			console.log('Loading past messages...');
-			loadMoreMessages();
+
+			loadingMessages = true;
+			chatElemHeight = chatElem.scrollHeight;
+
+			await loadMoreMessages();
+			maintainScrollPosition();
+
+			loadingMessages = false;
 		}
 	}
 
 	async function loadMoreMessages() {
-		loadingMore = true;
-
 		const lastMessage = chatHistory[0];
 		const querySnapshot = await getOlderMessages(lastMessage.timestamp);
 
 		// Don't do anything if there are no more messages to be loaded
 		if (querySnapshot.empty) {
-			loadingMore = false;
+			historyEmpty = true;
+			loadingMessages = false;
 			return;
 		}
 
@@ -92,13 +92,10 @@
 			(doc) => /** @type {import('$lib/types').Message} */ (JSON.parse(JSON.stringify(doc.data())))
 		);
 
+		console.log('Newly loaded messages:');
 		console.log(newMessages);
 
 		chatHistory = [...newMessages, ...chatHistory];
-
-		maintainScrollPosition();
-
-		loadingMore = false;
 	}
 
 	/**
@@ -117,7 +114,7 @@
 			userMessageCollection,
 			orderBy('timestamp'),
 			startAfter(startAfterTimestamp),
-			limit(5)
+			limit(10)
 		);
 
 		const querySnapshot = await getDocs(q);
@@ -138,8 +135,8 @@
 	});
 
 	onDestroy(() => unsubChat());
-	onMount(() => {
-		scrollChatToBottom('smooth');
+	afterNavigate(() => {
+		chatElem.scrollTop = chatElem.scrollHeight;
 	});
 </script>
 
