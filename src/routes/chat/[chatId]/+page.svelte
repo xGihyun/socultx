@@ -10,9 +10,9 @@
 		onSnapshot,
 		orderBy,
 		query,
-		startAfter,
 		Timestamp,
-		limitToLast
+		limitToLast,
+		endBefore
 	} from 'firebase/firestore';
 	import { db } from '$lib/firebase/firebase';
 	import { afterNavigate } from '$app/navigation';
@@ -63,7 +63,7 @@
 	}
 
 	async function loadMessagesOnScroll() {
-		if (chatElem.scrollTop === 0 && !loadingMessages && !historyEmpty) {
+		if (chatElem.scrollTop === 0 && !loadingMessages && !historyEmpty && chatHistory.length >= 10) {
 			console.log('Loading past messages...');
 
 			loadingMessages = true;
@@ -76,9 +76,24 @@
 		}
 	}
 
+	let prevSnapshotSize = 10;
+	let historySize = 10;
+
 	async function loadMoreMessages() {
 		const lastMessage = chatHistory[0];
+
+		// If it's not equal to 10, it means that the previously fetched messages were the last batch of messages / the very first messages sent in the history
+		// Check for this because even after loading the full history of messages, it still loads other messages causing duplicates
+		if (prevSnapshotSize !== 10) {
+			return;
+		}
+
 		const querySnapshot = await getOlderMessages(lastMessage.timestamp);
+
+		prevSnapshotSize = querySnapshot.size;
+		historySize += prevSnapshotSize;
+
+		console.log(historySize);
 
 		// Don't do anything if there are no more messages to be loaded
 		if (querySnapshot.empty) {
@@ -89,54 +104,61 @@
 
 		// Append the newly loaded messages to the existing chat messages
 		const newMessages = querySnapshot.docs.map(
-			(doc) => /** @type {import('$lib/types').Message} */ (JSON.parse(JSON.stringify(doc.data())))
+			/** @returns {import('$lib/types').Message}  */
+			(doc) => JSON.parse(JSON.stringify(doc.data()))
 		);
 
 		console.log('Newly loaded messages:');
 		console.log(newMessages);
 
+		newMessages.forEach((message) => {
+			if (chatHistory.includes(message)) {
+				console.log(message);
+			}
+		});
+
 		chatHistory = [...newMessages, ...chatHistory];
 	}
 
 	/**
-	 * @param {Timestamp} startAfterTimestamp
+	 * @param {Timestamp} timestamp
 	 * @returns {Promise<QuerySnapshot<import('firebase/firestore').DocumentData>>}
 	 */
-	async function getOlderMessages(startAfterTimestamp) {
-		console.log(startAfterTimestamp);
+	async function getOlderMessages(timestamp) {
 		const userMessageCollection = collection(
 			db,
 			`users/${$user.uid}/inbox/${data.chatId}/messages`
 		);
 
 		// Construct the query to get older messages
-		const q = query(
-			userMessageCollection,
-			orderBy('timestamp'),
-			startAfter(startAfterTimestamp),
-			limit(10)
-		);
+		const q = query(userMessageCollection, orderBy('timestamp'), endBefore(timestamp), limit(10));
 
 		const querySnapshot = await getDocs(q);
 
 		return querySnapshot;
 	}
 
-	const userMessageCollection = collection(db, `users/${$user.uid}/inbox/${data.chatId}/messages`);
-	const q = query(userMessageCollection, orderBy('timestamp'), limitToLast(10));
-
 	// TODO: Is this the best way to do snapshots? (reassigning chatHistory over and over again...)
+	// TODO: Only listen/run snapshot to the currently loaded messages, pls help
+	const userMessageCollection = collection(db, `users/${$user.uid}/inbox/${data.chatId}/messages`);
+	const q = query(userMessageCollection, orderBy('timestamp'), limitToLast(historySize));
+
 	const unsubChat = onSnapshot(q, (snapshot) => {
 		chatHistory = snapshot.docs.map(
 			(doc) => /** @type {import('$lib/types').Message} */ (doc.data())
 		);
-		chatHistory.sort((a, b) => a.timestamp.seconds - b.timestamp.seconds);
-		maintainScrollPosition();
+		// Sort in client side just to be sure
+		// chatHistory.sort((a, b) => a.timestamp.seconds - b.timestamp.seconds);
+		scrollChatToBottom('smooth');
 	});
 
 	onDestroy(() => unsubChat());
 	afterNavigate(() => {
 		chatElem.scrollTop = chatElem.scrollHeight;
+		// loadingMessages = false;
+		// chatElemHeight = 0;
+		// loadingMessages = false;
+		// historyEmpty = false;
 	});
 </script>
 

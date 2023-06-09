@@ -20,9 +20,7 @@ export async function load({ params, locals }) {
 		`users/${locals.userStuff.uid}/inbox/${chatId}/messages`
 	);
 
-	// TODO: Limit the number of messages fetched with limitToLast()
-	// I don't even know if this works
-	const q = query(userMessageCollection, orderBy('timestamp'), limitToLast(10));
+	const q = query(userMessageCollection, orderBy('timestamp', 'asc'), limitToLast(10));
 
 	const userMessageDocs = await getDocs(q);
 
@@ -37,8 +35,8 @@ export async function load({ params, locals }) {
 		});
 	}
 
-	console.log('Chat history:');
-	console.log(chatHistory);
+	// console.log('Chat history:');
+	// console.log(chatHistory);
 
 	return {
 		chatId: chatId,
@@ -97,11 +95,9 @@ export const actions = {
 		);
 
 		// Check if user is talking to themselves to not duplicate the sent message
-		if (userUID === receiver.uid) {
-			await addDoc(senderMessageCollection, messageData);
-		} else {
-			await addDoc(senderMessageCollection, messageData);
+		if (userUID !== receiver.uid) {
 			await addDoc(receiverMessageCollection, messageData);
 		}
+		await addDoc(senderMessageCollection, messageData);
 	}
 };
