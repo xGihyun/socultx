@@ -1,14 +1,14 @@
 import { db } from '$lib/firebase/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import type { Actions } from './$types';
 
-/** @type {import('./$types').Actions} */
-export const actions = {
-  default: async ({ url, locals }) => {
-    const userUID = locals.userUID;
-    const postId = url.searchParams.get('id');
-   // console.log(postId);
+export const actions: Actions = {
+	default: async ({ url, locals }) => {
+		const userUID = locals.userUID;
+		const postId = url.searchParams.get('id');
+		// console.log(postId);
 
-    if (!userUID) {
+		if (!userUID) {
 			console.log('No user!');
 			return;
 		}
@@ -23,7 +23,7 @@ export const actions = {
 
 		// Find the index of the post with the specified ID
 		const index = dataToStore.posts.findIndex(
-			(/** @type {{ id: string; }} */ post) => post.id === postId
+			(/** @type {{ id: string; }} */ post: { id: string | null; }) => post.id === postId
 		);
 		// dataToStore.posts
 
@@ -36,5 +36,5 @@ export const actions = {
 		await setDoc(docRef, dataToStore, { merge: true });
 
 		console.log('Deleted!');
-  }
+	}
 };

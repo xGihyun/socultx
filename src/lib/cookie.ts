@@ -4,7 +4,7 @@
  * @param {string | number | boolean} value
  * @param {number} expirationDays
  */
-export function setCookie(name, value, expirationDays) {
+export function setCookie(name: string, value: string | number | boolean, expirationDays: number) {
 	const expirationDate = new Date();
 	expirationDate.setDate(expirationDate.getDate() + expirationDays);
 

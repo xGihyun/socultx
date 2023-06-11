@@ -1,6 +1,6 @@
-/** @type {import('./$types').PageServerLoad} */
+import type { PageServerLoad } from "./$types";
 
-export async function load({ locals }) {
+export const load: PageServerLoad = async ({ locals }) => {
 	const userStuff = locals.userStuff;
 	const userUID = locals.userUID;
 
@@ -12,4 +12,4 @@ export async function load({ locals }) {
 		user: userStuff,
 		uid: userUID,
 	};
-}
+};

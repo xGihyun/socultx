@@ -1,7 +1,8 @@
 import ytdl from 'ytdl-core';
 import { json } from '@sveltejs/kit';
+import type { RequestHandler } from './$types';
 
-export async function GET({ params }) {
+export const GET: RequestHandler = async ({ params }) => {
     const { songId } = params;
 
     console.log(`Will now play the song - https://youtube.com/watch?v=${songId}`)
@@ -10,4 +11,4 @@ export async function GET({ params }) {
     const format = ytdl.chooseFormat(audioFormats, { quality: 'highestaudio' })
 
     return json(format);
-}
+};

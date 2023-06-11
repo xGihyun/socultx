@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import '../../app.postcss';
 	export let data;
 
@@ -8,7 +8,7 @@
 	/**
 	 * @param {string} songId
 	 */
-	async function playAudioStream(songId) {
+	async function playAudioStream(songId: string) {
 		const response = await fetch(`/listen/play/${songId}`);
 		const songInfo = await response.json();
 		audioSrc = songInfo.url;

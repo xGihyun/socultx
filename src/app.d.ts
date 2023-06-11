@@ -12,7 +12,7 @@ declare global {
 				is_logged_in: boolean;
 				uid: string | null;
 			};
-			users: array;
+			users: Array<any>;
 			// isLoggedIn: boolean,
 		}
 		// interface PageData {}
@@ -20,4 +20,4 @@ declare global {
 	}
 }
 
-export {};
+export { };
