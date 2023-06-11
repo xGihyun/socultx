@@ -33,9 +33,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"ffmpeg-static": "^5.1.0",
 		"firebase": "^9.22.0",
-		"fluent-ffmpeg": "^2.1.2",
 		"uid": "^2.0.2",
 		"ytdl-core": "^4.11.4",
 		"ytmusic-api": "^4.1.0"

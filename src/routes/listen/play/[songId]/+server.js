@@ -1,29 +1,13 @@
 import ytdl from 'ytdl-core';
-import Ffmpeg from 'fluent-ffmpeg';
-import ffmpegPath from 'ffmpeg-static';
+import { json } from '@sveltejs/kit';
 
-export function GET({ params }) {
-    if (!ffmpegPath) {
-        console.log("Missing FFMPEG from system, cannot play/stream music")
-        return {}
-    }
-
+export async function GET({ params }) {
     const { songId } = params;
 
     console.log(`Will now play the song - https://youtube.com/watch?v=${songId}`)
+    const information = await ytdl.getInfo(songId);
+    const audioFormats = ytdl.filterFormats(information.formats, 'audioonly')
+    const format = ytdl.chooseFormat(audioFormats, { quality: 'highestaudio' })
 
-    const stream = ytdl(songId, {
-        quality: 'highestaudio',
-    });
-
-    const proc = Ffmpeg({ source: stream }).setFfmpegPath(ffmpegPath).toFormat('mp3');
-    const songStream = proc.pipe();
-
-    // return songStream;
-    return new Response(songStream, {
-        headers: {
-            'Content-Type': 'audio/mpeg'
-        }
-    });
-
+    return json(format);
 }
