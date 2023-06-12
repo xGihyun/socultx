@@ -1,9 +1,9 @@
 import { browser } from '$app/environment';
 import { db } from '$lib/firebase/firebase';
-import { collection, doc, getDocs, setDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, setDoc, type DocumentData } from 'firebase/firestore';
+import type { LayoutServerLoad } from './$types';
 
-/** @type {import('./$types').LayoutServerLoad} */
-export async function load({ locals }) {
+export const load: LayoutServerLoad = async ({ locals }) => {
 	if (!locals.userStuff) {
 		return;
 	}
@@ -13,10 +13,10 @@ export async function load({ locals }) {
 	const usersDocs = await getDocs(usersCollection);
 
 	/** @type {import('$lib/types').UserData[]} */
-	let docData = [];
+	let docData: DocumentData[] = [];
 
 	usersDocs.forEach((doc) => {
-		docData.push(/** @type {import('$lib/types').UserData} */ (doc.data()));
+		docData.push(/** @type {import('$lib/types').UserData} */(doc.data()));
 	});
 
 	// /**
@@ -33,4 +33,4 @@ export async function load({ locals }) {
 		users: docData,
 		user: locals.userStuff
 	};
-}
+};

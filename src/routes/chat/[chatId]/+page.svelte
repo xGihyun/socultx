@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { enhance } from '$app/forms';
 	import { getContext, onDestroy } from 'svelte';
 	import ChatMessage from '../components/ChatMessage.svelte';
@@ -12,15 +12,18 @@
 		query,
 		Timestamp,
 		limitToLast,
-		endBefore
+		endBefore,
+		type DocumentData
 	} from 'firebase/firestore';
 	import { db } from '$lib/firebase/firebase';
 	import { afterNavigate } from '$app/navigation';
+	import type { Writable } from 'svelte/store';
 
-	const user = getContext('user');
+	const user = getContext<Writable<any>>('user');
 
 	export let data;
 
+	let chatHistory: DocumentData[];
 	$: chatHistory = data.chatHistory;
 
 	let currentMessage = '';
@@ -29,13 +32,13 @@
 	 * Send button that is used to be clicked manually or with code after `enter` since we are using `textbox` instead of `input`
 	 * @type {HTMLButtonElement}
 	 */
-	let chatSend;
+	let chatSend: HTMLButtonElement;
 
 	/**
 	 * Element used to scroll to bottom
 	 * @type {HTMLElement}
 	 */
-	let chatElem;
+	let chatElem: HTMLDivElement;
 	let chatElemHeight = 0;
 	let loadingMessages = false;
 	let historyEmpty = false;
@@ -44,7 +47,7 @@
 	 * Skeleton UI's scroll-to-bottom function. Runs after the user sends a message.
 	 * @param {ScrollBehavior} behavior
 	 */
-	function scrollChatToBottom(behavior) {
+	function scrollChatToBottom(behavior: ScrollBehavior) {
 		setTimeout(() => {
 			if (chatElem) {
 				chatElem.scrollTo({ top: chatElem.scrollHeight, behavior });
@@ -124,7 +127,7 @@
 	 * @param {Timestamp} timestamp
 	 * @returns {Promise<QuerySnapshot<import('firebase/firestore').DocumentData>>}
 	 */
-	async function getOlderMessages(timestamp) {
+	async function getOlderMessages(timestamp: Timestamp): Promise<QuerySnapshot<DocumentData>> {
 		const userMessageCollection = collection(
 			db,
 			`users/${$user.uid}/inbox/${data.chatId}/messages`
@@ -144,9 +147,7 @@
 	const q = query(userMessageCollection, orderBy('timestamp'), limitToLast(historySize));
 
 	const unsubChat = onSnapshot(q, (snapshot) => {
-		chatHistory = snapshot.docs.map(
-			(doc) => /** @type {import('$lib/types').Message} */ (doc.data())
-		);
+		chatHistory = snapshot.docs.map((doc) => doc.data());
 		// Sort in client side just to be sure
 		// chatHistory.sort((a, b) => a.timestamp.seconds - b.timestamp.seconds);
 		scrollChatToBottom('smooth');
@@ -187,7 +188,7 @@
 		method="post"
 		use:enhance
 	>
-		<div class="input-group input-group-divider rounded-container-token grid-cols-[1fr_auto]">
+		<div class="input-group-divider input-group grid-cols-[1fr_auto] rounded-container-token">
 			<textarea
 				bind:value={currentMessage}
 				class="w-full resize-none border-0 bg-transparent outline-none ring-0"

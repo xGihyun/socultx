@@ -1,12 +1,17 @@
-<script>
+<script lang="ts">
 	import '../../app.postcss';
 	export let data;
 
 	$: isSongPlaying = false;
 	$: audioSrc = '';
 
-	async function playAudioStream(/** @type {any} */ songId) {
-		audioSrc = `/listen/play/${songId}`;
+	/**
+	 * @param {string} songId
+	 */
+	async function playAudioStream(songId: string) {
+		const response = await fetch(`/listen/play/${songId}`);
+		const songInfo = await response.json();
+		audioSrc = songInfo.url;
 		isSongPlaying = true;
 	}
 </script>

@@ -13,20 +13,20 @@ export type UserDataInbox = {
 	user: UserData;
 };
 
-type Post = {
+export type Post = {
 	id: string;
 	content: string;
 	userUID: string;
 	user: string;
 };
 
-type Inbox = {
+export type Inbox = {
 	chat_id: string;
 	chat_name: string;
 	chat_photo_url: string;
 };
 
-type Message = {
+export type Message = {
 	content: string;
 	sender_uid: string;
 	sender_username: string;

@@ -8,11 +8,13 @@ import {
 	getDocs,
 	limitToLast,
 	orderBy,
-	query
+	query,
+	type DocumentData
 } from 'firebase/firestore';
+import type { Actions, PageServerLoad } from './$types';
+import type { Message } from '$lib/types';
 
-/** @type {import('./$types').PageServerLoad} */
-export async function load({ params, locals }) {
+export const load: PageServerLoad = async ({ params, locals }) => {
 	const chatId = params.chatId;
 
 	const userMessageCollection = collection(
@@ -24,28 +26,23 @@ export async function load({ params, locals }) {
 
 	const userMessageDocs = await getDocs(q);
 
-	/** @type {import('$lib/types').Message[]} */
-	let chatHistory = [];
+	let chatHistory: Message[] = [];
 
 	if (!userMessageDocs.empty) {
 		userMessageDocs.forEach((message) => {
 			chatHistory.push(
-				/** @type {import('$lib/types').Message} */ (JSON.parse(JSON.stringify(message.data())))
+				/** @type {import('$lib/types').Message} */(JSON.parse(JSON.stringify(message.data())))
 			);
 		});
 	}
-
-	// console.log('Chat history:');
-	// console.log(chatHistory);
 
 	return {
 		chatId: chatId,
 		chatHistory: chatHistory
 	};
-}
+};
 
-/** @type {import('./$types').Actions} */
-export const actions = {
+export const actions: Actions = {
 	send: async ({ request, locals, params }) => {
 		const formData = await request.formData();
 		const inputText = formData.get('content');
@@ -67,21 +64,20 @@ export const actions = {
 
 		const receiverRef = doc(db, 'users', params.chatId);
 		const receiverDoc = await getDoc(receiverRef);
-		const receiver = /** @type {import('$lib/types').UserData} */ (receiverDoc.data());
+		const receiver: DocumentData | undefined = (receiverDoc.data());
 
 		const currentDate = new Date();
 
-		/** @type {import('$lib/types').Message} */
-		const messageData = {
+		const messageData: Message = {
 			content: inputText.toString(),
 			sender_uid: userUID,
 			sender_username: username || '',
 			sender_photo_url: photoURL || '',
 			sender_email: email || '',
-			receiver_email: receiver.email || '',
-			receiver_photo_url: receiver.photo_url || '',
-			receiver_uid: receiver.uid || '',
-			receiver_username: receiver.username || '',
+			receiver_email: receiver?.email || '',
+			receiver_photo_url: receiver?.photo_url || '',
+			receiver_uid: receiver?.uid || '',
+			receiver_username: receiver?.username || '',
 			timestamp: Timestamp.fromDate(currentDate)
 		};
 
@@ -95,7 +91,7 @@ export const actions = {
 		);
 
 		// Check if user is talking to themselves to not duplicate the sent message
-		if (userUID !== receiver.uid) {
+		if (userUID !== receiver?.uid) {
 			await addDoc(receiverMessageCollection, messageData);
 		}
 		await addDoc(senderMessageCollection, messageData);

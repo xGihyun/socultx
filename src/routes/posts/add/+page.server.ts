@@ -1,9 +1,9 @@
 import { db } from '$lib/firebase/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { uid } from 'uid';
+import type { Actions } from './$types';
 
-/** @type {import('./$types').Actions} */
-export const actions = {
+export const actions: Actions = {
 	default: async ({ request, locals }) => {
 		const formData = await request.formData();
 		const inputText = formData.get('content');
@@ -44,3 +44,5 @@ export const actions = {
 		console.log('Posted!');
 	}
 };
+
+

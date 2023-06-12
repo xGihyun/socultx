@@ -1,12 +1,11 @@
-/** @type {import('@sveltejs/kit').Handle} */
 
-import { browser } from '$app/environment';
-import { db } from '$lib/firebase/firebase';
+// import { browser } from '$app/environment';
+// import { db } from '$lib/firebase/firebase';
 import { redirect } from '@sveltejs/kit';
-import { doc, setDoc } from 'firebase/firestore';
+// import { doc, setDoc } from 'firebase/firestore';
+import type { Handle } from '@sveltejs/kit';
 
-// https://kit.svelte.dev/docs/hooks
-export async function handle({ event, resolve }) {
+export const handle = (async ({ event, resolve }) => {
 	const userStuffCookie = event.cookies.get('userStuff');
 
 	if (userStuffCookie) {
@@ -30,4 +29,4 @@ export async function handle({ event, resolve }) {
 	const response = await resolve(event);
 
 	return response;
-}
+}) satisfies Handle;

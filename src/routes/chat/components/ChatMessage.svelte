@@ -1,35 +1,18 @@
-<script>
+<script lang="ts">
 	import { Avatar } from '@skeletonlabs/skeleton';
+	import type { Timestamp } from 'firebase/firestore';
 
-	/**
-	 * @type {string}
-	 */
-	export let username;
+	export let username: string;
 
-	/**
-	 * @type {string}
-	 */
-	export let message;
+	export let message: string;
 
-	/**
-	 * @type {string}
-	 */
-	export let uid;
+	export let uid: string;
 
-	/**
-	 * @type {string}
-	 */
-	export let senderId;
+	export let senderId: string;
 
-	/**
-	 * @type {string}
-	 */
-	export let photoURL;
+	export let photoURL: string;
 
-	/**
-	 * @type {import('firebase/firestore').Timestamp}
-	 */
-	export let timestamp;
+	export let timestamp: Timestamp;
 
 	$: isCurrentUser = uid === senderId;
 </script>

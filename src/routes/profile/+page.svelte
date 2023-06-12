@@ -1,7 +1,8 @@
-<script>
+<script lang="ts">
 	import { getContext } from 'svelte';
+	import type { Writable } from 'svelte/store';
 
-	const currentUser = getContext('user');
+	const currentUser = getContext<Writable<any>>('user');
 </script>
 
 <div>

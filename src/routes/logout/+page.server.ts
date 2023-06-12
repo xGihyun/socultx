@@ -3,9 +3,9 @@ import { signOut } from 'firebase/auth';
 import { redirect } from '@sveltejs/kit';
 import { doc, setDoc } from 'firebase/firestore';
 import { currentUser } from '$lib/store';
+import type { Actions } from './$types';
 
-/** @type {import('./$types').Actions} */
-export const actions = {
+export const actions: Actions = {
 	default: async ({ cookies, locals }) => {
 		console.log('Resetting writable...');
 		currentUser.set({

@@ -1,12 +1,13 @@
 import { setCookie } from '$lib/cookie';
 import { auth, db } from '$lib/firebase/firebase';
 import { allUsers } from '$lib/store';
+import type { UserData } from '$lib/types';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { collection, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, setDoc, type DocumentData } from 'firebase/firestore';
 
 // It will login via a popup window, might not be good for mobile
 export async function googleAuthPopup() {
-	const provider = new GoogleAuthProvider();
+	const provider: GoogleAuthProvider = new GoogleAuthProvider();
 	// Add prompt for user to select an account before log in/register
 	provider.setCustomParameters({
 		prompt: 'select_account'
@@ -19,11 +20,8 @@ export async function googleAuthPopup() {
 		const user = result.user;
 
 		// Database stuff
-		/**
-		 * The (initial) user data to store
-		 * @type {import('$lib/types').UserData}
-		 */
-		let dataToStore = {
+
+		let dataToStore: UserData = {
 			username: user.displayName,
 			uid: user.uid,
 			email: user.email,
@@ -50,16 +48,13 @@ export async function googleAuthPopup() {
 		const docCollection = collection(db, 'users');
 		const docs = await getDocs(docCollection);
 
-		/**
-		 * @type {import("@firebase/firestore").DocumentData[]}
-		 */
-		let docData = [];
+		let docData: DocumentData[] = [];
 
 		docs.forEach((doc) => {
 			docData.push(doc.data());
 		});
 
-		allUsers.update((val) => (val = /** @type {import('$lib/types').UserData[]} */ (docData)));
+		allUsers.update((val) => val = (docData));
 
 		// This will set a session cookie
 		setCookie(

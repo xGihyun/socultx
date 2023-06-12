@@ -1,11 +1,12 @@
-<script>
-	import { browser } from '$app/environment';
+<script lang="ts">
 	import { db } from '$lib/firebase/firebase';
 	import { Avatar } from '@skeletonlabs/skeleton';
 	import { collection, onSnapshot } from 'firebase/firestore';
 	import { getContext, onDestroy } from 'svelte';
 
-	const users = getContext('users');
+	// const users = getContext('users');
+
+	const users = getContext<any>('users');
 
 	const usersCollection = collection(db, 'users');
 
@@ -16,11 +17,11 @@
 	onDestroy(() => unsubUsers());
 </script>
 
-<ul class="list flex flex-col gap-2 px-5 py-10 overflow-y-auto">
+<ul class="list flex flex-col gap-2 overflow-y-auto px-5 py-10">
 	{#each $users as user, idx (idx)}
 		<a
 			href={`/chat/${user.uid}`}
-			class="hover:bg-secondary-900 rounded-md p-2 transition-colors duration-200 hover:bg-opacity-40"
+			class="rounded-md p-2 transition-colors duration-200 hover:bg-secondary-900 hover:bg-opacity-40"
 		>
 			<li>
 				<div class="relative h-10 w-10">
@@ -32,7 +33,7 @@
 					{/if}
 				</div>
 				<div class="flex flex-col">
-					<span class="flex-auto line-clamp-1">{user.username}</span>
+					<span class="line-clamp-1 flex-auto">{user.username}</span>
 					<span class="text-sm opacity-75">status</span>
 				</div>
 			</li>

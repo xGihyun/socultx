@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	// Your custom Skeleton theme:
 	import '../theme.postcss';
 
@@ -11,7 +11,10 @@
 
 	import { allUsers, currentUser } from '$lib/store';
 	import { getContext, setContext } from 'svelte';
-	import { Navbar, Sidebar } from '../components';
+	import Navbar from '../components/Navbar.svelte';
+	import Sidebar from '../components/Sidebar.svelte';
+	import type { UserData } from '$lib/types';
+	import type { Writable } from 'svelte/store';
 
 	export let data;
 
@@ -29,13 +32,13 @@
 	setContext('user', currentUser);
 	setContext('users', allUsers);
 
-	$: userContext = getContext('user');
+	$: userContext = getContext<Writable<UserData>>('user');
 </script>
 
 <div class="flex h-screen flex-col">
 	<Navbar />
 	<div class="flex w-full flex-1 overflow-hidden">
-		<main class="flex-1 overflow-y-auto relative">
+		<main class="relative flex-1 overflow-y-auto">
 			<slot />
 		</main>
 		{#if $userContext.is_logged_in}
