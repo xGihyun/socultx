@@ -4,30 +4,31 @@
 	import { collection, onSnapshot } from 'firebase/firestore';
 	import { getContext, onDestroy } from 'svelte';
 
-	$: isUserOnFriendsTab = true;
+	$: currentTab = 'Friends';
+
+	$: sidebarTabLogic = (clickedButtonName: string) => {
+		if (currentTab === clickedButtonName) {
+			return '!bg-primary-500 rounded-md p-2';
+		}
+		return 'p-2';
+	};
 
 	const users = getContext<any>('users');
-
 	const usersCollection = collection(db, 'users');
-
 	const unsubUsers = onSnapshot(usersCollection, (snapshot) => {
 		$users = snapshot.docs.map((doc) => doc.data());
 	});
-
 	onDestroy(() => unsubUsers());
 </script>
 
 <ul class="list flex flex-col gap-2 overflow-y-auto px-5 py-10">
-	<nav>
-		<ul>
-			<li>
-				<button class="flex-auto">Friends</button>
-				<button class="flex-auto">Queue</button>
-			</li>
-		</ul>
-	</nav>
-
-	{#if isUserOnFriendsTab}
+	<li>
+		<button class={sidebarTabLogic('Friends')} on:click={() => (currentTab = 'Friends')}
+			>Friends</button
+		>
+		<button class={sidebarTabLogic('Queue')} on:click={() => (currentTab = 'Queue')}>Queue</button>
+	</li>
+	{#if currentTab === 'Friends'}
 		{#each $users as user, idx (idx)}
 			<a
 				href={`/chat/${user.uid}`}
@@ -49,5 +50,13 @@
 				</li>
 			</a>
 		{/each}
+	{:else if currentTab === 'Queue'}
+		<div class="relative h-10 w-10 bg-primary-500" />
+		<!-- TODO: Place this tag somewhere in the root +layout.svelte -->
+		<!-- {#if isSongPlaying}
+			<audio controls autoplay src={audioSrc}>
+				Your browser does not support the <code>audio</code> element.
+			</audio>
+		{/if} -->
 	{/if}
 </ul>

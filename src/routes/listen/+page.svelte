@@ -2,17 +2,16 @@
 	import '../../app.postcss';
 	export let data;
 
-	$: isSongPlaying = false;
-	$: audioSrc = '';
-
-	/**
-	 * @param {string} songId
-	 */
-	async function playAudioStream(songId: string) {
+	async function playAudioStream(
+		songId: string,
+		songName: string,
+		artistName: string,
+		thumbnailUrl: string
+	) {
 		const response = await fetch(`/listen/play/${songId}`);
 		const songInfo = await response.json();
-		audioSrc = songInfo.url;
-		isSongPlaying = true;
+		const audioSrc = songInfo.url;
+		console.log(songInfo);
 	}
 </script>
 
@@ -33,20 +32,18 @@
 	</div>
 </form>
 
-<!-- TODO: Place this tag somewhere in the root +layout.svelte -->
-{#if isSongPlaying}
-	<audio controls autoplay src={audioSrc}>
-		Your browser does not support the <code>audio</code> element.
-	</audio>
-{/if}
-
 {#if data?.didUserSearch}
 	<h5 class="h5 m-2 text-white">
 		Search results for: <span class="font-bold">{data?.query}</span>
 	</h5>
 	<div class="overflow flex h-screen flex-wrap justify-evenly">
 		{#each data?.results as { type, videoId, name, thumbnails, artists }, i}
-			<button type="button" class="btn m-0 p-0" on:click={playAudioStream(videoId)}>
+			<button
+				type="button"
+				class="btn m-0 p-0"
+				on:click={() =>
+					playAudioStream(videoId, name, artists.map((e) => e.name).join(', '), thumbnails[0].url)}
+			>
 				<div class="card h-[60px] w-96 overflow-hidden">
 					<div class="flex">
 						<img src={thumbnails[0].url} alt="cover" />
