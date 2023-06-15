@@ -51,7 +51,17 @@
 			</a>
 		{/each}
 	{:else if currentTab === 'Queue'}
-		<div class="relative h-10 w-10 bg-primary-500" />
+		<div class="card h-[60px] w-64 overflow-hidden">
+			<div class="flex">
+				<img src={nowPlaying?.thumbnailUrl} alt="cover" />
+				<div class="mx-2 my-auto flex flex-col items-start truncate">
+					<p class="truncate font-gt-walsheim-pro-medium">{nowPlaying?.songName}</p>
+					<p class="truncate font-gt-walsheim-pro-thin">
+						{nowPlaying?.artistName}
+					</p>
+				</div>
+			</div>
+		</div>
 		<!-- TODO: Place this tag somewhere in the root +layout.svelte -->
 		<!-- {#if isSongPlaying}
 			<audio controls autoplay src={audioSrc}>

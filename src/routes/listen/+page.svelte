@@ -12,6 +12,15 @@
 		const songInfo = await response.json();
 		const audioSrc = songInfo.url;
 		console.log(songInfo);
+		let infoToStore = {
+			songName: songName,
+			artistName: artistName,
+			songId: songId,
+			songUrl: audioSrc,
+			thumbnailUrl: thumbnailUrl
+		};
+		// Set a session storage item
+		sessionStorage.setItem('nowPlaying', JSON.stringify(infoToStore));
 	}
 </script>
 
