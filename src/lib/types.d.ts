@@ -38,3 +38,10 @@ export type Message = {
 	receiver_email: string;
 	timestamp: Timestamp;
 };
+
+export type Song = {
+	song: string,
+	artist: string,
+	url: string,
+	cover_art_url: thumbnailUrl
+}

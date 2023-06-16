@@ -1,5 +1,6 @@
 import { writable, type Writable } from 'svelte/store';
-import type { UserData } from './types';
+import type { Song, UserData } from './types';
+import { browser } from '$app/environment';
 
 export const currentUser: Writable<UserData> = writable({
 	email: '',
@@ -10,3 +11,5 @@ export const currentUser: Writable<UserData> = writable({
 });
 
 export const allUsers: Writable<any> = writable([]);
+
+export const musicQueue: Writable<Song[]> = writable([]);

@@ -1,5 +1,6 @@
 <script lang="ts">
-	import '../../app.postcss';
+	import { setContext } from 'svelte';
+	import { musicQueue } from '$lib/store';
 	export let data;
 
 	async function playAudioStream(
@@ -13,14 +14,19 @@
 		const audioSrc = songInfo.url;
 		console.log(songInfo);
 		let infoToStore = {
-			songName: songName,
-			artistName: artistName,
-			songId: songId,
-			songUrl: audioSrc,
-			thumbnailUrl: thumbnailUrl
+			song: songName,
+			artist: artistName,
+			// songId: songId,
+			url: audioSrc,
+			cover_art_url: thumbnailUrl
 		};
+		console.log(infoToStore);
+
+		// Add the song to the queue (array)
+		musicQueue.update((arr) => [...arr, infoToStore]);
 		// Set a session storage item
-		sessionStorage.setItem('nowPlaying', JSON.stringify(infoToStore));
+		// sessionStorage.setItem('nowPlaying', JSON.stringify(infoToStore));
+		// musicQueue.set(JSON.stringify(infoToStore));
 	}
 </script>
 

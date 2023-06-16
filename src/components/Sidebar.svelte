@@ -1,11 +1,19 @@
 <script lang="ts">
 	import { db } from '$lib/firebase/firebase';
+	import { musicQueue } from '$lib/store';
 	import { Avatar } from '@skeletonlabs/skeleton';
 	import { collection, onSnapshot } from 'firebase/firestore';
 	import { getContext, onDestroy } from 'svelte';
+	import type { Song } from '$lib/types';
 
 	$: currentTab = 'Friends';
 
+	let nowPlaying: Song[] = [];
+	musicQueue.subscribe((value) => {
+		nowPlaying = value;
+	});
+
+	// Whenever the user clicks on any of the tabs, grab the latest context
 	$: sidebarTabLogic = (clickedButtonName: string) => {
 		if (currentTab === clickedButtonName) {
 			return '!bg-primary-500 rounded-md p-2';
@@ -18,6 +26,7 @@
 	const unsubUsers = onSnapshot(usersCollection, (snapshot) => {
 		$users = snapshot.docs.map((doc) => doc.data());
 	});
+
 	onDestroy(() => unsubUsers());
 </script>
 
@@ -51,22 +60,25 @@
 			</a>
 		{/each}
 	{:else if currentTab === 'Queue'}
-		<div class="card h-[60px] w-64 overflow-hidden">
-			<div class="flex">
-				<img src={nowPlaying?.thumbnailUrl} alt="cover" />
-				<div class="mx-2 my-auto flex flex-col items-start truncate">
-					<p class="truncate font-gt-walsheim-pro-medium">{nowPlaying?.songName}</p>
-					<p class="truncate font-gt-walsheim-pro-thin">
-						{nowPlaying?.artistName}
-					</p>
+		{#each nowPlaying as item}
+			<div class="card w-64 overflow-hidden">
+				<div class="flex">
+					<img src={item.cover_art_url} alt="cover" />
+					<div class="mx-2 my-auto flex flex-col items-start truncate">
+						<p class="truncate font-gt-walsheim-pro-medium">{item.song}</p>
+						<p class="truncate font-gt-walsheim-pro-thin">
+							{item.artist}
+						</p>
+					</div>
 				</div>
 			</div>
-		</div>
+		{/each}
+
 		<!-- TODO: Place this tag somewhere in the root +layout.svelte -->
 		<!-- {#if isSongPlaying}
-			<audio controls autoplay src={audioSrc}>
-				Your browser does not support the <code>audio</code> element.
-			</audio>
 		{/if} -->
+		{#if nowPlaying.length >= 1}
+			TODO: Add svelte-mp3
+		{/if}
 	{/if}
 </ul>
