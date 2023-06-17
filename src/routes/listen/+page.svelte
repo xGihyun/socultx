@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
 	import { musicQueue } from '$lib/store';
+	import { isPlaying } from 'svelte-mp3';
 	export let data;
 
 	async function playAudioStream(
@@ -24,6 +25,7 @@
 
 		// Add the song to the queue (array)
 		musicQueue.update((arr) => [...arr, infoToStore]);
+		isPlaying.set(true);
 		// Set a session storage item
 		// sessionStorage.setItem('nowPlaying', JSON.stringify(infoToStore));
 		// musicQueue.set(JSON.stringify(infoToStore));

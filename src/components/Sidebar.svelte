@@ -4,13 +4,19 @@
 	import { Avatar } from '@skeletonlabs/skeleton';
 	import { collection, onSnapshot } from 'firebase/firestore';
 	import { getContext, onDestroy } from 'svelte';
+	import { AudioPlayer } from 'svelte-mp3';
+	import { browser } from '$app/environment';
 	import type { Song } from '$lib/types';
+	import { onMount } from 'svelte';
 
 	$: currentTab = 'Friends';
+
+	let player: AudioPlayer;
 
 	let nowPlaying: Song[] = [];
 	musicQueue.subscribe((value) => {
 		nowPlaying = value;
+		console.log(player);
 	});
 
 	// Whenever the user clicks on any of the tabs, grab the latest context
@@ -21,12 +27,20 @@
 		return 'p-2';
 	};
 
+	// Element status observer (this is the audio player)
+	onMount(() => {
+		player.$on('ended', () => {
+			console.log('Song has ended, removing the song (0th index) from queue');
+			musicQueue.update((arr) => arr.slice(1));
+			// nowPlaying.slice(1);
+		});
+	});
+
 	const users = getContext<any>('users');
 	const usersCollection = collection(db, 'users');
 	const unsubUsers = onSnapshot(usersCollection, (snapshot) => {
 		$users = snapshot.docs.map((doc) => doc.data());
 	});
-
 	onDestroy(() => unsubUsers());
 </script>
 
@@ -73,12 +87,16 @@
 				</div>
 			</div>
 		{/each}
-
-		<!-- TODO: Place this tag somewhere in the root +layout.svelte -->
-		<!-- {#if isSongPlaying}
-		{/if} -->
-		{#if nowPlaying.length >= 1}
-			TODO: Add svelte-mp3
-		{/if}
 	{/if}
+	<div class={nowPlaying.length >= 1 && currentTab === 'Queue' ? 'visible' : 'invisible'}>
+		{#if browser}
+			<AudioPlayer
+				bind:this={player}
+				loop="no-repeat"
+				showShuffle={false}
+				color="white"
+				urls={[nowPlaying[0]?.url] || []}
+			/>
+		{/if}
+	</div>
 </ul>
