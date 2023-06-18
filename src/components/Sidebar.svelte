@@ -4,10 +4,11 @@
 	import { Avatar } from '@skeletonlabs/skeleton';
 	import { collection, onSnapshot } from 'firebase/firestore';
 	import { getContext, onDestroy } from 'svelte';
-	import { AudioPlayer } from 'svelte-mp3';
+	import { AudioPlayer, isPlaying } from 'svelte-mp3';
 	import { browser } from '$app/environment';
 	import type { Song } from '$lib/types';
 	import { onMount } from 'svelte';
+	import { activateTextTruncateScroll } from 'text-truncate-scroll';
 
 	$: currentTab = 'Friends';
 
@@ -27,12 +28,15 @@
 		return 'p-2';
 	};
 
-	// Element status observer (this is the audio player)
 	onMount(() => {
+		activateTextTruncateScroll();
 		player.$on('ended', () => {
 			console.log('Song has ended, removing the song (0th index) from queue');
 			musicQueue.update((arr) => arr.slice(1));
-			// nowPlaying.slice(1);
+			if (nowPlaying.length >= 1) {
+				// If there are songs remaining from queue
+				isPlaying.set(true); // Play the next song
+			}
 		});
 	});
 
@@ -44,13 +48,40 @@
 	onDestroy(() => unsubUsers());
 </script>
 
-<ul class="list flex flex-col gap-2 overflow-y-auto px-5 py-10">
+<ul class="list flex w-72 flex-col gap-2 overflow-y-auto px-5 py-10">
 	<li>
 		<button class={sidebarTabLogic('Friends')} on:click={() => (currentTab = 'Friends')}
 			>Friends</button
 		>
 		<button class={sidebarTabLogic('Queue')} on:click={() => (currentTab = 'Queue')}>Queue</button>
 	</li>
+
+	<!-- Now playing div block -->
+	<div class={nowPlaying.length >= 1 && currentTab === 'Queue' ? 'visible' : 'invisible absolute'}>
+		<div class="mb-6 mt-2">Now Playing</div>
+		<div class="overflow-hidden">
+			<div class="mb-2 flex">
+				<img src={nowPlaying[0]?.cover_art_url} alt="cover" />
+				<div class="mx-2 my-auto flex flex-col items-start">
+					<p class="text-truncate-scroll font-gt-walsheim-pro-medium">{nowPlaying[0]?.song}</p>
+					<p class="font-gt-walsheim-pro-thin">
+						{nowPlaying[0]?.artist}
+					</p>
+				</div>
+			</div>
+		</div>
+		{#if browser}
+			<!-- Check out the library I used - https://github.com/Khandakar227/svelte-mp3 -->
+			<AudioPlayer
+				style={'svg { width: 24px; height: 24px; }'}
+				bind:this={player}
+				showShuffle={false}
+				color="white"
+				urls={nowPlaying.map((song) => song.url)}
+			/>
+		{/if}
+	</div>
+
 	{#if currentTab === 'Friends'}
 		{#each $users as user, idx (idx)}
 			<a
@@ -74,29 +105,33 @@
 			</a>
 		{/each}
 	{:else if currentTab === 'Queue'}
-		{#each nowPlaying as item}
-			<div class="card w-64 overflow-hidden">
-				<div class="flex">
-					<img src={item.cover_art_url} alt="cover" />
-					<div class="mx-2 my-auto flex flex-col items-start truncate">
-						<p class="truncate font-gt-walsheim-pro-medium">{item.song}</p>
-						<p class="truncate font-gt-walsheim-pro-thin">
+		{#if nowPlaying.length >= 2}
+			<div class="mb-4 mt-4">Next from queue</div>
+		{:else}
+			<div class="mb-4 mt-4">Try adding some music...</div>
+		{/if}
+		{#each nowPlaying.slice(1) as item}
+			<!-- <div>
+					<div class="flex">
+						<img src={item.cover_art_url} alt="cover" />
+						<div class="mx-2 my-auto flex flex-col items-start">
+							<p class="text-truncate-scroll font-gt-walsheim-pro-medium">{item.song}</p>
+							<p class="font-gt-walsheim-pro-thin">{item.artist}</p>
+						</div>
+					</div>
+				</div> -->
+
+			<img src={item.cover_art_url} alt="cover" />
+			<!-- <div class="overflow-hidden">
+				<div class="h-8">
+					<div class="mx-2 my-auto flex flex-col items-start">
+						<p class="text-truncate-scroll font-gt-walsheim-pro-medium">{item.song}</p>
+						<p class="font-gt-walsheim-pro-thin">
 							{item.artist}
 						</p>
 					</div>
 				</div>
-			</div>
+			</div> -->
 		{/each}
 	{/if}
-	<div class={nowPlaying.length >= 1 && currentTab === 'Queue' ? 'visible' : 'invisible'}>
-		{#if browser}
-			<AudioPlayer
-				bind:this={player}
-				loop="no-repeat"
-				showShuffle={false}
-				color="white"
-				urls={[nowPlaying[0]?.url] || []}
-			/>
-		{/if}
-	</div>
 </ul>

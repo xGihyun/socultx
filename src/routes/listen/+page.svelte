@@ -17,7 +17,6 @@
 		let infoToStore = {
 			song: songName,
 			artist: artistName,
-			// songId: songId,
 			url: audioSrc,
 			cover_art_url: thumbnailUrl
 		};
