@@ -1,8 +1,11 @@
 <script lang="ts">
-	import { setContext } from 'svelte';
 	import { musicQueue } from '$lib/store';
 	import { isPlaying } from 'svelte-mp3';
+	import { afterUpdate, beforeUpdate, onMount, tick } from 'svelte';
+	import { activateTextTruncateScroll } from 'text-truncate-scroll';
 	export let data;
+
+	$: hasResults = data.didUserSearch;
 
 	async function playAudioStream(
 		songId: string,
@@ -29,6 +32,14 @@
 		// sessionStorage.setItem('nowPlaying', JSON.stringify(infoToStore));
 		// musicQueue.set(JSON.stringify(infoToStore));
 	}
+
+	// let songNameClass = 'font-gt-walsheim-pro-medium';
+	// let artistNameClass = 'font-gt-walsheim-pro-thin';
+
+	afterUpdate(() => {
+		activateTextTruncateScroll();
+		hasResults = false;
+	});
 </script>
 
 <form action="/listen">
@@ -49,29 +60,36 @@
 </form>
 
 {#if data?.didUserSearch}
-	<h5 class="h5 m-2 text-white">
-		Search results for: <span class="font-bold">{data?.query}</span>
-	</h5>
-	<div class="overflow flex h-screen flex-wrap justify-evenly">
-		{#each data?.results as { type, videoId, name, thumbnails, artists }, i}
-			<button
-				type="button"
-				class="btn m-0 p-0"
-				on:click={() =>
-					playAudioStream(videoId, name, artists.map((e) => e.name).join(', '), thumbnails[0].url)}
-			>
-				<div class="card h-[60px] w-96 overflow-hidden">
-					<div class="flex">
-						<img src={thumbnails[0].url} alt="cover" />
-						<div class="mx-2 my-auto flex flex-col items-start truncate">
-							<p class="truncate font-gt-walsheim-pro-medium">{name}</p>
-							<p class="truncate font-gt-walsheim-pro-thin">
-								{artists.map((e) => e.name).join(', ')}
-							</p>
+	{#key hasResults}
+		<h5 class="h5 m-2 text-white">
+			Search results for: <span class="font-bold">{data?.query}</span>
+		</h5>
+		<div class="overflow flex h-screen flex-wrap justify-evenly">
+			{#each data?.results as { type, videoId, name, thumbnails, artists }, i}
+				<button
+					type="button"
+					class="btn m-0 p-0"
+					on:click={() =>
+						playAudioStream(
+							videoId,
+							name,
+							artists.map((e) => e.name).join(', '),
+							thumbnails[0].url
+						)}
+				>
+					<div class="card h-[60px] w-96 overflow-hidden">
+						<div class="flex">
+							<img src={thumbnails[0].url} alt="cover" />
+							<div class="mx-2 my-auto flex flex-col items-start">
+								<p class="text-truncate-scroll font-gt-walsheim-pro-medium">{name}</p>
+								<p class="text-truncate-scroll font-gt-walsheim-pro-thin">
+									{artists.map((e) => e.name).join(', ')}
+								</p>
+							</div>
 						</div>
 					</div>
-				</div>
-			</button>
-		{/each}
-	</div>
+				</button>
+			{/each}
+		</div>
+	{/key}
 {/if}

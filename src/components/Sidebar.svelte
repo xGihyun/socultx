@@ -7,17 +7,32 @@
 	import { AudioPlayer, isPlaying } from 'svelte-mp3';
 	import { browser } from '$app/environment';
 	import type { Song } from '$lib/types';
-	import { onMount } from 'svelte';
+	import { onMount, afterUpdate } from 'svelte';
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
 
 	$: currentTab = 'Friends';
+	$: playerKeyCondition = false;
 
 	let player: AudioPlayer;
+	let actualQueue: Song[] = [];
 
-	let nowPlaying: Song[] = [];
 	musicQueue.subscribe((value) => {
-		nowPlaying = value;
-		console.log(player);
+		// titleOfTheSongClass = 'font-gt-walsheim-pro-medium';
+		// artistsOfTheSongClass = 'font-gt-walsheim-pro-thin';
+		actualQueue = value;
+		playerKeyCondition = !playerKeyCondition;
+		// Reset the css values for the class first
+		// nowPlayingSong = value[0]?.song;
+		// nowPlayingArtist = value[0]?.artist;
+		// nowPlayingCover = value[0]?.cover_art_url;
+		// console.log(nowPlayingSong);
+
+		// console.log(player);
+
+		if (browser) {
+			// Now add the necessary truncate scroll effect
+			activateTextTruncateScroll();
+		}
 	});
 
 	// Whenever the user clicks on any of the tabs, grab the latest context
@@ -29,15 +44,24 @@
 	};
 
 	onMount(() => {
-		activateTextTruncateScroll();
+		// activateTextTruncateScroll({ timeoutBeforeInit: 500 });
 		player.$on('ended', () => {
 			console.log('Song has ended, removing the song (0th index) from queue');
 			musicQueue.update((arr) => arr.slice(1));
-			if (nowPlaying.length >= 1) {
+			if (actualQueue.length >= 1) {
 				// If there are songs remaining from queue
 				isPlaying.set(true); // Play the next song
 			}
 		});
+
+		// player.$on('canplay', () => {
+		// 	if (browser) {
+		// 		// Now add the necessary truncate scroll effect
+		// 		titleOfTheSongClass = 'text-truncate-scroll font-gt-walsheim-pro-medium';
+		// 		artistsOfTheSongClass = 'text-truncate-scroll font-gt-walsheim-pro-thin';
+		// 		activateTextTruncateScroll();
+		// 	}
+		// });
 	});
 
 	const users = getContext<any>('users');
@@ -57,29 +81,32 @@
 	</li>
 
 	<!-- Now playing div block -->
-	<div class={nowPlaying.length >= 1 && currentTab === 'Queue' ? 'visible' : 'invisible absolute'}>
-		<div class="mb-6 mt-2">Now Playing</div>
-		<div class="overflow-hidden">
-			<div class="mb-2 flex">
-				<img src={nowPlaying[0]?.cover_art_url} alt="cover" />
-				<div class="mx-2 my-auto flex flex-col items-start">
-					<p class="text-truncate-scroll font-gt-walsheim-pro-medium">{nowPlaying[0]?.song}</p>
-					<p class="font-gt-walsheim-pro-thin">
-						{nowPlaying[0]?.artist}
-					</p>
+	<div class={actualQueue.length >= 1 && currentTab === 'Queue' ? 'visible' : 'invisible absolute'}>
+		<div class="mb-4 mt-2">Now Playing</div>
+		<div class="card overflow-hidden">
+			{#key playerKeyCondition}
+				<div class="flex">
+					<img src={actualQueue[0]?.cover_art_url} alt="cover" />
+					<div class="mx-2 my-auto flex flex-col items-start">
+						<p class="text-truncate-scroll font-gt-walsheim-pro-medium">{actualQueue[0]?.song}</p>
+						<p class="text-truncate-scroll font-gt-walsheim-pro-thin">
+							{actualQueue[0]?.artist}
+						</p>
+					</div>
 				</div>
-			</div>
+			{/key}
+
+			{#if browser}
+				<!-- Check out the library I used - https://github.com/Khandakar227/svelte-mp3 -->
+				<AudioPlayer
+					bind:this={player}
+					style=""
+					showShuffle={false}
+					color="white"
+					urls={actualQueue.map((song) => song.url)}
+				/>
+			{/if}
 		</div>
-		{#if browser}
-			<!-- Check out the library I used - https://github.com/Khandakar227/svelte-mp3 -->
-			<AudioPlayer
-				style={'svg { width: 24px; height: 24px; }'}
-				bind:this={player}
-				showShuffle={false}
-				color="white"
-				urls={nowPlaying.map((song) => song.url)}
-			/>
-		{/if}
 	</div>
 
 	{#if currentTab === 'Friends'}
@@ -105,33 +132,27 @@
 			</a>
 		{/each}
 	{:else if currentTab === 'Queue'}
-		{#if nowPlaying.length >= 2}
+		{#if actualQueue.length >= 2}
 			<div class="mb-4 mt-4">Next from queue</div>
 		{:else}
 			<div class="mb-4 mt-4">Try adding some music...</div>
 		{/if}
-		{#each nowPlaying.slice(1) as item}
-			<!-- <div>
-					<div class="flex">
+		<div class="flex-column overflow-auto pr-2">
+			{#each actualQueue.slice(1) as item}
+				<div class="card my-2 overflow-hidden">
+					<div class="flex h-14">
 						<img src={item.cover_art_url} alt="cover" />
 						<div class="mx-2 my-auto flex flex-col items-start">
-							<p class="text-truncate-scroll font-gt-walsheim-pro-medium">{item.song}</p>
-							<p class="font-gt-walsheim-pro-thin">{item.artist}</p>
+							<p class="text-truncate-scroll font-gt-walsheim-pro-regular mb-1 text-sm">
+								{item.song}
+							</p>
+							<p class="text-truncate-scroll font-gt-walsheim-pro-thin text-sm">
+								{item.artist}
+							</p>
 						</div>
 					</div>
-				</div> -->
-
-			<img src={item.cover_art_url} alt="cover" />
-			<!-- <div class="overflow-hidden">
-				<div class="h-8">
-					<div class="mx-2 my-auto flex flex-col items-start">
-						<p class="text-truncate-scroll font-gt-walsheim-pro-medium">{item.song}</p>
-						<p class="font-gt-walsheim-pro-thin">
-							{item.artist}
-						</p>
-					</div>
 				</div>
-			</div> -->
-		{/each}
+			{/each}
+		</div>
 	{/if}
 </ul>
