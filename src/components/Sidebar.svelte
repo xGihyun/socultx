@@ -4,10 +4,10 @@
 	import { Avatar } from '@skeletonlabs/skeleton';
 	import { collection, onSnapshot } from 'firebase/firestore';
 	import { getContext, onDestroy } from 'svelte';
-	import { AudioPlayer, isPlaying } from 'svelte-mp3';
+	import { AudioPlayer, isPlaying, trackIndex } from 'svelte-mp3';
 	import { browser } from '$app/environment';
 	import type { Song } from '$lib/types';
-	import { onMount, afterUpdate } from 'svelte';
+	import { onMount } from 'svelte';
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
 
 	$: currentTab = 'Friends';
@@ -15,6 +15,7 @@
 
 	let player: AudioPlayer;
 	let actualQueue: Song[] = [];
+	let recentIndex: number = $trackIndex;
 
 	musicQueue.subscribe((value) => {
 		// titleOfTheSongClass = 'font-gt-walsheim-pro-medium';
@@ -35,6 +36,25 @@
 		}
 	});
 
+	trackIndex.subscribe((latestTrackIndex) => {
+		// if (recentIndex < latestTrackIndex) {
+		// 	// User pressed Next track
+		// 	console.log('User pressed next');
+
+		// 	musicQueue.update((arr) => arr.slice(1));
+		// } else if (recentIndex > latestTrackIndex) {
+		// 	// User pressed Previous track
+		// 	console.log('User pressed prev');
+		// }
+
+		// recentIndex = latestTrackIndex;
+		playerKeyCondition = !playerKeyCondition;
+		if (browser) {
+			// Now add the necessary truncate scroll effect
+			activateTextTruncateScroll();
+		}
+	});
+
 	// Whenever the user clicks on any of the tabs, grab the latest context
 	$: sidebarTabLogic = (clickedButtonName: string) => {
 		if (currentTab === clickedButtonName) {
@@ -43,26 +63,18 @@
 		return 'p-2';
 	};
 
-	onMount(() => {
-		// activateTextTruncateScroll({ timeoutBeforeInit: 500 });
-		player.$on('ended', () => {
-			console.log('Song has ended, removing the song (0th index) from queue');
-			musicQueue.update((arr) => arr.slice(1));
-			if (actualQueue.length >= 1) {
-				// If there are songs remaining from queue
-				isPlaying.set(true); // Play the next song
-			}
-		});
+	// onMount(() => {
+	// 	player.$on('ended', () => {
+	// 		console.log('Song has ended, removing the song (0th index) from queue');
+	// 		// musicQueue.update((arr) => arr.slice(1));
 
-		// player.$on('canplay', () => {
-		// 	if (browser) {
-		// 		// Now add the necessary truncate scroll effect
-		// 		titleOfTheSongClass = 'text-truncate-scroll font-gt-walsheim-pro-medium';
-		// 		artistsOfTheSongClass = 'text-truncate-scroll font-gt-walsheim-pro-thin';
-		// 		activateTextTruncateScroll();
-		// 	}
-		// });
-	});
+	// 		trackIndex.update((currIndex) => currIndex++);
+	// 		if (actualQueue.length >= 1) {
+	// 			// If there are songs remaining from queue
+	// 			isPlaying.set(true); // Play the next song
+	// 		}
+	// 	});
+	// });
 
 	const users = getContext<any>('users');
 	const usersCollection = collection(db, 'users');
@@ -82,15 +94,22 @@
 
 	<!-- Now playing div block -->
 	<div class={actualQueue.length >= 1 && currentTab === 'Queue' ? 'visible' : 'invisible absolute'}>
-		<div class="mb-4 mt-2">Now Playing</div>
+		<!-- <div class="mb-4 mt-2">Now Playing</div> -->
 		<div class="card overflow-hidden">
 			{#key playerKeyCondition}
-				<div class="flex">
-					<img src={actualQueue[0]?.cover_art_url} alt="cover" />
+				<div class="m-2.5 flex">
+					<img
+						src={actualQueue[$trackIndex]?.cover_art_url}
+						alt="cover"
+						class="rounded"
+						referrerpolicy="no-referrer"
+					/>
 					<div class="mx-2 my-auto flex flex-col items-start">
-						<p class="text-truncate-scroll font-gt-walsheim-pro-medium">{actualQueue[0]?.song}</p>
+						<p class="text-truncate-scroll font-gt-walsheim-pro-medium">
+							{actualQueue[$trackIndex]?.song}
+						</p>
 						<p class="text-truncate-scroll font-gt-walsheim-pro-thin">
-							{actualQueue[0]?.artist}
+							{actualQueue[$trackIndex]?.artist}
 						</p>
 					</div>
 				</div>
@@ -100,7 +119,8 @@
 				<!-- Check out the library I used - https://github.com/Khandakar227/svelte-mp3 -->
 				<AudioPlayer
 					bind:this={player}
-					style=""
+					style="margin: 0.5em"
+					loop="repeat-all"
 					showShuffle={false}
 					color="white"
 					urls={actualQueue.map((song) => song.url)}
@@ -117,7 +137,7 @@
 			>
 				<li>
 					<div class="relative h-10 w-10">
-						<Avatar src={user.photo_url} width="w-10" />
+						<Avatar src={user.photo_url} width="w-10" referrerpolicy="no-referrer" />
 						{#if user.is_logged_in}
 							<span
 								class="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-green-500"
@@ -132,26 +152,28 @@
 			</a>
 		{/each}
 	{:else if currentTab === 'Queue'}
-		{#if actualQueue.length >= 2}
+		<!-- {#if actualQueue.length >= 2}
 			<div class="mb-4 mt-4">Next from queue</div>
-		{:else}
+		{:else if actualQueue.length == 0}
 			<div class="mb-4 mt-4">Try adding some music...</div>
-		{/if}
+		{/if} -->
 		<div class="flex-column overflow-auto pr-2">
-			{#each actualQueue.slice(1) as item}
-				<div class="card my-2 overflow-hidden">
-					<div class="flex h-14">
-						<img src={item.cover_art_url} alt="cover" />
-						<div class="mx-2 my-auto flex flex-col items-start">
-							<p class="text-truncate-scroll font-gt-walsheim-pro-regular mb-1 text-sm">
-								{item.song}
-							</p>
-							<p class="text-truncate-scroll font-gt-walsheim-pro-thin text-sm">
-								{item.artist}
-							</p>
+			{#each actualQueue as item, index}
+				{#if index > $trackIndex}
+					<div class="card mb-2 overflow-hidden">
+						<div class="flex h-14">
+							<img src={item.cover_art_url} alt="cover" referrerpolicy="no-referrer" />
+							<div class="mx-2 my-auto flex flex-col items-start">
+								<p class="text-truncate-scroll font-gt-walsheim-pro-regular mb-1 text-sm">
+									{item.song}
+								</p>
+								<p class="text-truncate-scroll font-gt-walsheim-pro-thin text-sm">
+									{item.artist}
+								</p>
+							</div>
 						</div>
 					</div>
-				</div>
+				{/if}
 			{/each}
 		</div>
 	{/if}

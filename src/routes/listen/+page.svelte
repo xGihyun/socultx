@@ -7,11 +7,25 @@
 
 	$: hasResults = data.didUserSearch;
 
+	// function getMinAndSec(seconds: number) {
+	// 	const min = Math.floor(seconds / 60);
+	// 	const secs = seconds % 60;
+	// 	return min.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
+	// }
+
+	// Input (261) -> Output (4:20)
+	function getMinAndSec(seconds: number) {
+		const minutes = Math.floor(seconds / 60);
+		const remainingSeconds = seconds % 60;
+		return minutes + ':' + remainingSeconds.toString().padStart(2, '0');
+	}
+
 	async function playAudioStream(
 		songId: string,
 		songName: string,
 		artistName: string,
-		thumbnailUrl: string
+		thumbnailUrl: string,
+		duration: number
 	) {
 		const response = await fetch(`/listen/play/${songId}`);
 		const songInfo = await response.json();
@@ -21,7 +35,8 @@
 			song: songName,
 			artist: artistName,
 			url: audioSrc,
-			cover_art_url: thumbnailUrl
+			cover_art_url: thumbnailUrl,
+			duration: getMinAndSec(duration)
 		};
 		console.log(infoToStore);
 
@@ -65,7 +80,7 @@
 			Search results for: <span class="font-bold">{data?.query}</span>
 		</h5>
 		<div class="overflow flex h-screen flex-wrap justify-evenly">
-			{#each data?.results as { type, videoId, name, thumbnails, artists }, i}
+			{#each data?.results as { type, videoId, name, thumbnails, artists, duration }, i}
 				<button
 					type="button"
 					class="btn m-0 p-0"
@@ -74,18 +89,29 @@
 							videoId,
 							name,
 							artists.map((e) => e.name).join(', '),
-							thumbnails[0].url
+							thumbnails[0].url,
+							duration
 						)}
 				>
 					<div class="card h-[60px] w-96 overflow-hidden">
 						<div class="flex">
-							<img src={thumbnails[0].url} alt="cover" />
-							<div class="mx-2 my-auto flex flex-col items-start">
-								<p class="text-truncate-scroll font-gt-walsheim-pro-medium">{name}</p>
-								<p class="text-truncate-scroll font-gt-walsheim-pro-thin">
-									{artists.map((e) => e.name).join(', ')}
-								</p>
+							<img
+								class="flex-none"
+								src={thumbnails[0].url}
+								alt="cover"
+								referrerpolicy="no-referrer"
+							/>
+							<div class="mx-2 grow self-center">
+								<div class="flex flex-col items-start">
+									<p class="text-truncate-scroll font-gt-walsheim-pro-medium">{name}</p>
+									<p class="text-truncate-scroll font-gt-walsheim-pro-light">
+										{artists.map((e) => e.name).join(', ')}
+									</p>
+								</div>
 							</div>
+							<span class="mx-2 flex-none self-center font-gt-walsheim-pro-thin text-[12px]">
+								{getMinAndSec(duration)}
+							</span>
 						</div>
 					</div>
 				</button>
