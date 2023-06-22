@@ -9,6 +9,11 @@
 	// Finally, your application's global stylesheet (sometimes labeled 'app.css')
 	import '../app.postcss';
 
+	// This is needed for interactive popups
+	import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
+	import { storePopup } from '@skeletonlabs/skeleton';
+	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
+
 	import { allUsers, currentUser } from '$lib/store';
 	import { getContext, setContext } from 'svelte';
 	import Navbar from '../components/Navbar.svelte';

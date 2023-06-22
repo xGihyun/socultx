@@ -36,6 +36,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@floating-ui/dom": "^1.4.2",
 		"firebase": "^9.22.0",
 		"svelte-mp3": "^1.3.0",
 		"text-truncate-scroll": "^1.3.5",

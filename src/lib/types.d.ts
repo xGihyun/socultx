@@ -42,6 +42,7 @@ export type Message = {
 export type Song = {
 	song: string,
 	artist: string,
+	album: object,
 	url: string,
 	cover_art_url: thumbnailUrl,
 	duration: string,

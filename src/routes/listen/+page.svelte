@@ -3,15 +3,18 @@
 	import { isPlaying } from 'svelte-mp3';
 	import { afterUpdate, beforeUpdate, onMount, tick } from 'svelte';
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
+	import { popup } from '@skeletonlabs/skeleton';
+	import type { PopupSettings } from '@skeletonlabs/skeleton';
+
+	const threeDots: PopupSettings = {
+		event: 'click',
+		target: 'threeDotsActions',
+		placement: 'bottom'
+	};
+
 	export let data;
 
 	$: hasResults = data.didUserSearch;
-
-	// function getMinAndSec(seconds: number) {
-	// 	const min = Math.floor(seconds / 60);
-	// 	const secs = seconds % 60;
-	// 	return min.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
-	// }
 
 	// Input (261) -> Output (4:20)
 	function getMinAndSec(seconds: number) {
@@ -23,6 +26,7 @@
 	async function playAudioStream(
 		songId: string,
 		songName: string,
+		albumInfo: object,
 		artistName: string,
 		thumbnailUrl: string,
 		duration: number
@@ -34,6 +38,7 @@
 		let infoToStore = {
 			song: songName,
 			artist: artistName,
+			album: albumInfo,
 			url: audioSrc,
 			cover_art_url: thumbnailUrl,
 			duration: getMinAndSec(duration)
@@ -48,8 +53,7 @@
 		// musicQueue.set(JSON.stringify(infoToStore));
 	}
 
-	// let songNameClass = 'font-gt-walsheim-pro-medium';
-	// let artistNameClass = 'font-gt-walsheim-pro-thin';
+	async function addSongToQueue() {}
 
 	afterUpdate(() => {
 		activateTextTruncateScroll();
@@ -79,12 +83,12 @@
 		<h5 class="h5 m-2 text-white">
 			Search results for: <span class="font-bold">{data?.query}</span>
 		</h5>
-		<div class="overflow flex h-screen flex-wrap justify-evenly">
-			{#each data?.results as { type, videoId, name, thumbnails, artists, duration }, i}
+		<div class="flex h-screen flex-wrap justify-between">
+			{#each data?.results as { type, videoId, name, thumbnails, artists, duration, album }, i}
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
-				<div class="h-[60px] w-96 overflow-hidden">
+				<div class="card-hover mx-4 my-4 h-[60px] w-[500px] overflow-hidden">
 					<div class="flex">
-						<div class="group relative flex-none">
+						<div class="group relative flex-none grow-0">
 							<img
 								class="rounded group-hover:opacity-40"
 								src={thumbnails[0].url}
@@ -96,12 +100,13 @@
 								width="32"
 								height="32"
 								fill="currentColor"
-								class="bi bi-play absolute inset-x-4 inset-y-3 cursor-pointer opacity-0 group-hover:opacity-100"
+								class="bi bi-play absolute inset-x-4 inset-y-3 cursor-pointer opacity-0 transition duration-300 ease-in-out hover:scale-150 group-hover:opacity-100"
 								viewBox="0 0 16 16"
 								on:click={() =>
 									playAudioStream(
 										videoId,
 										name,
+										album,
 										artists.map((e) => e.name).join(', '),
 										thumbnails[0].url,
 										duration
@@ -113,7 +118,7 @@
 							</svg>
 						</div>
 
-						<div class="mx-2 grow self-center">
+						<div class="ml-4 mr-4 grow self-center">
 							<div class="flex flex-col items-start">
 								<p class="text-truncate-scroll font-gt-walsheim-pro-medium">{name}</p>
 								<p class="text-truncate-scroll font-gt-walsheim-pro-light">
@@ -121,13 +126,37 @@
 								</p>
 							</div>
 						</div>
-						<span>Add to Queue</span>
-						<span class="mx-2 flex-none self-center font-gt-walsheim-pro-thin text-[12px]">
-							{getMinAndSec(duration)}
-						</span>
+
+						<div class="grid h-12 w-6 flex-none grow-0 content-center gap-2 self-center">
+							<button class="justify-self-end" use:popup={threeDots}>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="18"
+									height="18"
+									fill="currentColor"
+									class="bi bi-three-dots"
+									viewBox="0 0 16 16"
+								>
+									<path
+										d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"
+									/>
+								</svg>
+							</button>
+
+							<span class="justify-self-end font-gt-walsheim-pro-thin text-[12px]">
+								{getMinAndSec(duration)}
+							</span>
+						</div>
 					</div>
 				</div>
 			{/each}
 		</div>
 	{/key}
 {/if}
+
+<div class="card w-72 p-4 shadow-xl" data-popup="threeDotsActions">
+	<div><p>Add to queue</p></div>
+	<div><p>Go to artist</p></div>
+	<div><p>Go to album</p></div>
+	<div class="arrow bg-surface-100-800-token" />
+</div>
