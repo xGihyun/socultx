@@ -81,40 +81,52 @@
 		</h5>
 		<div class="overflow flex h-screen flex-wrap justify-evenly">
 			{#each data?.results as { type, videoId, name, thumbnails, artists, duration }, i}
-				<button
-					type="button"
-					class="btn m-0 p-0"
-					on:click={() =>
-						playAudioStream(
-							videoId,
-							name,
-							artists.map((e) => e.name).join(', '),
-							thumbnails[0].url,
-							duration
-						)}
-				>
-					<div class="card h-[60px] w-96 overflow-hidden">
-						<div class="flex">
+				<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<div class="h-[60px] w-96 overflow-hidden">
+					<div class="flex">
+						<div class="group relative flex-none">
 							<img
-								class="flex-none"
+								class="rounded group-hover:opacity-40"
 								src={thumbnails[0].url}
 								alt="cover"
 								referrerpolicy="no-referrer"
 							/>
-							<div class="mx-2 grow self-center">
-								<div class="flex flex-col items-start">
-									<p class="text-truncate-scroll font-gt-walsheim-pro-medium">{name}</p>
-									<p class="text-truncate-scroll font-gt-walsheim-pro-light">
-										{artists.map((e) => e.name).join(', ')}
-									</p>
-								</div>
-							</div>
-							<span class="mx-2 flex-none self-center font-gt-walsheim-pro-thin text-[12px]">
-								{getMinAndSec(duration)}
-							</span>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="32"
+								height="32"
+								fill="currentColor"
+								class="bi bi-play absolute inset-x-4 inset-y-3 cursor-pointer opacity-0 group-hover:opacity-100"
+								viewBox="0 0 16 16"
+								on:click={() =>
+									playAudioStream(
+										videoId,
+										name,
+										artists.map((e) => e.name).join(', '),
+										thumbnails[0].url,
+										duration
+									)}
+							>
+								<path
+									d="M10.804 8 5 4.633v6.734L10.804 8zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696l6.363 3.692z"
+								/>
+							</svg>
 						</div>
+
+						<div class="mx-2 grow self-center">
+							<div class="flex flex-col items-start">
+								<p class="text-truncate-scroll font-gt-walsheim-pro-medium">{name}</p>
+								<p class="text-truncate-scroll font-gt-walsheim-pro-light">
+									{artists.map((e) => e.name).join(', ')}
+								</p>
+							</div>
+						</div>
+						<span>Add to Queue</span>
+						<span class="mx-2 flex-none self-center font-gt-walsheim-pro-thin text-[12px]">
+							{getMinAndSec(duration)}
+						</span>
 					</div>
-				</button>
+				</div>
 			{/each}
 		</div>
 	{/key}
