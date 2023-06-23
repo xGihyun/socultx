@@ -40,6 +40,7 @@ export type Message = {
 };
 
 export type Song = {
+	id: string,
 	song: string,
 	artist: string,
 	album: object,

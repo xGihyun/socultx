@@ -7,29 +7,25 @@
 	import { AudioPlayer, isPlaying, trackIndex } from 'svelte-mp3';
 	import { browser } from '$app/environment';
 	import type { Song } from '$lib/types';
-	import { onMount } from 'svelte';
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
 
 	$: currentTab = 'Friends';
 	$: playerKeyCondition = false;
 
-	let player: AudioPlayer;
 	let actualQueue: Song[] = [];
-	let recentIndex: number = $trackIndex;
+	// let recentIndex: number = $trackIndex;
 
 	musicQueue.subscribe((value) => {
 		// titleOfTheSongClass = 'font-gt-walsheim-pro-medium';
 		// artistsOfTheSongClass = 'font-gt-walsheim-pro-thin';
 		actualQueue = value;
 		playerKeyCondition = !playerKeyCondition;
+
 		// Reset the css values for the class first
 		// nowPlayingSong = value[0]?.song;
 		// nowPlayingArtist = value[0]?.artist;
 		// nowPlayingCover = value[0]?.cover_art_url;
 		// console.log(nowPlayingSong);
-
-		// console.log(player);
-
 		if (browser) {
 			// Now add the necessary truncate scroll effect
 			activateTextTruncateScroll();
@@ -63,19 +59,6 @@
 		return 'p-2';
 	};
 
-	// onMount(() => {
-	// 	player.$on('ended', () => {
-	// 		console.log('Song has ended, removing the song (0th index) from queue');
-	// 		// musicQueue.update((arr) => arr.slice(1));
-
-	// 		trackIndex.update((currIndex) => currIndex++);
-	// 		if (actualQueue.length >= 1) {
-	// 			// If there are songs remaining from queue
-	// 			isPlaying.set(true); // Play the next song
-	// 		}
-	// 	});
-	// });
-
 	const users = getContext<any>('users');
 	const usersCollection = collection(db, 'users');
 	const unsubUsers = onSnapshot(usersCollection, (snapshot) => {
@@ -89,11 +72,19 @@
 		<button class={sidebarTabLogic('Friends')} on:click={() => (currentTab = 'Friends')}
 			>Friends</button
 		>
-		<button class={sidebarTabLogic('Queue')} on:click={() => (currentTab = 'Queue')}>Queue</button>
+		<button
+			class={sidebarTabLogic('Activity')}
+			on:click={() => {
+				currentTab = 'Activity';
+				playerKeyCondition = !playerKeyCondition;
+			}}>Activity</button
+		>
 	</li>
 
 	<!-- Now playing div block -->
-	<div class={actualQueue.length >= 1 && currentTab === 'Queue' ? 'visible' : 'invisible absolute'}>
+	<div
+		class={actualQueue.length >= 1 && currentTab === 'Activity' ? 'visible' : 'invisible absolute'}
+	>
 		<!-- <div class="mb-4 mt-2">Now Playing</div> -->
 		<div class="card overflow-hidden">
 			{#key playerKeyCondition}
@@ -118,9 +109,9 @@
 			{#if browser}
 				<!-- Check out the library I used - https://github.com/Khandakar227/svelte-mp3 -->
 				<AudioPlayer
-					bind:this={player}
-					style="margin: 0.5em"
+					style="margin: 0.5em;"
 					loop="repeat-all"
+					showTrackNum={false}
 					showShuffle={false}
 					color="white"
 					urls={actualQueue.map((song) => song.url)}
@@ -151,20 +142,53 @@
 				</li>
 			</a>
 		{/each}
-	{:else if currentTab === 'Queue'}
-		<!-- {#if actualQueue.length >= 2}
+	{:else if currentTab === 'Activity'}
+		{#if actualQueue.length >= 2}
 			<div class="mb-4 mt-4">Next from queue</div>
 		{:else if actualQueue.length == 0}
 			<div class="mb-4 mt-4">Try adding some music...</div>
-		{/if} -->
+		{/if}
+
 		<div class="flex-column overflow-auto pr-2">
-			{#each actualQueue as item, index}
-				{#if index > $trackIndex}
-					<div class="card mb-2 overflow-hidden">
+			{#key playerKeyCondition}
+				{#each actualQueue as item, index}
+					<!-- TODO: Watch vid and implement the dnd queieng -  https://www.youtube.com/watch?v=lTDKhj83tec  -->
+					<div
+						class={index === $trackIndex
+							? 'variant-glass-secondary mb-2 overflow-hidden rounded-md'
+							: 'mb-2 overflow-hidden rounded-md'}
+					>
 						<div class="flex h-14">
-							<img src={item.cover_art_url} alt="cover" referrerpolicy="no-referrer" />
+							<div class="relative flex-none">
+								<img
+									class={index === $trackIndex ? 'opacity-40' : 'opacity-100'}
+									src={item.cover_art_url}
+									alt="cover"
+									referrerpolicy="no-referrer"
+								/>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="32"
+									height="32"
+									fill="currentColor"
+									class={$isPlaying && index === $trackIndex
+										? 'absolute inset-x-3 inset-y-3 fill-primary-300 opacity-100 motion-safe:animate-pulse'
+										: 'absolute inset-x-3 inset-y-3 opacity-0'}
+									viewBox="0 0 16 16"
+								>
+									<path
+										d="M6 13c0 1.105-1.12 2-2.5 2S1 14.105 1 13c0-1.104 1.12-2 2.5-2s2.5.896 2.5 2zm9-2c0 1.105-1.12 2-2.5 2s-2.5-.895-2.5-2 1.12-2 2.5-2 2.5.895 2.5 2z"
+									/> <path fill-rule="evenodd" d="M14 11V2h1v9h-1zM6 3v10H5V3h1z" />
+									<path d="M5 2.905a1 1 0 0 1 .9-.995l8-.8a1 1 0 0 1 1.1.995V3L5 4V2.905z" />
+								</svg>
+							</div>
+
 							<div class="mx-2 my-auto flex flex-col items-start">
-								<p class="text-truncate-scroll font-gt-walsheim-pro-regular mb-1 text-sm">
+								<p
+									class={$isPlaying && index === $trackIndex
+										? 'text-truncate-scroll font-gt-walsheim-pro-regular mb-1 text-sm text-primary-300'
+										: 'text-truncate-scroll font-gt-walsheim-pro-regular mb-1 text-sm'}
+								>
 									{item.song}
 								</p>
 								<p class="text-truncate-scroll font-gt-walsheim-pro-thin text-sm">
@@ -173,8 +197,8 @@
 							</div>
 						</div>
 					</div>
-				{/if}
-			{/each}
+				{/each}
+			{/key}
 		</div>
 	{/if}
 </ul>
