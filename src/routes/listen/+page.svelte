@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { musicQueue } from '$lib/store';
 	import { isPlaying, trackIndex } from 'svelte-mp3';
-	import { afterUpdate, beforeUpdate, onMount, tick } from 'svelte';
+	import { afterUpdate } from 'svelte';
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
 	import { popup } from '@skeletonlabs/skeleton';
+	import { songDraggable } from '$lib/dnd';
 	import type { PopupSettings } from '@skeletonlabs/skeleton';
-	import type { Song } from '$lib/types.js';
+	import type { Song } from '$lib/types';
 
 	const threeDots: PopupSettings = {
 		event: 'click',

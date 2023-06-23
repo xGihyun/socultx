@@ -8,6 +8,7 @@
 	import { browser } from '$app/environment';
 	import type { Song } from '$lib/types';
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
+	import { songDraggable } from '$lib/dnd';
 
 	$: currentTab = 'Friends';
 	$: playerKeyCondition = false;
@@ -153,11 +154,9 @@
 			{#key playerKeyCondition}
 				{#each actualQueue as item, index}
 					<!-- TODO: Watch vid and implement the dnd queieng -  https://www.youtube.com/watch?v=lTDKhj83tec  -->
-					<div
-						class={index === $trackIndex
-							? 'variant-glass-secondary mb-2 overflow-hidden rounded-md'
-							: 'mb-2 overflow-hidden rounded-md'}
-					>
+
+					<!-- START DEFAULT -->
+					<!-- <div class={index === $trackIndex ? 'variant-glass-secondary' : ''}>
 						<div class="flex h-14">
 							<div class="relative flex-none">
 								<img
@@ -195,6 +194,39 @@
 									{item.artist}
 								</p>
 							</div>
+						</div>
+					</div> -->
+					<!-- END DEFAULT -->
+
+					<div use:songDraggable class="flex h-[60px]">
+						<div class="relative flex-none">
+							<img src={item.cover_art_url} alt="cover" referrerpolicy="no-referrer" />
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="32"
+								height="32"
+								fill="currentColor"
+								class="absolute inset-x-3 inset-y-3 opacity-60"
+								viewBox="0 0 16 16"
+							>
+								<path
+									d="M6 13c0 1.105-1.12 2-2.5 2S1 14.105 1 13c0-1.104 1.12-2 2.5-2s2.5.896 2.5 2zm9-2c0 1.105-1.12 2-2.5 2s-2.5-.895-2.5-2 1.12-2 2.5-2 2.5.895 2.5 2z"
+								/> <path fill-rule="evenodd" d="M14 11V2h1v9h-1zM6 3v10H5V3h1z" />
+								<path d="M5 2.905a1 1 0 0 1 .9-.995l8-.8a1 1 0 0 1 1.1.995V3L5 4V2.905z" />
+							</svg>
+						</div>
+
+						<div class="mx-2 my-auto flex flex-col items-start">
+							<p
+								class={$isPlaying && index === $trackIndex
+									? 'text-truncate-scroll font-gt-walsheim-pro-regular mb-1 text-sm text-primary-300'
+									: 'text-truncate-scroll font-gt-walsheim-pro-regular mb-1 text-sm'}
+							>
+								{item.song}
+							</p>
+							<p class="text-truncate-scroll font-gt-walsheim-pro-thin text-sm">
+								{item.artist}
+							</p>
 						</div>
 					</div>
 				{/each}
