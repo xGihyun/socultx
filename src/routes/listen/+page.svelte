@@ -4,9 +4,9 @@
 	import { afterUpdate } from 'svelte';
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
 	import { popup } from '@skeletonlabs/skeleton';
-	import { songDraggable } from '$lib/dnd';
 	import type { PopupSettings } from '@skeletonlabs/skeleton';
 	import type { Song } from '$lib/types';
+	import { draggableSong } from '$lib/dnd.js';
 
 	const threeDots: PopupSettings = {
 		event: 'click',

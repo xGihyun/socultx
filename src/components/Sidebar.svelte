@@ -6,20 +6,20 @@
 	import { getContext, onDestroy } from 'svelte';
 	import { AudioPlayer, isPlaying, trackIndex } from 'svelte-mp3';
 	import { browser } from '$app/environment';
-	import type { Song } from '$lib/types';
+	// import type { Song } from '$lib/types';
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
-	import { songDraggable } from '$lib/dnd';
+	import { draggableSong, draggableContainer } from '$lib/dnd';
 
 	$: currentTab = 'Friends';
 	$: playerKeyCondition = false;
 
-	let actualQueue: Song[] = [];
+	// let actualQueue: Song[] = [];
 	// let recentIndex: number = $trackIndex;
 
 	musicQueue.subscribe((value) => {
 		// titleOfTheSongClass = 'font-gt-walsheim-pro-medium';
 		// artistsOfTheSongClass = 'font-gt-walsheim-pro-thin';
-		actualQueue = value;
+		// actualQueue = value;
 		playerKeyCondition = !playerKeyCondition;
 
 		// Reset the css values for the class first
@@ -84,24 +84,24 @@
 
 	<!-- Now playing div block -->
 	<div
-		class={actualQueue.length >= 1 && currentTab === 'Activity' ? 'visible' : 'invisible absolute'}
+		class={$musicQueue.length >= 1 && currentTab === 'Activity' ? 'visible' : 'invisible absolute'}
 	>
 		<!-- <div class="mb-4 mt-2">Now Playing</div> -->
 		<div class="card overflow-hidden">
 			{#key playerKeyCondition}
 				<div class="m-2.5 flex">
 					<img
-						src={actualQueue[$trackIndex]?.cover_art_url}
+						src={$musicQueue[$trackIndex]?.cover_art_url}
 						alt="cover"
 						class="rounded"
 						referrerpolicy="no-referrer"
 					/>
 					<div class="mx-2 my-auto flex flex-col items-start">
 						<p class="text-truncate-scroll font-gt-walsheim-pro-medium">
-							{actualQueue[$trackIndex]?.song}
+							{$musicQueue[$trackIndex]?.song}
 						</p>
 						<p class="text-truncate-scroll font-gt-walsheim-pro-thin">
-							{actualQueue[$trackIndex]?.artist}
+							{$musicQueue[$trackIndex]?.artist}
 						</p>
 					</div>
 				</div>
@@ -115,7 +115,7 @@
 					showTrackNum={false}
 					showShuffle={false}
 					color="white"
-					urls={actualQueue.map((song) => song.url)}
+					urls={$musicQueue.map((song) => song.url)}
 				/>
 			{/if}
 		</div>
@@ -144,15 +144,15 @@
 			</a>
 		{/each}
 	{:else if currentTab === 'Activity'}
-		{#if actualQueue.length >= 2}
+		{#if $musicQueue.length >= 2}
 			<div class="mb-4 mt-4">Next from queue</div>
-		{:else if actualQueue.length == 0}
+		{:else if $musicQueue.length == 0}
 			<div class="mb-4 mt-4">Try adding some music...</div>
 		{/if}
 
-		<div class="flex-column overflow-auto pr-2">
+		<div use:draggableContainer class="flex-column overflow-auto p-2">
 			{#key playerKeyCondition}
-				{#each actualQueue as item, index}
+				{#each $musicQueue as item, index}
 					<!-- TODO: Watch vid and implement the dnd queieng -  https://www.youtube.com/watch?v=lTDKhj83tec  -->
 
 					<!-- START DEFAULT -->
@@ -198,7 +198,18 @@
 					</div> -->
 					<!-- END DEFAULT -->
 
-					<div use:songDraggable class="flex h-[60px]">
+					<!-- TODO: Use separate data-attributes -->
+					<div
+						use:draggableSong
+						class="draggable my-2 flex bg-surface-800"
+						data-id={item.id}
+						data-song={item.song}
+						data-artist={item.artist}
+						data-album={item.album?.name || ''}
+						data-cover_art_url={item.cover_art_url}
+						data-duration={item.duration}
+						data-url={item.url}
+					>
 						<div class="relative flex-none">
 							<img src={item.cover_art_url} alt="cover" referrerpolicy="no-referrer" />
 							<svg
