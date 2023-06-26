@@ -4,7 +4,7 @@
 	import type { PopupSettings } from '@skeletonlabs/skeleton';
 	import { popup } from '@skeletonlabs/skeleton';
 	import type { Song } from '$lib/types';
-	import type { AlbumDetailed, SongDetailed } from 'ytmusic-api';
+	import type { AlbumBasic, SongDetailed } from 'ytmusic-api';
 
 	const threeDots: PopupSettings = {
 		event: 'click',
@@ -26,7 +26,7 @@
 	async function setSongInfoToStore(
 		songId: string,
 		songName: string,
-		albumInfo: { name: string; albumId: string },
+		albumInfo: AlbumBasic,
 		artistName: string,
 		thumbnailUrl: string,
 		duration: number

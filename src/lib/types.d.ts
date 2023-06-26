@@ -1,4 +1,5 @@
 import type { Timestamp } from "firebase/firestore";
+import type { AlbumBasic } from "ytmusic-api";
 
 export type UserData = {
 	username: string | null;
@@ -43,8 +44,8 @@ export type Song = {
 	id: string,
 	song: string,
 	artist: string,
-	album: { name: string, albumId: string },
+	album: AlbumBasic,
 	url: string,
-	cover_art_url: thumbnailUrl,
+	cover_art_url: string,
 	duration: string,
 }

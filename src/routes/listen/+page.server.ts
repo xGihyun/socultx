@@ -14,15 +14,7 @@ export const load: PageServerLoad = async ({ url }) => {
     }
 
     // Use yt-music api
-    const ytmusic = await new YTMusic().initialize()
-
-    //     let results: { name: string; type: "SONG"; videoId: string; artists: { name: string; artistId: string; }[]; album: { name: string; albumId: string; }; duration: number; thumbnails: { url: string; width: number; height: number; }[]; }[] | {
-    //         year: number | null; name: string; type: "ALBUM"; albumId: string; artists: { name: string; artistId: string; }[]; thumbnails: {
-    //             url: string; width: number; height: number /**
-    //  * @type {{ name: string; type: "SONG"; videoId: string; artists: { name: string; artistId: string; }[]; album: { name: string; albumId: string; }; duration: number; thumbnails: { url: string; width: number; height: number; }[]; }[] | { year: number | null; name: string; type: "ALBUM"; albumId: string; artists: { name: string; artistId: string; }[]; thumbnails: { url: string; width: number; height: number; }[]; playlistId: string; }[]}
-    //  */;
-    //         }[]; playlistId: string;
-    //     }[] = [];
+    const ytmusic = await new YTMusic().initialize();
 
     let results: SongDetailed[] | AlbumDetailed[] = []
 
