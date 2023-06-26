@@ -1,5 +1,6 @@
-import YTMusic from 'ytmusic-api'
+import type { SongDetailed, AlbumDetailed } from 'ytmusic-api'
 import type { PageServerLoad } from './$types';
+import YTMusic from 'ytmusic-api';
 
 export const load: PageServerLoad = async ({ url }) => {
     const query = url.searchParams.get('q')
@@ -15,22 +16,27 @@ export const load: PageServerLoad = async ({ url }) => {
     // Use yt-music api
     const ytmusic = await new YTMusic().initialize()
 
-    let results: { name: string; type: "SONG"; videoId: string; artists: { name: string; artistId: string; }[]; album: { name: string; albumId: string; }; duration: number; thumbnails: { url: string; width: number; height: number; }[]; }[] | {
-        year: number | null; name: string; type: "ALBUM"; albumId: string; artists: { name: string; artistId: string; }[]; thumbnails: {
-            url: string; width: number; height: number /**
- * @type {{ name: string; type: "SONG"; videoId: string; artists: { name: string; artistId: string; }[]; album: { name: string; albumId: string; }; duration: number; thumbnails: { url: string; width: number; height: number; }[]; }[] | { year: number | null; name: string; type: "ALBUM"; albumId: string; artists: { name: string; artistId: string; }[]; thumbnails: { url: string; width: number; height: number; }[]; playlistId: string; }[]}
- */;
-        }[]; playlistId: string;
-    }[] = [];
-    if (type == "1") {
+    //     let results: { name: string; type: "SONG"; videoId: string; artists: { name: string; artistId: string; }[]; album: { name: string; albumId: string; }; duration: number; thumbnails: { url: string; width: number; height: number; }[]; }[] | {
+    //         year: number | null; name: string; type: "ALBUM"; albumId: string; artists: { name: string; artistId: string; }[]; thumbnails: {
+    //             url: string; width: number; height: number /**
+    //  * @type {{ name: string; type: "SONG"; videoId: string; artists: { name: string; artistId: string; }[]; album: { name: string; albumId: string; }; duration: number; thumbnails: { url: string; width: number; height: number; }[]; }[] | { year: number | null; name: string; type: "ALBUM"; albumId: string; artists: { name: string; artistId: string; }[]; thumbnails: { url: string; width: number; height: number; }[]; playlistId: string; }[]}
+    //  */;
+    //         }[]; playlistId: string;
+    //     }[] = [];
+
+    let results: SongDetailed[] | AlbumDetailed[] = []
+
+
+    if (type == "song") {
         results = await ytmusic.searchSongs(query);
-    } else if (type == "2") {
+    } else if (type == "album") {
         results = await ytmusic.searchAlbums(query)
     }
 
     return {
         didUserSearch: true,
         query: query,
+        type: type,
         results: results
     }
 };

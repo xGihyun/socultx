@@ -6,9 +6,10 @@
 	import { afterUpdate, getContext, onDestroy } from 'svelte';
 	import { AudioPlayer, isPlaying, trackIndex } from 'svelte-mp3';
 	import { browser } from '$app/environment';
-	import type { Song } from '$lib/types';
+	import type { Song, UserData } from '$lib/types';
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
 	import { draggableSong, draggableContainer } from '$lib/dnd';
+	import type { Writable } from 'svelte/store';
 
 	$: currentTab = 'Friends';
 	$: playerKeyCondition = false;
@@ -39,11 +40,20 @@
 		}
 	});
 
-	const users = getContext<any>('users');
+	const users = getContext<Writable<UserData[]>>('users');
+
 	const usersCollection = collection(db, 'users');
 	const unsubUsers = onSnapshot(usersCollection, (snapshot) => {
-		$users = snapshot.docs.map((doc) => doc.data());
+		$users = snapshot.docs.map((doc) => doc.data() as UserData);
 	});
+
+	function removeItemFromQueue(itemIndex: number) {
+		musicQueue.update((currentQueue) => {
+			currentQueue.splice(itemIndex, 1);
+			return currentQueue;
+		});
+	}
+
 	onDestroy(() => unsubUsers());
 </script>
 
@@ -65,7 +75,6 @@
 	<div
 		class={actualQueue.length >= 1 && currentTab === 'Activity' ? 'visible' : 'invisible absolute'}
 	>
-		<!-- <div class="mb-4 mt-2">Now Playing</div> -->
 		<div class="card overflow-hidden">
 			{#key playerKeyCondition}
 				<div class="m-2.5 flex">
@@ -109,7 +118,7 @@
 			>
 				<li>
 					<div class="relative h-10 w-10">
-						<Avatar src={user.photo_url} width="w-10" referrerpolicy="no-referrer" />
+						<Avatar src={user.photo_url || ''} width="w-10" referrerpolicy="no-referrer" />
 						{#if user.is_logged_in}
 							<span
 								class="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-green-500"
@@ -145,47 +154,60 @@
 						data-url={item.url}
 						data-now_playing={index === $trackIndex ? true : false}
 					>
-						<div class="relative flex-none">
-							<img
-								src={item.cover_art_url}
-								alt="cover"
-								referrerpolicy="no-referrer"
-								class={index === $trackIndex ? 'opacity-40' : 'opacity-100'}
-							/>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								viewBox="0 0 24 24"
-								class="absolute inset-x-3 inset-y-3 fill-warning-800 opacity-0 hover:opacity-100"
-							>
-								<g>
-									<path fill="none" d="M0 0h24v24H0z" />
+						<div class="group relative flex-none">
+							{#if index === $trackIndex}
+								<img
+									src={item.cover_art_url}
+									alt="cover"
+									referrerpolicy="no-referrer"
+									class="opacity-40"
+								/>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="32"
+									height="32"
+									fill="currentColor"
+									class={$isPlaying
+										? 'visible absolute inset-x-3 inset-y-3 fill-primary-300 motion-safe:animate-pulse'
+										: 'invisible absolute inset-x-3 inset-y-3'}
+									viewBox="0 0 16 16"
+								>
 									<path
-										d="M7 4V2h10v2h5v2h-2v15a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6H2V4h5zM6 6v14h12V6H6zm3 3h2v8H9V9zm4 0h2v8h-2V9z"
-									/>
-								</g>
-							</svg>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="32"
-								height="32"
-								fill="currentColor"
-								class={$isPlaying && index === $trackIndex
-									? 'visible absolute inset-x-3 inset-y-3 fill-primary-300 motion-safe:animate-pulse'
-									: 'invisible absolute inset-x-3 inset-y-3'}
-								viewBox="0 0 16 16"
-							>
-								<path
-									d="M6 13c0 1.105-1.12 2-2.5 2S1 14.105 1 13c0-1.104 1.12-2 2.5-2s2.5.896 2.5 2zm9-2c0 1.105-1.12 2-2.5 2s-2.5-.895-2.5-2 1.12-2 2.5-2 2.5.895 2.5 2z"
-								/> <path fill-rule="evenodd" d="M14 11V2h1v9h-1zM6 3v10H5V3h1z" />
-								<path d="M5 2.905a1 1 0 0 1 .9-.995l8-.8a1 1 0 0 1 1.1.995V3L5 4V2.905z" />
-							</svg>
+										d="M6 13c0 1.105-1.12 2-2.5 2S1 14.105 1 13c0-1.104 1.12-2 2.5-2s2.5.896 2.5 2zm9-2c0 1.105-1.12 2-2.5 2s-2.5-.895-2.5-2 1.12-2 2.5-2 2.5.895 2.5 2z"
+									/> <path fill-rule="evenodd" d="M14 11V2h1v9h-1zM6 3v10H5V3h1z" />
+									<path d="M5 2.905a1 1 0 0 1 .9-.995l8-.8a1 1 0 0 1 1.1.995V3L5 4V2.905z" />
+								</svg>
+							{:else}
+								<img
+									src={item.cover_art_url}
+									alt="cover"
+									referrerpolicy="no-referrer"
+									class="group-hover:opacity-40"
+								/>
+								<!-- svelte-ignore a11y-click-events-have-key-events -->
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									viewBox="0 0 24 24"
+									height="32"
+									width="32"
+									class="absolute inset-x-3 inset-y-3 cursor-pointer fill-error-400 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+									on:click={() => removeItemFromQueue(index)}
+								>
+									<g>
+										<path fill="none" d="M0 0h24v24H0z" />
+										<path
+											d="M7 4V2h10v2h5v2h-2v15a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6H2V4h5zM6 6v14h12V6H6zm3 3h2v8H9V9zm4 0h2v8h-2V9z"
+										/>
+									</g>
+								</svg>
+							{/if}
 						</div>
 
 						<div class="mx-2 my-auto flex flex-col items-start">
 							<p
-								class={$isPlaying && index === $trackIndex
-									? 'text-truncate-scroll font-gt-walsheim-pro-regular mb-1 text-sm text-primary-300'
-									: 'text-truncate-scroll font-gt-walsheim-pro-regular mb-1 text-sm'}
+								class={`text-truncate-scroll font-gt-walsheim-pro-regular mb-1 text-sm ${
+									$isPlaying && index === $trackIndex ? 'text-primary-300' : 'text-white'
+								}`}
 							>
 								{item.song}
 							</p>

@@ -43,7 +43,7 @@ export type Song = {
 	id: string,
 	song: string,
 	artist: string,
-	album: object,
+	album: { name: string, albumId: string },
 	url: string,
 	cover_art_url: thumbnailUrl,
 	duration: string,
