@@ -1,4 +1,5 @@
 import { musicQueue } from "$lib/store";
+import { trackIndex } from "svelte-mp3";
 import type { Song } from "$lib/types";
 
 export function draggableSong(node: HTMLElement) {
@@ -36,29 +37,37 @@ export function draggableContainer(node: HTMLElement) {
 
     })
 
-    node.addEventListener('dragend', () => {
-        // console.log("Before: ")
-        // console.log(musicQueue);
-        // console.log("After: ");
-        // console.log(node.children)
+    node.addEventListener('dragend', async () => {
         let newQueue: Song[] = []
+        let indexToSet: number;
 
         for (let i = 0; i < node.children.length; i++) {
             let element = node.children[i] as HTMLElement;
+            if (element.dataset.now_playing as string == "true") {
+                indexToSet = i;
+                // trackIndex.set(i);
+            }
             newQueue.push({
                 id: element.dataset.id as string,
                 song: element.dataset.song as string,
                 artist: element.dataset.artist as string,
                 album: element.dataset.album,
                 url: element.dataset.url as string,
-                cover_art_url: element.dataset.cover_art_url,
+                cover_art_url: element.dataset.cover_art_url as string,
                 duration: element.dataset.duration as string
             })
         }
 
         // Set changes
         musicQueue.set(newQueue);
+        trackIndex.set(indexToSet);
     })
+
+    return {
+        destroy() {
+
+        }
+    }
 
 }
 

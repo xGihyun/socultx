@@ -3,49 +3,20 @@
 	import { musicQueue } from '$lib/store';
 	import { Avatar } from '@skeletonlabs/skeleton';
 	import { collection, onSnapshot } from 'firebase/firestore';
-	import { getContext, onDestroy } from 'svelte';
+	import { afterUpdate, getContext, onDestroy } from 'svelte';
 	import { AudioPlayer, isPlaying, trackIndex } from 'svelte-mp3';
 	import { browser } from '$app/environment';
-	// import type { Song } from '$lib/types';
+	import type { Song } from '$lib/types';
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
 	import { draggableSong, draggableContainer } from '$lib/dnd';
 
 	$: currentTab = 'Friends';
 	$: playerKeyCondition = false;
 
-	// let actualQueue: Song[] = [];
-	// let recentIndex: number = $trackIndex;
+	let actualQueue: Song[] = [];
 
-	musicQueue.subscribe((value) => {
-		// titleOfTheSongClass = 'font-gt-walsheim-pro-medium';
-		// artistsOfTheSongClass = 'font-gt-walsheim-pro-thin';
-		// actualQueue = value;
-		playerKeyCondition = !playerKeyCondition;
-
-		// Reset the css values for the class first
-		// nowPlayingSong = value[0]?.song;
-		// nowPlayingArtist = value[0]?.artist;
-		// nowPlayingCover = value[0]?.cover_art_url;
-		// console.log(nowPlayingSong);
-		if (browser) {
-			// Now add the necessary truncate scroll effect
-			activateTextTruncateScroll();
-		}
-	});
-
-	trackIndex.subscribe((latestTrackIndex) => {
-		// if (recentIndex < latestTrackIndex) {
-		// 	// User pressed Next track
-		// 	console.log('User pressed next');
-
-		// 	musicQueue.update((arr) => arr.slice(1));
-		// } else if (recentIndex > latestTrackIndex) {
-		// 	// User pressed Previous track
-		// 	console.log('User pressed prev');
-		// }
-
-		// recentIndex = latestTrackIndex;
-		playerKeyCondition = !playerKeyCondition;
+	musicQueue.subscribe((updatedQueue) => {
+		actualQueue = updatedQueue;
 		if (browser) {
 			// Now add the necessary truncate scroll effect
 			activateTextTruncateScroll();
@@ -59,6 +30,14 @@
 		}
 		return 'p-2';
 	};
+
+	afterUpdate(() => {
+		playerKeyCondition = !playerKeyCondition;
+		if (browser) {
+			// Now add the necessary truncate scroll effect
+			activateTextTruncateScroll();
+		}
+	});
 
 	const users = getContext<any>('users');
 	const usersCollection = collection(db, 'users');
@@ -84,24 +63,24 @@
 
 	<!-- Now playing div block -->
 	<div
-		class={$musicQueue.length >= 1 && currentTab === 'Activity' ? 'visible' : 'invisible absolute'}
+		class={actualQueue.length >= 1 && currentTab === 'Activity' ? 'visible' : 'invisible absolute'}
 	>
 		<!-- <div class="mb-4 mt-2">Now Playing</div> -->
 		<div class="card overflow-hidden">
 			{#key playerKeyCondition}
 				<div class="m-2.5 flex">
 					<img
-						src={$musicQueue[$trackIndex]?.cover_art_url}
+						src={actualQueue[$trackIndex]?.cover_art_url}
 						alt="cover"
 						class="rounded"
 						referrerpolicy="no-referrer"
 					/>
 					<div class="mx-2 my-auto flex flex-col items-start">
 						<p class="text-truncate-scroll font-gt-walsheim-pro-medium">
-							{$musicQueue[$trackIndex]?.song}
+							{actualQueue[$trackIndex]?.song}
 						</p>
 						<p class="text-truncate-scroll font-gt-walsheim-pro-thin">
-							{$musicQueue[$trackIndex]?.artist}
+							{actualQueue[$trackIndex]?.artist}
 						</p>
 					</div>
 				</div>
@@ -109,13 +88,14 @@
 
 			{#if browser}
 				<!-- Check out the library I used - https://github.com/Khandakar227/svelte-mp3 -->
+
 				<AudioPlayer
 					style="margin: 0.5em;"
 					loop="repeat-all"
-					showTrackNum={false}
+					showTrackNum={true}
 					showShuffle={false}
 					color="white"
-					urls={$musicQueue.map((song) => song.url)}
+					urls={actualQueue.map((song) => song.url)}
 				/>
 			{/if}
 		</div>
@@ -144,61 +124,15 @@
 			</a>
 		{/each}
 	{:else if currentTab === 'Activity'}
-		{#if $musicQueue.length >= 2}
+		{#if actualQueue.length >= 2}
 			<div class="mb-4 mt-4">Next from queue</div>
-		{:else if $musicQueue.length == 0}
+		{:else if actualQueue.length == 0}
 			<div class="mb-4 mt-4">Try adding some music...</div>
 		{/if}
 
 		<div use:draggableContainer class="flex-column overflow-auto p-2">
 			{#key playerKeyCondition}
-				{#each $musicQueue as item, index}
-					<!-- TODO: Watch vid and implement the dnd queieng -  https://www.youtube.com/watch?v=lTDKhj83tec  -->
-
-					<!-- START DEFAULT -->
-					<!-- <div class={index === $trackIndex ? 'variant-glass-secondary' : ''}>
-						<div class="flex h-14">
-							<div class="relative flex-none">
-								<img
-									class={index === $trackIndex ? 'opacity-40' : 'opacity-100'}
-									src={item.cover_art_url}
-									alt="cover"
-									referrerpolicy="no-referrer"
-								/>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="32"
-									height="32"
-									fill="currentColor"
-									class={$isPlaying && index === $trackIndex
-										? 'absolute inset-x-3 inset-y-3 fill-primary-300 opacity-100 motion-safe:animate-pulse'
-										: 'absolute inset-x-3 inset-y-3 opacity-0'}
-									viewBox="0 0 16 16"
-								>
-									<path
-										d="M6 13c0 1.105-1.12 2-2.5 2S1 14.105 1 13c0-1.104 1.12-2 2.5-2s2.5.896 2.5 2zm9-2c0 1.105-1.12 2-2.5 2s-2.5-.895-2.5-2 1.12-2 2.5-2 2.5.895 2.5 2z"
-									/> <path fill-rule="evenodd" d="M14 11V2h1v9h-1zM6 3v10H5V3h1z" />
-									<path d="M5 2.905a1 1 0 0 1 .9-.995l8-.8a1 1 0 0 1 1.1.995V3L5 4V2.905z" />
-								</svg>
-							</div>
-
-							<div class="mx-2 my-auto flex flex-col items-start">
-								<p
-									class={$isPlaying && index === $trackIndex
-										? 'text-truncate-scroll font-gt-walsheim-pro-regular mb-1 text-sm text-primary-300'
-										: 'text-truncate-scroll font-gt-walsheim-pro-regular mb-1 text-sm'}
-								>
-									{item.song}
-								</p>
-								<p class="text-truncate-scroll font-gt-walsheim-pro-thin text-sm">
-									{item.artist}
-								</p>
-							</div>
-						</div>
-					</div> -->
-					<!-- END DEFAULT -->
-
-					<!-- TODO: Use separate data-attributes -->
+				{#each actualQueue as item, index}
 					<div
 						use:draggableSong
 						class="draggable my-2 flex bg-surface-800"
@@ -209,15 +143,35 @@
 						data-cover_art_url={item.cover_art_url}
 						data-duration={item.duration}
 						data-url={item.url}
+						data-now_playing={index === $trackIndex ? true : false}
 					>
 						<div class="relative flex-none">
-							<img src={item.cover_art_url} alt="cover" referrerpolicy="no-referrer" />
+							<img
+								src={item.cover_art_url}
+								alt="cover"
+								referrerpolicy="no-referrer"
+								class={index === $trackIndex ? 'opacity-40' : 'opacity-100'}
+							/>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								viewBox="0 0 24 24"
+								class="absolute inset-x-3 inset-y-3 fill-warning-800 opacity-0 hover:opacity-100"
+							>
+								<g>
+									<path fill="none" d="M0 0h24v24H0z" />
+									<path
+										d="M7 4V2h10v2h5v2h-2v15a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6H2V4h5zM6 6v14h12V6H6zm3 3h2v8H9V9zm4 0h2v8h-2V9z"
+									/>
+								</g>
+							</svg>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								width="32"
 								height="32"
 								fill="currentColor"
-								class="absolute inset-x-3 inset-y-3 opacity-60"
+								class={$isPlaying && index === $trackIndex
+									? 'visible absolute inset-x-3 inset-y-3 fill-primary-300 motion-safe:animate-pulse'
+									: 'invisible absolute inset-x-3 inset-y-3'}
 								viewBox="0 0 16 16"
 							>
 								<path
@@ -235,6 +189,7 @@
 							>
 								{item.song}
 							</p>
+
 							<p class="text-truncate-scroll font-gt-walsheim-pro-thin text-sm">
 								{item.artist}
 							</p>
