@@ -1,4 +1,4 @@
-import { musicQueue } from "$lib/store";
+import { musicQueue } from "$lib/music";
 import { trackIndex } from "svelte-mp3";
 import type { Song } from "$lib/types";
 

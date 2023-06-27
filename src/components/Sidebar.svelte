@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { db } from '$lib/firebase/firebase';
-	import { musicQueue } from '$lib/store';
+	import { musicQueue } from '$lib/music';
 	import { Avatar } from '@skeletonlabs/skeleton';
 	import { collection, onSnapshot } from 'firebase/firestore';
 	import { afterUpdate, getContext, onDestroy } from 'svelte';

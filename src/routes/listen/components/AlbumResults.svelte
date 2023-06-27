@@ -1,82 +1,46 @@
 <script lang="ts">
-	import { musicQueue } from '$lib/store';
-	// import { isPlaying, trackIndex } from 'svelte-mp3';
-	// import type { PopupSettings } from '@skeletonlabs/skeleton';
+	import {
+		currentSongInfo,
+		fetchAlbumDetails,
+		fetchSongAudioUrl,
+		musicQueue,
+		setSongInfoToStore
+	} from '$lib/music';
+	import type { Song } from '$lib/types';
+	import { isPlaying } from 'svelte-mp3';
 	import type { AlbumDetailed } from 'ytmusic-api';
-
-	// const threeDots: PopupSettings = {
-	// 	event: 'click',
-	// 	target: 'threeDotsActions',
-	// 	placement: 'bottom'
-	// };
 
 	export let results: AlbumDetailed[];
 
-	// // Input (261) -> Output (4:20)
-	// function getMinAndSec(seconds: number) {
-	// 	const minutes = Math.floor(seconds / 60);
-	// 	const remainingSeconds = seconds % 60;
-	// 	return minutes + ':' + remainingSeconds.toString().padStart(2, '0');
-	// }
+	async function addAlbumToQueue(
+		albumName: string,
+		albumId: string,
+		albumCover: string,
+		artistName: string,
+		playlistId: string
+	) {
+		let albumTracks = await fetchAlbumDetails(playlistId);
+		let tracks: Song[] = [];
+		console.log(albumTracks);
+		console.log('Adding album to queue please wait...');
+		for (let i = 0; i < albumTracks.length; i++) {
+			setSongInfoToStore(
+				albumTracks[i].videoId,
+				albumTracks[i].title,
+				{ name: albumName, albumId: albumId },
+				artistName,
+				albumCover,
+				albumTracks[i].lengthSeconds
+			);
 
-	// async function setSongInfoToStore(
-	// 	songId: string,
-	// 	songName: string,
-	// 	albumInfo: { name: string; albumId: string },
-	// 	artistName: string,
-	// 	thumbnailUrl: string,
-	// 	duration: number
-	// ) {
-	// 	infoToStore = {
-	// 		id: songId,
-	// 		song: songName,
-	// 		artist: artistName,
-	// 		album: albumInfo,
-	// 		url: '',
-	// 		cover_art_url: thumbnailUrl,
-	// 		duration: getMinAndSec(duration)
-	// 	};
-	// }
+			$currentSongInfo.url = await fetchSongAudioUrl(albumTracks[i].videoId);
+			tracks.push($currentSongInfo);
+			// musicQueue.update((arr) => [...arr, $currentSongInfo]);
+		}
+		musicQueue.update((arr) => arr.concat(tracks));
 
-	// async function fetchSongAudioUrl() {
-	// 	const response = await fetch(`/listen/play/${infoToStore.id}`);
-	// 	const songInfo = await response.json();
-	// 	const audioSrc = songInfo.url;
-	// 	infoToStore.url = audioSrc;
-	// }
-
-	// async function playSong() {
-	// 	await fetchSongAudioUrl();
-	// 	// Replace the current playing song on the queue
-	// 	musicQueue.update((arr) => {
-	// 		return arr.length != 0
-	// 			? arr.map((item, index) => (index === $trackIndex ? infoToStore : item))
-	// 			: [infoToStore, ...arr];
-	// 	});
-
-	// 	isPlaying.set(true);
-	// }
-
-	async function fetchAlbumDetails(playlistId: string) {
-		// Just use Invidious api for playlists - "https://docs.invidious.io/api/#language"
-
-		// Get the Track ID for every track by scraping from an unlisted Youtube playlist
-		let properUrl = `https://y.com.sb/api/v1/playlists/${playlistId}`;
-		let resp = await fetch(properUrl);
-		console.log(await resp.json());
-		// TODO: Implement album queing and playing
+		console.log('Album tracks added to queue');
 	}
-
-	async function addAlbumToQueue(playlistId: string) {
-		// console.log(albumId);
-		// const response = await fetch(`/listen/album/${playlistId}`);
-		// console.log(response);
-		// await fetchSongAudioUrl();
-		// musicQueue.update((arr) => [...arr, infoToStore]);
-		console.log('Adding album to queue');
-	}
-
-	// console.log(results);
 </script>
 
 <div class="flex h-screen flex-wrap justify-evenly">
@@ -108,7 +72,14 @@
 			<div class="absolute left-4 top-6 flex flex-col justify-center gap-4">
 				<button
 					class="variant-soft-secondary btn cursor-pointer bg-gradient-to-br text-lg opacity-0 transition duration-300 ease-in-out group-hover:opacity-100"
-					on:click={() => addAlbumToQueue(albumId)}
+					on:click={() =>
+						addAlbumToQueue(
+							name,
+							albumId,
+							thumbnails[0].url,
+							artists.map((e) => e.name).join(', '),
+							playlistId
+						)}
 				>
 					Add to queue
 				</button>
@@ -128,6 +99,17 @@
 
 				<button
 					class="variant-ghost-primary btn text-lg opacity-0 transition duration-300 ease-in-out hover:scale-105 group-hover:opacity-100"
+					on:click={() => {
+						addAlbumToQueue(
+							name,
+							albumId,
+							thumbnails[0].url,
+							artists.map((e) => e.name).join(', '),
+							playlistId
+						);
+
+						isPlaying.set(true);
+					}}
 				>
 					Play album
 					<svg

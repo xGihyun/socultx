@@ -1,69 +1,28 @@
 <script lang="ts">
-	import { musicQueue } from '$lib/store';
 	import { isPlaying, trackIndex } from 'svelte-mp3';
 	import type { PopupSettings } from '@skeletonlabs/skeleton';
 	import { popup } from '@skeletonlabs/skeleton';
-	import type { Song } from '$lib/types';
-	import type { AlbumBasic, SongDetailed } from 'ytmusic-api';
+	import type { SongDetailed } from 'ytmusic-api';
+	import { fetchSongAudioUrl, getMinAndSec, setSongInfoToStore } from '$lib/music';
+	import { musicQueue, currentSongInfo } from '$lib/music';
 
-	const threeDots: PopupSettings = {
+	export let results: SongDetailed[];
+	const popupConfig: PopupSettings = {
 		event: 'click',
 		target: 'threeDotsActions',
 		placement: 'bottom'
 	};
 
-	export let results: SongDetailed[];
-
-	let infoToStore: Song;
-
-	// Input (261) -> Output (4:20)
-	function getMinAndSec(seconds: number) {
-		const minutes = Math.floor(seconds / 60);
-		const remainingSeconds = seconds % 60;
-		return minutes + ':' + remainingSeconds.toString().padStart(2, '0');
-	}
-
-	async function setSongInfoToStore(
-		songId: string,
-		songName: string,
-		albumInfo: AlbumBasic,
-		artistName: string,
-		thumbnailUrl: string,
-		duration: number
-	) {
-		infoToStore = {
-			id: songId,
-			song: songName,
-			artist: artistName,
-			album: albumInfo,
-			url: '',
-			cover_art_url: thumbnailUrl,
-			duration: getMinAndSec(duration)
-		};
-	}
-
-	async function fetchSongAudioUrl() {
-		const response = await fetch(`/listen/play/${infoToStore.id}`);
-		const songInfo = await response.json();
-		const audioSrc = songInfo.url;
-		infoToStore.url = audioSrc;
-	}
-
 	async function playSong() {
-		await fetchSongAudioUrl();
+		$currentSongInfo.url = await fetchSongAudioUrl($currentSongInfo.id);
 		// Replace the current playing song on the queue
 		musicQueue.update((arr) => {
 			return arr.length != 0
-				? arr.map((item, index) => (index === $trackIndex ? infoToStore : item))
-				: [infoToStore, ...arr];
+				? arr.map((item, index) => (index === $trackIndex ? $currentSongInfo : item))
+				: [$currentSongInfo, ...arr];
 		});
 
 		isPlaying.set(true);
-	}
-
-	async function addSongToQueue() {
-		await fetchSongAudioUrl();
-		musicQueue.update((arr) => [...arr, infoToStore]);
 	}
 </script>
 
@@ -118,8 +77,10 @@
 				<div class="grid h-12 w-6 flex-none grow-0 content-center gap-2 self-center">
 					<button
 						class="justify-self-end"
-						use:popup={threeDots}
+						use:popup={popupConfig}
 						on:click={() => {
+							console.log(thumbnails[0]);
+							console.log(duration);
 							setSongInfoToStore(
 								videoId,
 								name,
@@ -152,14 +113,4 @@
 			</div>
 		</div>
 	{/each}
-</div>
-
-<!-- Popup actions for song -->
-<div class="card shadow-xl" data-popup="threeDotsActions">
-	<div class="btn-group-vertical">
-		<button on:click={addSongToQueue}>Add to queue</button>
-		<button>Go to artist</button>
-		<button>Go to album</button>
-		<div class="arrow bg-surface-100-800-token" />
-	</div>
 </div>

@@ -10,5 +10,3 @@ export const currentUser: Writable<UserData> = writable({
 });
 
 export const allUsers: Writable<any> = writable([]);
-
-export const musicQueue: Writable<Song[]> = writable([]);

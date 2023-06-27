@@ -1,68 +1,12 @@
 <script lang="ts">
-	// import { musicQueue } from '$lib/store';
-	// import { isPlaying, trackIndex } from 'svelte-mp3';
-	import { afterUpdate } from 'svelte';
+	import { afterUpdate, onMount } from 'svelte';
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
 	import SongResults from './components/SongResults.svelte';
 	import AlbumResults from './components/AlbumResults.svelte';
-	// import type { Song } from '$lib/types';
-
+	import { musicQueue, currentSongInfo, fetchSongAudioUrl } from '$lib/music';
 	export let data;
 
 	$: hasResults = data.didUserSearch;
-	// let infoToStore: Song;
-
-	// // Input (261) -> Output (4:20)
-	// function getMinAndSec(seconds: number) {
-	// 	const minutes = Math.floor(seconds / 60);
-	// 	const remainingSeconds = seconds % 60;
-	// 	return minutes + ':' + remainingSeconds.toString().padStart(2, '0');
-	// }
-
-	// async function setSongInfoToStore(
-	// 	songId: string,
-	// 	songName: string,
-	// 	albumInfo: { name: string; albumId: string },
-	// 	artistName: string,
-	// 	thumbnailUrl: string,
-	// 	duration: number
-	// ) {
-	// 	infoToStore = {
-	// 		id: songId,
-	// 		song: songName,
-	// 		artist: artistName,
-	// 		album: albumInfo,
-	// 		url: '',
-	// 		cover_art_url: thumbnailUrl,
-	// 		duration: getMinAndSec(duration)
-	// 	};
-	// }
-
-	// async function fetchSongAudioUrl() {
-	// 	const response = await fetch(`/listen/play/${infoToStore.id}`);
-	// 	const songInfo = await response.json();
-	// 	const audioSrc = songInfo.url;
-	// 	infoToStore.url = audioSrc;
-	// }
-
-	// async function playSong() {
-	// 	await fetchSongAudioUrl();
-	// 	// Replace the current playing song on the queue
-	// 	musicQueue.update((arr) => {
-	// 		return arr.length != 0
-	// 			? arr.map((item, index) => (index === $trackIndex ? infoToStore : item))
-	// 			: [infoToStore, ...arr];
-	// 	});
-
-	// 	// musicQueue.update((arr) => [infoToStore, ...arr]);
-	// 	isPlaying.set(true);
-	// }
-
-	// async function addSongToQueue() {
-	// 	await fetchSongAudioUrl();
-	// 	musicQueue.update((arr) => [...arr, infoToStore]);
-	// }
-
 	afterUpdate(() => {
 		activateTextTruncateScroll();
 		hasResults = false;
@@ -98,3 +42,18 @@
 		{/if}
 	{/key}
 {/if}
+
+<!-- Popup actions for song -->
+<div class="card shadow-xl" data-popup="threeDotsActions">
+	<div class="btn-group-vertical">
+		<button
+			on:click={async () => {
+				$currentSongInfo.url = await fetchSongAudioUrl($currentSongInfo.id);
+				musicQueue.update((arr) => [...arr, $currentSongInfo]);
+			}}>Add to queue</button
+		>
+		<button>Go to artist</button>
+		<button>Go to album</button>
+		<div class="arrow bg-surface-100-800-token" />
+	</div>
+</div>
