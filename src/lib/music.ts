@@ -3,7 +3,8 @@ import type { Song } from "./types";
 import type { AlbumBasic } from "ytmusic-api";
 import { PUBLIC_INVIDIOUS_HOSTNAME } from "$env/static/public";
 export const musicQueue: Writable<Song[]> = writable([]);
-export const currentSongInfo: Writable<Song> = writable()
+export const currentSongInfo: Writable<Song> = writable();
+export const isMusicLoading: Writable<boolean> = writable();
 
 // Input (261) -> Output (4:20)
 export function getMinAndSec(seconds: number) {
@@ -13,9 +14,7 @@ export function getMinAndSec(seconds: number) {
 }
 
 export async function fetchSongAudioUrl(songId: string) {
-    // const response = await fetch(`/listen/play/${songId}`)
-    // const songInfo = await response.json()
-    // return songInfo.url
+
     console.log(songId)
     const response = await fetch(`https://${PUBLIC_INVIDIOUS_HOSTNAME}/api/v1/videos/${songId}?fields=adaptiveFormats`);
     const songInfo = await response.json();

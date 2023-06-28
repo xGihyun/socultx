@@ -3,7 +3,7 @@
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
 	import SongResults from './components/SongResults.svelte';
 	import AlbumResults from './components/AlbumResults.svelte';
-	import { musicQueue, currentSongInfo, fetchSongAudioUrl } from '$lib/music';
+	import { musicQueue, currentSongInfo, fetchSongAudioUrl, isMusicLoading } from '$lib/music';
 	export let data;
 
 	$: hasResults = data.didUserSearch;
@@ -47,13 +47,16 @@
 <div class="card shadow-xl" data-popup="threeDotsActions">
 	<div class="btn-group-vertical">
 		<button
+			disabled={$isMusicLoading}
 			on:click={async () => {
+				isMusicLoading.set(true);
 				$currentSongInfo.url = await fetchSongAudioUrl($currentSongInfo.id);
 				musicQueue.update((arr) => [...arr, $currentSongInfo]);
+				isMusicLoading.set(false);
 			}}>Add to queue</button
 		>
-		<button>Go to artist</button>
-		<button>Go to album</button>
+		<button disabled={$isMusicLoading}>Go to artist</button>
+		<button disabled={$isMusicLoading}>Go to album</button>
 		<div class="arrow bg-surface-100-800-token" />
 	</div>
 </div>
