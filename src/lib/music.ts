@@ -16,7 +16,9 @@ export function getMinAndSec(seconds: number) {
 export async function fetchSongAudioUrl(songId: string) {
 
     console.log(songId)
-    const response = await fetch(`https://${PUBLIC_INVIDIOUS_HOSTNAME}/api/v1/videos/${songId}?fields=adaptiveFormats`);
+    const response = await fetch(`/listen/play/${songId}`)
+    /*
+    const response = await fetch(`https://${PUBLIC_INVIDIOUS_HOSTNAME}/api/v1/videos/${songId}`);
     const songInfo = await response.json();
     // Get best format for audio
     let bestAudioFormat = songInfo.adaptiveFormats.filter(
@@ -34,6 +36,7 @@ export async function fetchSongAudioUrl(songId: string) {
     // // Replace hostname to get actual media link
     audioURL.hostname = PUBLIC_INVIDIOUS_HOSTNAME;
     return audioURL.toString()
+    */
 }
 
 export async function fetchAlbumDetails(playlistId: string) {

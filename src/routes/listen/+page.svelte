@@ -1,19 +1,22 @@
 <script lang="ts">
-	import { afterUpdate, onMount } from 'svelte';
+	import { afterUpdate, hasContext } from 'svelte';
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
 	import SongResults from './components/SongResults.svelte';
 	import AlbumResults from './components/AlbumResults.svelte';
 	import { musicQueue, currentSongInfo, fetchSongAudioUrl, isMusicLoading } from '$lib/music';
+	import Spinner from '../../components/Spinner.svelte';
 	export let data;
 
 	$: hasResults = data.didUserSearch;
+	$: showLoading = hasResults;
+
 	afterUpdate(() => {
 		activateTextTruncateScroll();
 		hasResults = false;
 	});
 </script>
 
-<form action="/listen">
+<form action="/listen" on:submit={() => (showLoading = true)}>
 	<div class="grid w-full grid-cols-1 gap-2 md:grid-cols-2">
 		<label for="q" class="label m-4 text-white">
 			<span>Search</span>
@@ -29,6 +32,12 @@
 		</label>
 	</div>
 </form>
+
+{#if showLoading == true}
+	<div class="flex justify-center p-16 opacity-50">
+		<Spinner />
+	</div>
+{/if}
 
 {#if data.didUserSearch}
 	{#key hasResults}
