@@ -17,7 +17,10 @@
 		if ($isMusicLoading) return;
 
 		isMusicLoading.set(true);
-		$currentSongInfo.url = (await fetchSongAudioUrl($currentSongInfo.id)).url;
+
+		let song = await fetchSongAudioUrl($currentSongInfo.id);
+		$currentSongInfo.url = song.url;
+		$currentSongInfo.lyrics = song.lyrics;
 		// Replace the current playing song on the queue
 		musicQueue.update((arr) => {
 			return arr.length != 0

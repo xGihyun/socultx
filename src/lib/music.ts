@@ -17,6 +17,7 @@ export async function fetchSongAudioUrl(songId: string) {
     console.log(songId)
     const response = await fetch(`/listen/play/${songId}`)
     const songInfo = await response.json()
+    console.log(songInfo)
     return songInfo;
 
     /*

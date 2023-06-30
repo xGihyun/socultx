@@ -3,7 +3,7 @@
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
 	import SongResults from './components/SongResults.svelte';
 	import AlbumResults from './components/AlbumResults.svelte';
-	import { musicQueue, currentSongInfo, fetchSongAudioUrl, isMusicLoading } from '$lib/music';
+	import { musicQueue, currentSongInfo, isMusicLoading } from '$lib/music';
 	import Spinner from '../../components/Spinner.svelte';
 	export let data;
 
@@ -60,7 +60,6 @@
 			disabled={$isMusicLoading}
 			on:click={async () => {
 				isMusicLoading.set(true);
-				// $currentSongInfo.url = (await fetchSongAudioUrl($currentSongInfo.id)).url;
 				musicQueue.update((arr) => [...arr, $currentSongInfo]);
 				isMusicLoading.set(false);
 			}}>Add to queue</button

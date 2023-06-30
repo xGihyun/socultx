@@ -48,6 +48,7 @@ export type Song = {
 	url: string,
 	cover_art_url: string,
 	duration: string,
+	lyrics: string,
 }
 
 export type SpinnerTypes = {

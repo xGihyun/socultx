@@ -14,10 +14,10 @@ export const GET: RequestHandler = async ({ params }) => {
     const url = bestAudioFormat.decipher(ytm.session.player);
 
     // Get song lyrics if possible
-    const lyrics = await ytm.music.getLyrics(songId);
+    const lyrics = await ytm.music.getLyrics(songId).catch(() => console.error(`No lyrics found for - ${songId}`));
 
     return json({
         url: url,
-        info: lyrics?.description
+        lyrics: lyrics?.description.text ?? "No lyrics found T_T"
     })
 };
