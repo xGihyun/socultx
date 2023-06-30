@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { db } from '$lib/firebase/firebase';
-	import { isMusicLoading, musicQueue } from '$lib/music';
+	import { fetchSongAudioUrl, isMusicLoading, musicQueue } from '$lib/music';
 	import { Avatar } from '@skeletonlabs/skeleton';
 	import { collection, onSnapshot } from 'firebase/firestore';
 	import { afterUpdate, getContext, onDestroy } from 'svelte';
@@ -22,6 +22,14 @@
 		if (browser) {
 			// Now add the necessary truncate scroll effect
 			activateTextTruncateScroll();
+		}
+	});
+
+	trackIndex.subscribe(async (latestIndex) => {
+		// If the actual song url is blank, just fetch it
+		if ($isPlaying === true && $musicQueue[latestIndex].url === '') {
+			// actualQueue[$trackIndex].url =
+			$musicQueue[$trackIndex].url = (await fetchSongAudioUrl(actualQueue[latestIndex].id)).url;
 		}
 	});
 
@@ -79,12 +87,14 @@
 		<div class="card overflow-hidden">
 			{#key playerKeyCondition}
 				<div class="m-2.5 flex">
-					<img
-						src={actualQueue[$trackIndex]?.cover_art_url}
-						alt="cover"
-						class="rounded"
-						referrerpolicy="no-referrer"
-					/>
+					<div class="group relative flex-none">
+						<img
+							src={actualQueue[$trackIndex]?.cover_art_url}
+							alt="cover"
+							class="rounded"
+							referrerpolicy="no-referrer"
+						/>
+					</div>
 					<div class="mx-2 my-auto flex flex-col items-start">
 						<p class="text-truncate-scroll font-gt-walsheim-pro-medium">
 							{actualQueue[$trackIndex]?.song}
@@ -146,7 +156,7 @@
 			</div>
 		{:else}
 			<!-- TODO: Removing past items from queue creates bugs, don't let users delete, just let them reorder or play again -->
-			<div use:draggableContainer class="flex-column overflow-auto p-2">
+			<div use:draggableContainer class="flex-column overflow-auto pl-2 pr-2">
 				{#key playerKeyCondition}
 					{#each actualQueue as item, index}
 						<div

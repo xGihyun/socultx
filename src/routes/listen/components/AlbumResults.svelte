@@ -2,14 +2,13 @@
 	import {
 		currentSongInfo,
 		fetchAlbumDetails,
-		fetchSongAudioUrl,
 		isMusicLoading,
 		musicQueue,
 		setSongInfoToStore
 	} from '$lib/music';
 	import type { Song } from '$lib/types';
 	import { isPlaying } from 'svelte-mp3';
-	import type { AlbumDetailed } from 'ytmusic-api';
+	import type { AlbumDetailed } from '$lib/types';
 	import AlbumMarquee from './AlbumMarquee.svelte';
 
 	export let results: AlbumDetailed[];
@@ -38,9 +37,7 @@
 				albumTracks[i].lengthSeconds
 			);
 
-			$currentSongInfo.url = await fetchSongAudioUrl(albumTracks[i].videoId);
 			tracks.push($currentSongInfo);
-			// musicQueue.update((arr) => [...arr, $currentSongInfo]);
 		}
 		musicQueue.update((arr) => arr.concat(tracks));
 
@@ -65,7 +62,7 @@
 						width="160"
 						height="160"
 						class="rounded-lg"
-						src={thumbnails[2].url}
+						src={thumbnails[1].url}
 						alt="cover"
 						referrerpolicy="no-referrer"
 					/>
@@ -82,7 +79,7 @@
 							addAlbumToQueue(
 								name,
 								albumId,
-								thumbnails[0].url,
+								thumbnails[thumbnails.length - 1].url,
 								artists.map((e) => e.name).join(', '),
 								playlistId
 							)}
@@ -109,7 +106,7 @@
 							addAlbumToQueue(
 								name,
 								albumId,
-								thumbnails[0].url,
+								thumbnails[thumbnails.length - 1].url,
 								artists.map((e) => e.name).join(', '),
 								playlistId
 							);

@@ -2,7 +2,7 @@
 	import { isPlaying, trackIndex } from 'svelte-mp3';
 	import type { PopupSettings } from '@skeletonlabs/skeleton';
 	import { popup } from '@skeletonlabs/skeleton';
-	import type { SongDetailed } from 'ytmusic-api';
+	import type { SongDetailed } from '$lib/types';
 	import { fetchSongAudioUrl, getMinAndSec, setSongInfoToStore } from '$lib/music';
 	import { musicQueue, currentSongInfo, isMusicLoading } from '$lib/music';
 
@@ -17,7 +17,7 @@
 		if ($isMusicLoading) return;
 
 		isMusicLoading.set(true);
-		$currentSongInfo.url = await fetchSongAudioUrl($currentSongInfo.id);
+		$currentSongInfo.url = (await fetchSongAudioUrl($currentSongInfo.id)).url;
 		// Replace the current playing song on the queue
 		musicQueue.update((arr) => {
 			return arr.length != 0
@@ -40,7 +40,7 @@
 				<div class="group relative flex-none grow-0">
 					<img
 						class="rounded group-hover:opacity-40"
-						src={thumbnails[0].url}
+						src={thumbnails[thumbnails.length - 1].url}
 						alt="cover"
 						referrerpolicy="no-referrer"
 					/>
@@ -53,8 +53,8 @@
 								name,
 								album,
 								artists.map((e) => e.name).join(', '),
-								thumbnails[0].url,
-								duration
+								thumbnails[thumbnails.length - 1].url,
+								duration.text ?? duration.seconds
 							);
 							playSong();
 						}}
@@ -89,15 +89,15 @@
 						disabled={$isMusicLoading}
 						use:popup={popupConfig}
 						on:click={() => {
-							console.log(thumbnails[0]);
+							console.log(thumbnails[thumbnails.length - 1]);
 							console.log(duration);
 							setSongInfoToStore(
 								videoId,
 								name,
 								album,
 								artists.map((e) => e.name).join(', '),
-								thumbnails[0].url,
-								duration
+								thumbnails[thumbnails.length - 1].url,
+								duration.text ?? duration.seconds
 							);
 							console.log('Done setting info.... now popping up?');
 						}}
@@ -117,7 +117,7 @@
 					</button>
 
 					<span class="justify-self-end font-gt-walsheim-pro-thin text-[12px]">
-						{getMinAndSec(duration)}
+						{duration.text ?? getMinAndSec(duration.seconds)}
 					</span>
 				</div>
 			</div>

@@ -1,34 +1,81 @@
-import type { SongDetailed, AlbumDetailed } from 'ytmusic-api'
+import type { AlbumDetailed, SongDetailed } from '$lib/types';
 import type { PageServerLoad } from './$types';
-import YTMusic from 'ytmusic-api';
+import { Innertube } from 'youtubei.js'
 
 export const load: PageServerLoad = async ({ url }) => {
+    const ytm = await Innertube.create();
     const query = url.searchParams.get('q')
-    const type = url.searchParams.get('type');
+    const categoryType: any = url.searchParams.get('type');
     if (!query) {
         return {
             didUserSearch: false,
             query: null,
+            type: null,
             results: []
         }
     }
 
-    // Use yt-music api
-    const ytmusic = await new YTMusic().initialize();
+    // Use youtubei.js
+    const searchResult = await ytm.music.search(query, { type: categoryType })
+    let results: SongDetailed[] | AlbumDetailed[] = [];
+    if (categoryType == "song") {
 
-    let results: SongDetailed[] | AlbumDetailed[] = []
+        results = searchResult.songs?.contents.map(item => {
 
+            let artists = item.artists?.map(i => ({ name: i.name as string, artistId: i.channel_id as string })) ?? []
 
-    if (type == "song") {
-        results = await ytmusic.searchSongs(query);
-    } else if (type == "album") {
-        results = await ytmusic.searchAlbums(query)
+            return {
+                name: item.title as string,
+                type: "SONG",
+                videoId: item.id as string,
+                artists: artists,
+                album: {
+                    name: item.album?.name as string,
+                    albumId: item.album?.id as string
+                },
+                duration: {
+                    text: item.duration?.text as string,
+                    seconds: item.duration?.seconds as number
+                },
+                thumbnails: item.thumbnails.map(i => ({
+                    url: i.url,
+                    height: i.height,
+                    width: i.width
+                }))
+            }
+        }) ?? []
+
+    } else if (categoryType == "album") {
+        results = searchResult.albums?.contents.map(item => {
+
+            let artists = item.flex_columns[1].title.runs?.filter(i => "endpoint" in i).map(i =>
+            ({
+                name: i.text as string,
+                artistId: i.endpoint.payload.browseId as string,
+            })) ?? []
+
+            let playlistId = item.overlay?.content?.endpoint.payload.playlistId ?? null
+
+            return {
+                year: item.year as string,
+                name: item.title as string,
+                albumId: item.id as string,
+                artists: artists,
+                playlistId: playlistId,
+                thumbnails: item.thumbnails.map(i => ({
+                    url: i.url,
+                    height: i.height,
+                    width: i.width
+                }))
+            }
+        }) ?? []
     }
 
     return {
         didUserSearch: true,
         query: query,
-        type: type,
+        type: categoryType,
         results: results
     }
+
 };

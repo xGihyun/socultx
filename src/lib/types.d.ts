@@ -1,5 +1,5 @@
 import type { Timestamp } from "firebase/firestore";
-import type { AlbumBasic } from "ytmusic-api";
+import type { Thumbnail } from "youtubei.js/dist/src/parser/misc";
 
 export type UserData = {
 	username: string | null;
@@ -67,3 +67,22 @@ export type Circle2Types = {
 	durationInner: string;
 	durationCenter: string;
 } & SpinnerTypes;
+
+export type SongDetailed = {
+	type: string,
+	videoId: string,
+	name: string,
+	artists: { name: string, artistId: string }[],
+	album: { name: string, albumId: string },
+	duration: { text: string, seconds: number },
+	thumbnails: Thumbnail[]
+}
+
+export type AlbumDetailed = {
+	albumId: string,
+	playlistId: string,
+	name: string,
+	artists: { name: string, artistId: string }[],
+	year: string,
+	thumbnails: Thumbnail[]
+}

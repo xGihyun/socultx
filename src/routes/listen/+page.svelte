@@ -14,6 +14,7 @@
 		activateTextTruncateScroll();
 		hasResults = false;
 	});
+	console.log(data);
 </script>
 
 <form action="/listen" on:submit={() => (showLoading = true)}>
@@ -39,7 +40,7 @@
 	</div>
 {/if}
 
-{#if data.didUserSearch}
+{#if data.didUserSearch && showLoading == false}
 	{#key hasResults}
 		<h5 class="h5 m-2 text-white">
 			Search results for: <span class="font-bold">{data?.query}</span>
@@ -59,7 +60,7 @@
 			disabled={$isMusicLoading}
 			on:click={async () => {
 				isMusicLoading.set(true);
-				$currentSongInfo.url = await fetchSongAudioUrl($currentSongInfo.id);
+				// $currentSongInfo.url = (await fetchSongAudioUrl($currentSongInfo.id)).url;
 				musicQueue.update((arr) => [...arr, $currentSongInfo]);
 				isMusicLoading.set(false);
 			}}>Add to queue</button

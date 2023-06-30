@@ -1,10 +1,9 @@
 import { writable, type Writable } from "svelte/store";
 import type { Song } from "./types";
-import type { AlbumBasic } from "ytmusic-api";
-import { PUBLIC_INVIDIOUS_HOSTNAME } from "$env/static/public";
+import { PUBLIC_INVIDIOUS_HOSTNAME } from '$env/static/public'
 export const musicQueue: Writable<Song[]> = writable([]);
 export const currentSongInfo: Writable<Song> = writable();
-export const isMusicLoading: Writable<boolean> = writable();
+export const isMusicLoading: Writable<boolean> = writable(false);
 
 // Input (261) -> Output (4:20)
 export function getMinAndSec(seconds: number) {
@@ -17,6 +16,9 @@ export async function fetchSongAudioUrl(songId: string) {
 
     console.log(songId)
     const response = await fetch(`/listen/play/${songId}`)
+    const songInfo = await response.json()
+    return songInfo;
+
     /*
     const response = await fetch(`https://${PUBLIC_INVIDIOUS_HOSTNAME}/api/v1/videos/${songId}`);
     const songInfo = await response.json();
@@ -52,10 +54,10 @@ export async function fetchAlbumDetails(playlistId: string) {
 export function setSongInfoToStore(
     songId: string,
     songName: string,
-    albumInfo: AlbumBasic,
+    albumInfo: { name: string, albumId: string },
     artistName: string,
     thumbnailUrl: string,
-    duration: number
+    duration: string | number
 ) {
     currentSongInfo.set({
         id: songId,
@@ -64,6 +66,6 @@ export function setSongInfoToStore(
         album: albumInfo,
         url: '',
         cover_art_url: thumbnailUrl,
-        duration: getMinAndSec(duration)
+        duration: duration as string || getMinAndSec(duration as number)
     })
 }
