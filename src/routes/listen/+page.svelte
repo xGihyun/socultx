@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { afterUpdate, hasContext } from 'svelte';
+	import { afterUpdate } from 'svelte';
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
 	import SongResults from './components/SongResults.svelte';
 	import AlbumResults from './components/AlbumResults.svelte';

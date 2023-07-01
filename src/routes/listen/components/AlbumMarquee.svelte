@@ -9,7 +9,7 @@
 	function checkIfTextOverflows() {
 		let parentElement = upperElement.parentElement;
 		if (upperElement.clientWidth > parentElement?.clientWidth) {
-			console.log(upperElement);
+			console.log('Overflowing element: ', upperElement);
 			setTimeout(() => {
 				isUpperMoving = !isUpperMoving;
 			}, 1000);

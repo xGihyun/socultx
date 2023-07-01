@@ -1,4 +1,4 @@
-import { musicQueue } from "$lib/music";
+import { musicQueue, areSongsSelected } from "$lib/music";
 import { trackIndex } from "svelte-mp3";
 import type { Song } from "$lib/types";
 
@@ -11,13 +11,24 @@ export function draggableSong(node: HTMLElement) {
         node.classList.add('dragging')
     })
 
+    node.addEventListener('click', async () => {
+        if (node.getAttribute('selected') == "true") {
+            node.classList.remove('border-error-400', 'rounded', 'border-2')
+            node.removeAttribute('selected')
+            areSongsSelected.set(false)
+        } else {
+            node.classList.add('border-error-400', 'rounded', 'border-2')
+            node.setAttribute('selected', "true");
+            areSongsSelected.set(true)
+        }
+    })
+
     node.addEventListener('dragend', () => {
         node.classList.remove('dragging')
     })
 
     return {
         destroy() {
-
         }
     }
 }
@@ -54,7 +65,8 @@ export function draggableContainer(node: HTMLElement) {
                 album: element.dataset.album,
                 url: element.dataset.url as string,
                 cover_art_url: element.dataset.cover_art_url as string,
-                duration: element.dataset.duration as string
+                duration: element.dataset.duration as string,
+                lyrics: element.dataset.lyrics as string,
             })
         }
 

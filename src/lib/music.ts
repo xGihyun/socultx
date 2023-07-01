@@ -4,6 +4,7 @@ import { PUBLIC_INVIDIOUS_HOSTNAME } from '$env/static/public'
 export const musicQueue: Writable<Song[]> = writable([]);
 export const currentSongInfo: Writable<Song> = writable();
 export const isMusicLoading: Writable<boolean> = writable(false);
+export const areSongsSelected: Writable<boolean> = writable(false);
 
 // Input (261) -> Output (4:20)
 export function getMinAndSec(seconds: number) {
@@ -19,27 +20,6 @@ export async function fetchSongAudioUrl(songId: string) {
     const songInfo = await response.json()
     console.log(songInfo)
     return songInfo;
-
-    /*
-    const response = await fetch(`https://${PUBLIC_INVIDIOUS_HOSTNAME}/api/v1/videos/${songId}`);
-    const songInfo = await response.json();
-    // Get best format for audio
-    let bestAudioFormat = songInfo.adaptiveFormats.filter(
-        (item: { type: string; audioQuality: string; audioSampleRate: number }) => {
-            return (
-                item.type == 'audio/webm; codecs="opus"' &&
-                item.audioQuality == 'AUDIO_QUALITY_MEDIUM' &&
-                item.audioSampleRate == 48000
-            );
-        }
-    );
-    // console.log(bestAudioFormat[0].url)
-    // return bestAudioFormat[0].url
-    const audioURL = new URL(bestAudioFormat[0].url);
-    // // Replace hostname to get actual media link
-    audioURL.hostname = PUBLIC_INVIDIOUS_HOSTNAME;
-    return audioURL.toString()
-    */
 }
 
 export async function fetchAlbumDetails(playlistId: string) {
@@ -67,6 +47,7 @@ export function setSongInfoToStore(
         album: albumInfo,
         url: '',
         cover_art_url: thumbnailUrl,
-        duration: duration as string || getMinAndSec(duration as number)
+        duration: duration as string || getMinAndSec(duration as number),
+        lyrics: ''
     })
 }

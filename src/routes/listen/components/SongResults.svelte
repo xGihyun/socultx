@@ -80,8 +80,8 @@
 				<div class="ml-4 mr-4 grow self-center">
 					<div class="flex flex-col items-start">
 						<p class="text-truncate-scroll font-gt-walsheim-pro-medium">{name}</p>
-						<p class="text-truncate-scroll font-gt-walsheim-pro-light">
-							{artists.map((e) => e.name).join(', ')}
+						<p class="text-truncate-scroll font-gt-walsheim-pro-thin">
+							{artists.map((e) => e.name).join(', ')} • {album.name}
 						</p>
 					</div>
 				</div>
@@ -92,8 +92,6 @@
 						disabled={$isMusicLoading}
 						use:popup={popupConfig}
 						on:click={() => {
-							console.log(thumbnails[thumbnails.length - 1]);
-							console.log(duration);
 							setSongInfoToStore(
 								videoId,
 								name,
