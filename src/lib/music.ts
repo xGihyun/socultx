@@ -51,6 +51,6 @@ export function setSongInfoToStore(
         url: '',
         cover_art_url: thumbnailUrl,
         duration: duration as string || getMinAndSec(duration as number),
-        lyrics: ''
+        lyrics: '',
     })
 }

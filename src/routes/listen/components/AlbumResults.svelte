@@ -2,6 +2,7 @@
 	import {
 		currentSongInfo,
 		fetchAlbumDetails,
+		fetchSongAudioUrl,
 		isMusicLoading,
 		musicQueue,
 		setSongInfoToStore
@@ -36,6 +37,10 @@
 				albumCover,
 				albumTracks[i].lengthSeconds
 			);
+
+			let song = await fetchSongAudioUrl($currentSongInfo.id);
+			$currentSongInfo.url = song.url;
+			$currentSongInfo.lyrics = song.lyrics;
 
 			tracks.push($currentSongInfo);
 		}

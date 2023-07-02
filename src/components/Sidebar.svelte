@@ -10,8 +10,6 @@
 	import Spinner from './Spinner.svelte';
 	import type { UserData } from '$lib/types';
 	import Queue from './Queue.svelte';
-	// import { activateTextTruncateScroll } from 'text-truncate-scroll';
-	// import { draggableSong, draggableContainer } from '$lib/dnd';
 	import type { Writable } from 'svelte/store';
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
 
