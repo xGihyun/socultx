@@ -152,17 +152,51 @@
 			{#if $musicQueue.length >= 2}
 				<div class="flex items-center justify-between pt-2">
 					<p class="ml-2">Next from queue</p>
-					<!-- <button class="rounded-md bg-error-400 p-2">Remove</button> -->
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						viewBox="0 0 24 24"
 						height="24"
 						width="24"
-						class={$areSongsSelected
+						class={$areSongsSelected.state
 							? 'visible mr-2 cursor-pointer fill-surface-600 transition-colors duration-300 hover:scale-105 hover:fill-error-400'
 							: 'invisible'}
-						on:click={() => {}}
+						on:click={() => {
+							// Get selected items from queue then remove one by one
+
+							// $areSongsSelected.selectedIndexes.forEach((index) => {
+							// 	musicQueue.update((currentQueue) => {
+							// 		currentQueue.splice(index, 1);
+							// 		if ($trackIndex > index) $trackIndex--;
+							// 		return currentQueue;
+							// 	});
+							// });
+
+							// Use reverse for loop
+							for (let index = $areSongsSelected.selectedIndexes.length - 1; index >= 0; index--) {
+								musicQueue.update((currentQueue) => {
+									currentQueue.splice($areSongsSelected.selectedIndexes[index], 1);
+									if ($trackIndex > $areSongsSelected.selectedIndexes[index]) $trackIndex--;
+									return currentQueue;
+								});
+							}
+
+							// musicQueue.update((currentQueue) => {
+							// 	console.log('Current queue (old) is: ', currentQueue);
+
+							// 	let newQueue = currentQueue.filter(
+							// 		(_, index) => !$areSongsSelected.selectedIndexes.includes(index)
+							// 	);
+
+							// 	console.log('Current queue (new) is: ', newQueue);
+							// 	return newQueue;
+							// });
+
+							// Hide icon
+							// $areSongsSelected.state = false;
+							// $areSongsSelected.
+							areSongsSelected.set({ state: false, selectedIndexes: [] });
+						}}
 					>
 						<g>
 							<path fill="none" d="M0 0h24v24H0z" />

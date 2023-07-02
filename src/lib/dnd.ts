@@ -1,8 +1,9 @@
 import { musicQueue, areSongsSelected } from "$lib/music";
 import { trackIndex } from "svelte-mp3";
 import type { Song } from "$lib/types";
+import { get } from "svelte/store";
 
-export function draggableSong(node: HTMLElement) {
+export function draggableSong(node: HTMLElement, indexOfElement: number) {
 
     node.draggable = true;
     node.style.cursor = 'move';
@@ -11,20 +12,43 @@ export function draggableSong(node: HTMLElement) {
         node.classList.add('dragging')
     })
 
-    node.addEventListener('click', async () => {
+    node.addEventListener('click', () => {
         if (node.getAttribute('selected') == "true") {
-            node.classList.remove('border-error-400', 'rounded', 'border-2')
-            node.removeAttribute('selected')
-            areSongsSelected.set(false)
+            let selectedElements = node.parentElement?.querySelectorAll("[selected='true']");
+            selectedElements?.forEach((item) => {
+                item.classList.remove('border-error-400', 'rounded', 'border-2');
+                item.setAttribute('selected', 'false')
+            })
+
+            areSongsSelected.set({ state: false, selectedIndexes: [] })
+
+
+            console.log("reset selected items: ", get(areSongsSelected))
+
         } else {
             node.classList.add('border-error-400', 'rounded', 'border-2')
             node.setAttribute('selected', "true");
-            areSongsSelected.set(true)
+            areSongsSelected.update((current) => ({
+                state: true, selectedIndexes: [...current.selectedIndexes, indexOfElement]
+            }))
+            console.log(get(areSongsSelected))
         }
     })
 
     node.addEventListener('dragend', () => {
         node.classList.remove('dragging')
+
+        // Reset selected items just in case
+
+        let selectedElements = node.parentElement?.querySelectorAll("[selected='true']");
+        selectedElements?.forEach((item) => {
+            item.classList.remove('border-error-400', 'rounded', 'border-2');
+            item.setAttribute('selected', 'false')
+        })
+
+        areSongsSelected.set({ state: false, selectedIndexes: [] })
+        console.log("reset selected items (cause of dragging): ", get(areSongsSelected))
+
     })
 
     return {

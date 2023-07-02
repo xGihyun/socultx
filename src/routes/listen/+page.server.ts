@@ -1,9 +1,15 @@
 import type { AlbumDetailed, SongDetailed } from '$lib/types';
 import type { PageServerLoad } from './$types';
-import { Innertube } from 'youtubei.js'
+import { ytm } from '$lib/music';
+import { Innertube } from 'youtubei.js';
 
 export const load: PageServerLoad = async ({ url }) => {
-    const ytm = await Innertube.create();
+    // const ytm = await Innertube.create();
+    if (ytm.get() == null) {
+        ytm.set(await Innertube.create());
+        console.log("Initializing innertube api...")
+    }
+
     const query = url.searchParams.get('q')
     const categoryType: any = url.searchParams.get('type');
     if (!query) {
@@ -16,11 +22,11 @@ export const load: PageServerLoad = async ({ url }) => {
     }
 
     // Use youtubei.js
-    const searchResult = await ytm.music.search(query, { type: categoryType })
+    const searchResult = await (ytm.get())?.music.search(query, { type: categoryType })
     let results: SongDetailed[] | AlbumDetailed[] = [];
     if (categoryType == "song") {
 
-        results = searchResult.songs?.contents.map(item => {
+        results = searchResult?.songs?.contents.map(item => {
 
             let artists = item.artists?.map(i => ({ name: i.name as string, artistId: i.channel_id as string })) ?? []
 
@@ -46,7 +52,7 @@ export const load: PageServerLoad = async ({ url }) => {
         }) ?? []
 
     } else if (categoryType == "album") {
-        results = searchResult.albums?.contents.map(item => {
+        results = searchResult?.albums?.contents.map(item => {
 
             let artists = item.flex_columns[1].title.runs?.filter(i => "endpoint" in i).map(i =>
             ({

@@ -1,10 +1,13 @@
 import { writable, type Writable } from "svelte/store";
 import type { Song } from "./types";
 import { PUBLIC_INVIDIOUS_HOSTNAME } from '$env/static/public'
+import type Innertube from "youtubei.js";
+import { store, type Store } from "./store";
 export const musicQueue: Writable<Song[]> = writable([]);
 export const currentSongInfo: Writable<Song> = writable();
 export const isMusicLoading: Writable<boolean> = writable(false);
-export const areSongsSelected: Writable<boolean> = writable(false);
+export const areSongsSelected: Writable<{ state: boolean, selectedIndexes: Array<number> }> = writable({ state: false, selectedIndexes: [] });
+export const ytm: Store<Innertube | null> = store(null);
 
 // Input (261) -> Output (4:20)
 export function getMinAndSec(seconds: number) {

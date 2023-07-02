@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { googleAuthPopup } from '$lib/firebase/auth';
 	import { currentUser } from '$lib/store';
-	import { getContext } from 'svelte';
+	import { getContext, onMount } from 'svelte';
 	import { google } from '../assets/images';
 	import type { UserData } from '$lib/types';
 	import type { Writable } from 'svelte/store';

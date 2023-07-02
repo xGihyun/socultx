@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { draggableContainer, draggableSong } from '$lib/dnd';
-	import { fetchSongAudioUrl, musicQueue } from '$lib/music';
+	import { areSongsSelected, fetchSongAudioUrl, musicQueue } from '$lib/music';
 	import { afterUpdate } from 'svelte';
 	import { trackIndex, isPlaying } from 'svelte-mp3';
 	import { fly } from 'svelte/transition';
@@ -27,13 +27,13 @@
 		}
 	});
 
-	function removeItemFromQueue(itemIndex: number) {
-		musicQueue.update((currentQueue) => {
-			currentQueue.splice(itemIndex, 1);
-			if ($trackIndex > itemIndex) $trackIndex--;
-			return currentQueue;
-		});
-	}
+	// function removeItemFromQueue(itemIndex: number) {
+	// 	musicQueue.update((currentQueue) => {
+	// 		currentQueue.splice(itemIndex, 1);
+	// 		if ($trackIndex > itemIndex) $trackIndex--;
+	// 		return currentQueue;
+	// 	});
+	// }
 
 	afterUpdate(() => {
 		playerKeyCondition = !playerKeyCondition;
@@ -104,7 +104,7 @@
 			{:else}
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<div
-					use:draggableSong
+					use:draggableSong={index}
 					class="draggable my-2 flex bg-surface-800"
 					data-id={item.id}
 					data-song={item.song}
@@ -122,22 +122,23 @@
 							referrerpolicy="no-referrer"
 							class="group-hover:opacity-40"
 						/>
-						<!-- svelte-ignore a11y-click-events-have-key-events -->
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							viewBox="0 0 24 24"
-							height="32"
-							width="32"
-							class="absolute inset-x-3 inset-y-3 cursor-pointer fill-error-400 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-							on:click={() => removeItemFromQueue(index)}
+						<button
+							class="absolute inset-x-4 inset-y-3 outline-none"
+							on:click|stopPropagation={() => trackIndex.set(index)}
 						>
-							<g>
-								<path fill="none" d="M0 0h24v24H0z" />
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="32"
+								height="32"
+								fill="currentColor"
+								class="bi bi-play cursor-pointer opacity-0 transition duration-300 ease-in-out hover:scale-150 group-hover:opacity-100"
+								viewBox="0 0 16 16"
+							>
 								<path
-									d="M7 4V2h10v2h5v2h-2v15a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6H2V4h5zM6 6v14h12V6H6zm3 3h2v8H9V9zm4 0h2v8h-2V9z"
+									d="M10.804 8 5 4.633v6.734L10.804 8zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696l6.363 3.692z"
 								/>
-							</g>
-						</svg>
+							</svg>
+						</button>
 					</div>
 
 					<div class="mx-2 my-auto flex flex-col items-start">
