@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Avatar } from '@skeletonlabs/skeleton';
-	import { auth } from '$lib/firebase/firebase';
+	import { auth } from '$lib/client/firebase';
 	import { signOut } from 'firebase/auth';
 
 	export let picture: string | undefined;

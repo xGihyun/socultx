@@ -20,7 +20,7 @@
 	import Sidebar from '../components/Sidebar.svelte';
 	// import type { UserData } from '$lib/types';
 	// import type { Writable } from 'svelte/store';
-	import { auth, rtdb } from '$lib/firebase/firebase';
+	import { auth, rtdb } from '$lib/client/firebase';
 	import {
 		ref,
 		onValue,
@@ -33,7 +33,7 @@
 	} from 'firebase/database';
 	import { afterNavigate } from '$app/navigation';
 	// import { getAuth, type Unsubscribe } from 'firebase/auth';
-	import { setCookie } from '$lib/cookie';
+	// import { setCookie } from '$lib/cookie';
 
 	export let data;
 

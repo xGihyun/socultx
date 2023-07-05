@@ -1,8 +1,4 @@
-// import { auth, db } from '$lib/firebase/firebase';
-// import { collection, doc, getDocs, setDoc, type DocumentData } from 'firebase/firestore';
 import type { LayoutServerLoad } from './$types';
-// import { rtdb } from '$lib/firebase/firebase';
-// import { ref, onValue, push, onDisconnect, set, serverTimestamp } from 'firebase/database'
 
 export const load: LayoutServerLoad = async ({ locals }) => {
 	// if (!locals.userStuff) {

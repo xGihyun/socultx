@@ -15,7 +15,7 @@
 		endBefore,
 		type DocumentData
 	} from 'firebase/firestore';
-	import { db } from '$lib/firebase/firebase';
+	import { db } from '$lib/client/firebase';
 	import { afterNavigate } from '$app/navigation';
 	import type { Writable } from 'svelte/store';
 

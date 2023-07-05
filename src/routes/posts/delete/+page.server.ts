@@ -1,4 +1,4 @@
-import { db } from '$lib/firebase/firebase';
+import { db } from '$lib/client/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import type { Actions } from './$types';
 

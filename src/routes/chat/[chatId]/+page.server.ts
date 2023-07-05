@@ -1,4 +1,4 @@
-import { db } from '$lib/firebase/firebase';
+import { db } from '$lib/client/firebase';
 import {
 	Timestamp,
 	addDoc,

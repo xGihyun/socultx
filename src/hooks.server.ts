@@ -1,9 +1,5 @@
-
-// import { browser } from '$app/environment';
-// import { db } from '$lib/firebase/firebase';
 import { redirect } from '@sveltejs/kit';
 import cookie from 'cookie'
-// import { doc, setDoc } from 'firebase/firestore';
 import type { Handle } from '@sveltejs/kit';
 import { decodeToken } from '$lib/server/firebase-admin';
 import type { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';

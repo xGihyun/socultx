@@ -1,56 +1,71 @@
 <script lang="ts">
-	// import { googleAuthPopup } from '$lib/firebase/auth';
-	// import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 	import { google } from '../assets/images';
-	// import { auth } from '$lib/firebase/firebase';
-	import { enhance } from '$app/forms';
-	import { googleAuthPopup } from '$lib/firebase/auth';
-	// import { redirect } from '@sveltejs/kit';
-	// import { goto } from '$app/navigation';
-	export let message: string | undefined;
+	import { ensureUserExists, googleLoginPopup, login, register } from '$lib/client/auth';
+	import { deserialize } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
+
+	let message: string | undefined;
 	let isUserOnRegister = false;
 	let email = '';
 	let password = '';
 	let confirmPassword = '';
 
-	// async function handleSubmit() {
-	// 	console.log('I believe theres a cookie now?');
-	// 	// This if condition will validite the values of all variables included
-	// 	if (!email || !password || (isUserOnRegister && !confirmPassword)) {
-	// 		return;
-	// 	}
+	async function handleSubmit(this: HTMLFormElement) {
+		const formData = new FormData(this);
+		if (isUserOnRegister) {
+			// Register
+			const result = await register(email, password, confirmPassword);
+			if (result.type === 'failure') {
+				message = result.data?.message;
+				return;
+			}
 
-	// 	// This means the user is trying to register
-	// 	if (isUserOnRegister && password === confirmPassword) {
-	// 		try {
-	// 			await createUserWithEmailAndPassword(auth, email, password);
-	// 			console.log('Successfully created new user -> ', email);
-	// 		} catch (err: any) {
-	// 			alert(err.message);
-	// 			console.error(err);
-	// 			goto('/', { invalidateAll: true });
-	// 		}
-	// 	} else {
-	// 		// Else the user is trying to log in
-	// 		try {
-	// 			await signInWithEmailAndPassword(auth, email, password);
-	// 			console.log('Successfully logged in -> ', email);
-	// 		} catch (err: any) {
-	// 			alert(err.message);
-	// 			console.error(err);
-	// 			goto('/', { invalidateAll: true });
-	// 		}
-	// 	}
-	// }
+			let userToken = await result.data.credential?.user.getIdToken();
+			formData.set('userToken', userToken as string);
+
+			const response = await fetch(this.action, {
+				method: 'POST',
+				body: formData
+			});
+
+			const responseResult = deserialize(await response.text());
+
+			if (responseResult.type === 'success') {
+				await invalidateAll();
+			}
+		} else {
+			// Login
+			const result = await login(email, password);
+
+			if (result.type === 'failure') {
+				message = result.data?.message;
+				return;
+			}
+
+			let userToken = await result.data.credential?.user.getIdToken();
+			formData.set('userToken', userToken as string);
+
+			const response = await fetch(this.action, {
+				method: 'POST',
+				body: formData
+			});
+
+			const responseResult = deserialize(await response.text());
+
+			if (responseResult.type === 'success') {
+				await invalidateAll();
+			}
+		}
+	}
 </script>
 
 <!-- Email + Password sign in/log in -->
-<div class="card flex flex-col gap-4 rounded-md p-4">
+<div class="card flex w-80 flex-col gap-4 rounded-md p-4">
 	<form
 		class="contents"
 		method="post"
 		action={isUserOnRegister ? '?/register' : '?/login'}
-		use:enhance
+		on:submit|preventDefault={handleSubmit}
 	>
 		<h1
 			class={isUserOnRegister
@@ -61,7 +76,15 @@
 		</h1>
 		<hr />
 		{#if message}
-			<p class="font-gt-walsheim-pro-medium text-error-300">{message}</p>
+			<div>
+				<p class="font-gt-walsheim-pro-medium text-error-300">{message}</p>
+				{#if message === 'Password requirements not met!'}
+					<ul class="list-inside list-disc font-gt-walsheim-pro-light text-sm">
+						<li><span>Minimum of 8 characters </span></li>
+						<li>At least 1 lowercase, uppercase, and special character</li>
+					</ul>
+				{/if}
+			</div>
 		{/if}
 		<div>
 			<label class="label mb-4">
@@ -107,8 +130,13 @@
 					class={isUserOnRegister
 						? 'btn m-0 p-0 font-gt-walsheim-pro-medium text-primary-200 outline-none'
 						: 'btn m-0 p-0 font-gt-walsheim-pro-medium text-warning-200 outline-none'}
-					on:click={() => (isUserOnRegister = !isUserOnRegister)}
-					>{isUserOnRegister ? 'Log In' : 'Sign Up'}</button
+					on:click={() => {
+						email = '';
+						password = '';
+						confirmPassword = '';
+						message = undefined;
+						isUserOnRegister = !isUserOnRegister;
+					}}>{isUserOnRegister ? 'Log In' : 'Sign Up'}</button
 				></span
 			>
 		</div>
@@ -117,7 +145,7 @@
 	<hr />
 	<button
 		class="flex select-none items-center gap-4 rounded-lg border-[1px] border-white p-2"
-		on:click={googleAuthPopup}
+		on:click={googleLoginPopup}
 	>
 		<img src={google} alt="google" class="aspect-square w-8" />
 		<span class="text-xl">Continue with Google</span>

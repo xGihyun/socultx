@@ -5,7 +5,7 @@ export type UserData = {
 	username: string | null;
 	email: string | null;
 	photo_url: string | null;
-	is_logged_in: boolean;
+	// is_logged_in: boolean;
 	uid: string | null;
 };
 

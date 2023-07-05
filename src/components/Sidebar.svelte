@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { db } from '$lib/firebase/firebase';
+	import { db } from '$lib/client/firebase';
 	import { isMusicLoading, musicQueue, areSongsSelected } from '$lib/music';
 	import { Avatar } from '@skeletonlabs/skeleton';
 	import { collection, onSnapshot } from 'firebase/firestore';
