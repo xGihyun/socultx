@@ -5,7 +5,6 @@ export const currentUser: Writable<UserData> = writable({
 	email: '',
 	username: '',
 	uid: '',
-	is_logged_in: false,
 	photo_url: ''
 });
 

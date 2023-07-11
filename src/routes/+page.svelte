@@ -1,20 +1,60 @@
 <script lang="ts">
+	// import { toastStore, type ToastSettings } from '@skeletonlabs/skeleton';
+	// import type { DocumentData } from 'firebase/firestore';
+	// import { Avatar } from '@skeletonlabs/skeleton';
 	import Auth from '../components/Auth.svelte';
-	import type { ActionData } from './$types.js';
 
-	export let data;
-
-	// export let form: ActionData;
-
+	// export let data;
+	// export let form;
+	let form = false;
 	// console.log(form);
+	export let data;
+	// let { supabase } = data;
+	$: ({ supabase, session } = data);
+
+	// $: searchResults = form?.results as DocumentData[];
 </script>
 
-{#if data.user}
-	<div class="flex h-full flex-col items-center justify-center">
-		<!-- <p class="mb-10 text-5xl">Hello, {$userContext.username}</p> -->
-		<p class="mb-10 text-5xl">Hello, {data.user.name}</p>
-		<a class="variant-filled-secondary p-2" type="button" href="/profile">Go to profile</a>
-	</div>
+{#if session}
+	{#if form}
+		<!-- If user searches from the navbar -->
+		<div class="items-left mx-4 flex h-full w-80 flex-col justify-start">
+			<div class="my-4 text-2xl">People</div>
+			<!-- {#each searchResults as item}
+				<div class="variant-glass-surface my-2 rounded-md p-2">
+					<div class="flex h-16 gap-2">
+						<a href={`/profile/${item.uid}`}>
+							<Avatar src={item.photo_url} width="w-16" referrerpolicy="no-referrer" />
+						</a>
+						<div class="my-2 flex flex-grow flex-col">
+							<a href={`/profile/${item.uid}`} class="w-fit">
+								<span class="text-lg">{item.username}</span>
+							</a>
+							<span class="font-gt-walsheim-pro-thin">{item.bio || ''}</span>
+						</div>
+						<div class="m-auto">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								class="mr-2 h-6 w-6 fill-secondary-600"
+								height="1em"
+								viewBox="0 0 640 512"
+							>
+								<path
+									d="M96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM0 482.3C0 383.8 79.8 304 178.3 304h91.4C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3zM504 312V248H440c-13.3 0-24-10.7-24-24s10.7-24 24-24h64V136c0-13.3 10.7-24 24-24s24 10.7 24 24v64h64c13.3 0 24 10.7 24 24s-10.7 24-24 24H552v64c0 13.3-10.7 24-24 24s-24-10.7-24-24z"
+								/></svg
+							>
+						</div>
+					</div>
+				</div>
+			{/each} -->
+		</div>
+	{:else}
+		<!-- Dashboard? -->
+		<div class="flex h-full flex-col items-center justify-center">
+			<p class="mb-10 text-5xl">Hello, {session.user.user_metadata.username}</p>
+			<a class="variant-filled-secondary p-2" type="button" href="/profile">Go to profile</a>
+		</div>
+	{/if}
 {:else}
 	<div class="flex h-full flex-row items-center justify-around">
 		<div>
@@ -25,6 +65,6 @@
 			</h1>
 			<span>Social Media + Ultimate</span>
 		</div>
-		<Auth />
+		<Auth sb={supabase} />
 	</div>
 {/if}

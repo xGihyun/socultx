@@ -1,6 +1,8 @@
+// import { currentUser } from '$lib/store';
+// import { get } from 'svelte/store';
 import type { LayoutServerLoad } from './$types';
 
-export const load: LayoutServerLoad = async ({ locals }) => {
+export const load: LayoutServerLoad = async ({ locals: { getSession } }) => {
 	// if (!locals.userStuff) {
 	// 	return;
 	// }
@@ -33,6 +35,14 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 	// 	user: locals.userStuff
 	// };
 
-	const user = locals.user;
-	return { user }
+	// const user = locals.user;
+	// return { user }
+
+	// return {
+	// 	session: locals.session
+	// }
+
+	return {
+		session: await getSession()
+	}
 };

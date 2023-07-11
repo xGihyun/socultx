@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { db } from '$lib/client/firebase';
+	// import { db } from '$lib/client/firebase';
 	import { isMusicLoading, musicQueue, areSongsSelected } from '$lib/music';
-	import { Avatar } from '@skeletonlabs/skeleton';
-	import { collection, onSnapshot } from 'firebase/firestore';
+	// import { Avatar } from '@skeletonlabs/skeleton';
+	// import { collection, onSnapshot } from 'firebase/firestore';
 	import { afterUpdate, getContext, onDestroy } from 'svelte';
 	import { AudioPlayer, trackIndex } from 'svelte-mp3';
 	import { browser } from '$app/environment';
@@ -17,7 +17,7 @@
 	$: showLyrics = false;
 	$: nowPlayingKey = false;
 
-	// Whenever the user clicks on any of the tabs, grab the latest context
+	// Whenever the user clicks on any of the tabs, return a different classname
 	$: sidebarTabLogic = (clickedButtonName: string) => {
 		if (currentTab === clickedButtonName) {
 			return '!bg-primary-500 rounded-md p-2';
@@ -25,12 +25,12 @@
 		return 'p-2';
 	};
 
-	const users = getContext<Writable<UserData[]>>('users');
+	// const users = getContext<Writable<UserData[]>>('users');
 
-	const usersCollection = collection(db, 'users');
-	const unsubUsers = onSnapshot(usersCollection, (snapshot) => {
-		$users = snapshot.docs.map((doc) => doc.data() as UserData);
-	});
+	// const usersCollection = collection(db, 'users');
+	// const unsubUsers = onSnapshot(usersCollection, (snapshot) => {
+	// 	$users = snapshot.docs.map((doc) => doc.data() as UserData);
+	// });
 
 	afterUpdate(() => {
 		nowPlayingKey = !nowPlayingKey;
@@ -39,10 +39,12 @@
 		}
 	});
 
-	onDestroy(() => unsubUsers());
+	// onDestroy(() => unsubUsers());
 </script>
 
-<ul class="list flex w-72 flex-col gap-2 overflow-y-auto px-5 py-8">
+<ul
+	class="list flex w-72 flex-col gap-2 overflow-y-auto border-l-[1px] border-neutral-800 px-5 py-8"
+>
 	<li>
 		<button class={sidebarTabLogic('Friends')} on:click={() => (currentTab = 'Friends')}
 			>Friends</button
@@ -117,7 +119,8 @@
 	</div>
 
 	{#if currentTab === 'Friends'}
-		{#each $users as user, idx (idx)}
+		<!-- FRIENDS LIST -->
+		<!-- {#each $users as user, idx (idx)}
 			<a
 				href={`/chat/${user.uid}`}
 				class="rounded-md p-2 transition-colors duration-200 hover:bg-secondary-900 hover:bg-opacity-40"
@@ -138,7 +141,7 @@
 					</div>
 				</li>
 			</a>
-		{/each}
+		{/each} -->
 	{:else if currentTab === 'Activity'}
 		{#if showLyrics}
 			<div class="flex-column mb-4 mt-4 overflow-auto pl-2 pr-2" in:fly={{ y: -20, duration: 400 }}>
