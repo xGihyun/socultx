@@ -28,48 +28,24 @@
 		const {
 			data: { subscription }
 		} = supabase.auth.onAuthStateChange((event, _session) => {
-			console.log('This is inside the onAuthStateChange: ', _session);
+			console.log('This is `_session` inside the onAuthStateChange: ', _session);
 
 			// Means the user is logged in check console
 			if (_session) {
 				// Channel for online users
 				const specifiedChannel = supabase.channel('users');
 
-				specifiedChannel
-					.on('presence', { event: 'sync' }, () => {
-						// Sync event gives you all of the people in the room
-						const newState = specifiedChannel.presenceState();
-						console.log('sync', newState);
-					})
-					.on('presence', { event: 'leave' }, async ({ key, leftPresences }) => {
-						console.log('leave', key, leftPresences);
-
-						await fetch('/status', {
-							method: 'POST',
-							body: JSON.stringify({
-								state: 'offline',
-								uid: _session.user.id
-							})
+				// Join the channel
+				specifiedChannel.subscribe(async (status) => {
+					if (status === 'SUBSCRIBED') {
+						const presenceTrackStatus = await specifiedChannel.track({
+							uid: _session?.user.id
 						});
-					})
-					.on('presence', { event: 'join' }, async ({ key, newPresences }) => {
-						console.log('join', key, newPresences);
-						await fetch('/status', {
-							method: 'POST',
-							body: JSON.stringify({
-								state: 'online',
-								uid: _session.user.id
-							})
-						});
-					})
-					.subscribe(async (status) => {
-						if (status === 'SUBSCRIBED') {
-							const presenceTrackStatus = await specifiedChannel.track({
-								uid: _session.user.id
-							});
-							console.log(presenceTrackStatus);
-						}
-					});
+						console.log(presenceTrackStatus);
+					} else {
+						console.log(status);
+					}
+				});
 			}
 			if (_session?.expires_at !== session?.expires_at) {
 				invalidate('supabase:auth');

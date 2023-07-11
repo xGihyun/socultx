@@ -1,4 +1,5 @@
-import { type Readable, type Writable, writable } from 'svelte/store';
+import { type Writable, writable } from 'svelte/store';
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import type { UserData } from './types';
 
 export const currentUser: Writable<UserData> = writable({
@@ -9,7 +10,6 @@ export const currentUser: Writable<UserData> = writable({
 });
 
 export const allUsers: Writable<any> = writable([]);
-
 
 // Better writable with `.get()` method just copied it here - https://github.com/sveltejs/svelte/issues/2060
 export type Store<T> = Writable<T> & { get(): T };
@@ -27,3 +27,6 @@ export function store<T>(value: T): Store<T> {
 	}
 	return { set, update, subscribe: originalWritable.subscribe, get }
 }
+
+
+export const watcher: Store<RealtimeChannel | null> = store(null);

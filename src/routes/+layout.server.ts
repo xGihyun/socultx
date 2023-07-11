@@ -1,46 +1,43 @@
-// import { currentUser } from '$lib/store';
-// import { get } from 'svelte/store';
+import { watcher } from '$lib/store';
 import type { LayoutServerLoad } from './$types';
 
-export const load: LayoutServerLoad = async ({ locals: { getSession } }) => {
-	// if (!locals.userStuff) {
-	// 	return;
-	// }
+export const load: LayoutServerLoad = async ({ locals: { getSession, supabase } }) => {
 
-	// // Get all of the documents
-	// const usersCollection = collection(db, 'users');
-	// const usersDocs = await getDocs(usersCollection);
+	if (watcher.get() == null) {
+		// Starting watcher
+		console.log("Starting User Presence Watcher!");
+		// Assign a value to the 'store' wherein the RealtimeChannel is 'users'
+		watcher.set(supabase.channel('users'));
 
-	// /** @type {import('$lib/types').UserData[]} */
-	// let docData: DocumentData[] = [];
-
-	// usersDocs.forEach((doc) => {
-	// 	docData.push(/** @type {import('$lib/types').UserData} */(doc.data()));
-	// });
-
-
-
-	// /**
-	//  * @type {{ id: string; user: { uid: string | null; }; }[]}
-	//  */
-	// let userInbox = [];
-
-	// const userInboxCollection = collection(db, `users/${locals.userStuff.uid}/inbox`);
-	// const userInboxDocs = await getDocs(userInboxCollection);
-
-	// TODO: The inbox / list of users you've talked too
-
-	// return {
-	// 	users: docData,
-	// 	user: locals.userStuff
-	// };
-
-	// const user = locals.user;
-	// return { user }
-
-	// return {
-	// 	session: locals.session
-	// }
+		// Set listener if the user leaves or joins the channel
+		(watcher.get())
+			// ?.on('presence', { event: 'sync' }, () => {
+			// 	const newState = (watcher.get())?.presenceState()
+			// 	console.log('Syncing -> ', newState)
+			// })
+			?.on('presence', { event: 'leave' }, async ({ leftPresences }) => {
+				// Set the user's presence to 'true' in the database
+				if (leftPresences[0].uid) {
+					const { error } = await supabase
+						.from('profiles')
+						.update({ is_logged_in: false })
+						.eq('id', leftPresences[0].uid)
+					console.log(`Action: LEAVE, User Id: ${leftPresences[0].uid}, Error: ${error}`)
+				}
+			})
+			.on('presence', { event: 'join' }, async ({ newPresences }) => {
+				if (newPresences[0].uid) {
+					const { error } = await supabase
+						.from('profiles')
+						.update({ is_logged_in: true })
+						.eq('id', newPresences[0].uid)
+					console.log(`Action: JOIN, User Id: ${newPresences[0].uid}, Error: ${error}`)
+				}
+			})
+			.subscribe()
+	} else {
+		console.log("User Presence Watcher is already running, skipping...")
+	}
 
 	return {
 		session: await getSession()
