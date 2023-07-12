@@ -1,16 +1,12 @@
 <script lang="ts">
-	// import { db } from '$lib/client/firebase';
 	import { isMusicLoading, musicQueue, areSongsSelected } from '$lib/music';
 	// import { Avatar } from '@skeletonlabs/skeleton';
-	// import { collection, onSnapshot } from 'firebase/firestore';
-	import { afterUpdate, getContext, onDestroy } from 'svelte';
+	import { afterUpdate } from 'svelte';
 	import { AudioPlayer, trackIndex } from 'svelte-mp3';
 	import { browser } from '$app/environment';
 	import { fade, fly } from 'svelte/transition';
 	import Spinner from './Spinner.svelte';
-	import type { UserData } from '$lib/types';
 	import Queue from './Queue.svelte';
-	import type { Writable } from 'svelte/store';
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
 
 	$: currentTab = 'Friends';

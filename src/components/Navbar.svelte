@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
 	import { invalidate } from '$app/navigation';
 	import { Avatar } from '@skeletonlabs/skeleton';
 	import type { SupabaseClient } from '@supabase/supabase-js';
@@ -18,7 +19,7 @@
 	<div class="flex">
 		<a href="/" class="mr-8 font-gt-walsheim-pro-medium text-4xl uppercase">socult</a>
 
-		<form action="?/search" method="post">
+		<form action="?/search" method="post" use:enhance>
 			<div class="input-group-divider input-group w-96 grid-cols-[auto_1fr_auto]">
 				<div class="input-group-shim">
 					<svg

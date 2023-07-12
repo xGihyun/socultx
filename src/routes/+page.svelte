@@ -1,18 +1,13 @@
 <script lang="ts">
-	// import { toastStore, type ToastSettings } from '@skeletonlabs/skeleton';
 	// import type { DocumentData } from 'firebase/firestore';
-	// import { Avatar } from '@skeletonlabs/skeleton';
+	import { Avatar } from '@skeletonlabs/skeleton';
 	import Auth from '../components/Auth.svelte';
 
-	// export let data;
-	// export let form;
-	let form = false;
-	// console.log(form);
 	export let data;
-	// let { supabase } = data;
-	$: ({ supabase, session } = data);
+	export let form;
 
-	// $: searchResults = form?.results as DocumentData[];
+	$: ({ supabase, session } = data);
+	$: searchResults = form?.results;
 </script>
 
 {#if session}
@@ -20,14 +15,14 @@
 		<!-- If user searches from the navbar -->
 		<div class="items-left mx-4 flex h-full w-80 flex-col justify-start">
 			<div class="my-4 text-2xl">People</div>
-			<!-- {#each searchResults as item}
+			{#each searchResults as item}
 				<div class="variant-glass-surface my-2 rounded-md p-2">
 					<div class="flex h-16 gap-2">
-						<a href={`/profile/${item.uid}`}>
+						<a href={`/profile/${item.id}`}>
 							<Avatar src={item.photo_url} width="w-16" referrerpolicy="no-referrer" />
 						</a>
 						<div class="my-2 flex flex-grow flex-col">
-							<a href={`/profile/${item.uid}`} class="w-fit">
+							<a href={`/profile/${item.id}`} class="w-fit">
 								<span class="text-lg">{item.username}</span>
 							</a>
 							<span class="font-gt-walsheim-pro-thin">{item.bio || ''}</span>
@@ -46,7 +41,7 @@
 						</div>
 					</div>
 				</div>
-			{/each} -->
+			{/each}
 		</div>
 	{:else}
 		<!-- Dashboard? -->

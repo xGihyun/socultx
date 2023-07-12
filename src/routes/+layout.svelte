@@ -15,6 +15,8 @@
 	import { onMount } from 'svelte';
 	import { invalidate } from '$app/navigation';
 	import Navbar from '../components/Navbar.svelte';
+	import Sidebar from '../components/Sidebar.svelte';
+	import type { RealtimeChannel } from '@supabase/supabase-js';
 	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
 	export let data;
@@ -25,15 +27,15 @@
 	console.log('This is from +layout.svelte: ', session);
 
 	onMount(() => {
+		let specifiedChannel: RealtimeChannel;
 		const {
 			data: { subscription }
-		} = supabase.auth.onAuthStateChange((event, _session) => {
+		} = supabase.auth.onAuthStateChange(async (event, _session) => {
 			console.log('This is `_session` inside the onAuthStateChange: ', _session);
 
-			// Means the user is logged in check console
 			if (_session) {
-				// Channel for online users
-				const specifiedChannel = supabase.channel('users');
+				// Assign any channel name to connect to as long as all clients connect to the same channel
+				specifiedChannel = supabase.channel('users');
 
 				// Join the channel
 				specifiedChannel.subscribe(async (status) => {
@@ -42,11 +44,15 @@
 							uid: _session?.user.id
 						});
 						console.log(presenceTrackStatus);
-					} else {
-						console.log(status);
 					}
 				});
 			}
+
+			if (event === 'SIGNED_OUT' && _session === null) {
+				await specifiedChannel.unsubscribe();
+			}
+
+			// If the session has expired simply log the user out
 			if (_session?.expires_at !== session?.expires_at) {
 				invalidate('supabase:auth');
 			}
@@ -64,9 +70,9 @@
 		<main class="relative flex-1 overflow-y-auto">
 			<slot />
 		</main>
-		<!-- {#if data.user}
+		{#if session}
 			<Sidebar />
-		{/if} -->
+		{/if}
 	</div>
 	<Toast />
 </div>
