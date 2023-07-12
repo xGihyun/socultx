@@ -69,7 +69,6 @@
 
 		console.log(data);
 
-		// TODO: Alert/toast? using skeletonui?
 		toastStore.trigger(registerToastMessage);
 		// Reset form everything
 		email = '';

@@ -8,6 +8,7 @@
 	import Spinner from './Spinner.svelte';
 	import Queue from './Queue.svelte';
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
+	import { modeCurrent } from '@skeletonlabs/skeleton';
 
 	$: currentTab = 'Friends';
 	$: showLyrics = false;
@@ -138,6 +139,8 @@
 				</li>
 			</a>
 		{/each} -->
+		<div class="flex-column h-full bg-primary-500">View friend requests</div>
+		<!-- TODO: Friend requests thingy on sidebar, auth guards and more -->
 	{:else if currentTab === 'Activity'}
 		{#if showLyrics}
 			<div class="flex-column mb-4 mt-4 overflow-auto pl-2 pr-2" in:fly={{ y: -20, duration: 400 }}>

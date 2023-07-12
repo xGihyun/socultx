@@ -1,6 +1,6 @@
 <script lang="ts">
 	// import type { DocumentData } from 'firebase/firestore';
-	import { Avatar } from '@skeletonlabs/skeleton';
+	import { Avatar, toastStore, type ToastSettings } from '@skeletonlabs/skeleton';
 	import Auth from '../components/Auth.svelte';
 
 	export let data;
@@ -8,6 +8,45 @@
 
 	$: ({ supabase, session } = data);
 	$: searchResults = form?.results;
+
+	async function addFriend(uid: string, username: string) {
+		const { data, error } = await supabase
+			.from('friend_requests')
+			.insert({
+				sender_id: session?.user.id,
+				receiver_id: uid,
+				status: 'Pending'
+			})
+			.select();
+
+		if (error) {
+			console.log(`Failed to send friend request to ${uid}, Error: ${error}`);
+			const failedFriendRequestToast: ToastSettings = {
+				message: `Failed to send friend to ${username}`,
+				timeout: 5000,
+				background: 'variant-filled-danger'
+			};
+			toastStore.trigger(failedFriendRequestToast);
+			return;
+		}
+
+		console.log(`Sending friend request to ${uid}, Error: ${error}, Data: `, data);
+		console.log(data);
+
+		const sendFriendRequestToast: ToastSettings = {
+			message: `Friend request sent to ${username}`,
+			timeout: 30000,
+			background: 'variant-filled-primary',
+			action: {
+				label: 'Undo',
+				response: async () => {
+					await supabase.from('friend_requests').delete().eq('id', data[0].id);
+				}
+			}
+		};
+
+		toastStore.trigger(sendFriendRequestToast);
+	}
 </script>
 
 {#if session}
@@ -27,17 +66,20 @@
 							</a>
 							<span class="font-gt-walsheim-pro-thin">{item.bio || ''}</span>
 						</div>
+						<!-- Add friend button -->
 						<div class="m-auto">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								class="mr-2 h-6 w-6 fill-secondary-600"
-								height="1em"
-								viewBox="0 0 640 512"
-							>
-								<path
-									d="M96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM0 482.3C0 383.8 79.8 304 178.3 304h91.4C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3zM504 312V248H440c-13.3 0-24-10.7-24-24s10.7-24 24-24h64V136c0-13.3 10.7-24 24-24s24 10.7 24 24v64h64c13.3 0 24 10.7 24 24s-10.7 24-24 24H552v64c0 13.3-10.7 24-24 24s-24-10.7-24-24z"
-								/></svg
-							>
+							<button on:click={() => addFriend(item.id, item.username)}>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									class="mr-2 h-6 w-6 fill-secondary-600"
+									height="1em"
+									viewBox="0 0 640 512"
+								>
+									<path
+										d="M96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM0 482.3C0 383.8 79.8 304 178.3 304h91.4C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3zM504 312V248H440c-13.3 0-24-10.7-24-24s10.7-24 24-24h64V136c0-13.3 10.7-24 24-24s24 10.7 24 24v64h64c13.3 0 24 10.7 24 24s-10.7 24-24 24H552v64c0 13.3-10.7 24-24 24s-24-10.7-24-24z"
+									/></svg
+								>
+							</button>
 						</div>
 					</div>
 				</div>

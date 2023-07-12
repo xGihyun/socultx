@@ -9,6 +9,8 @@ export const currentUser: Writable<UserData> = writable({
 	photo_url: ''
 });
 
+export const receivedFriendRequests: Writable<any[] | null> = writable(null)
+
 export const allUsers: Writable<any> = writable([]);
 
 // Better writable with `.get()` method just copied it here - https://github.com/sveltejs/svelte/issues/2060

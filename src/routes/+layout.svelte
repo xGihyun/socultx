@@ -17,6 +17,7 @@
 	import Navbar from '../components/Navbar.svelte';
 	import Sidebar from '../components/Sidebar.svelte';
 	import type { RealtimeChannel } from '@supabase/supabase-js';
+	import { receivedFriendRequests } from '$lib/store';
 	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
 	export let data;
@@ -41,11 +42,24 @@
 				specifiedChannel.subscribe(async (status) => {
 					if (status === 'SUBSCRIBED') {
 						const presenceTrackStatus = await specifiedChannel.track({
-							uid: _session?.user.id
+							uid: _session.user.id
 						});
 						console.log(presenceTrackStatus);
 					}
 				});
+
+				// Gather current user data information like received friend requests
+				if ($receivedFriendRequests == null) {
+					const { data, error } = await supabase
+						.from('friend_requests')
+						.select()
+						.eq('receiver_id', _session.user.id);
+					if (error) {
+						console.log(error);
+					}
+					console.log('Received friend requests: ', data);
+					receivedFriendRequests.set(data);
+				}
 			}
 
 			if (event === 'SIGNED_OUT' && _session === null) {
