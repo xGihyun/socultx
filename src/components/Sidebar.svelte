@@ -1,18 +1,25 @@
 <script lang="ts">
 	import { isMusicLoading, musicQueue, areSongsSelected } from '$lib/music';
 	// import { Avatar } from '@skeletonlabs/skeleton';
-	import { afterUpdate } from 'svelte';
+	import { afterUpdate, onMount } from 'svelte';
 	import { AudioPlayer, trackIndex } from 'svelte-mp3';
 	import { browser } from '$app/environment';
 	import { fade, fly } from 'svelte/transition';
 	import Spinner from './Spinner.svelte';
 	import Queue from './Queue.svelte';
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
-	import { modeCurrent } from '@skeletonlabs/skeleton';
+	import { receivedFriendRequests } from '$lib/store';
+	import type { SupabaseClient } from '@supabase/supabase-js';
+	import { Avatar } from '@skeletonlabs/skeleton';
+
+	export let supabase: SupabaseClient;
 
 	$: currentTab = 'Friends';
 	$: showLyrics = false;
 	$: nowPlayingKey = false;
+	$: showFriendRequests = false;
+	let receivedRequests: any[] = [];
+	let sentRequests = [];
 
 	// Whenever the user clicks on any of the tabs, return a different classname
 	$: sidebarTabLogic = (clickedButtonName: string) => {
@@ -36,7 +43,25 @@
 		}
 	});
 
-	// onDestroy(() => unsubUsers());
+	receivedFriendRequests.subscribe(async (list) => {
+		if (list == null) return;
+
+		const { data, error } = await supabase
+			.from('profiles')
+			.select()
+			.in(
+				'id',
+				list.map((person) => person.sender_id)
+			);
+
+		if (error) {
+			console.log(error);
+			return;
+		}
+
+		console.log(data);
+		receivedRequests = data;
+	});
 </script>
 
 <ul
@@ -139,8 +164,63 @@
 				</li>
 			</a>
 		{/each} -->
-		<div class="flex-column h-full bg-primary-500">View friend requests</div>
-		<!-- TODO: Friend requests thingy on sidebar, auth guards and more -->
+		<div class="flex h-full flex-col">
+			<div class="flex-grow overflow-auto">
+				{#if showFriendRequests}
+					<div>
+						<p>Pending friend requests</p>
+						{#each receivedRequests as item}
+							<div class="card">
+								<a href={`/profile/${item.id}`}>
+									<Avatar src={item.photo_url} width="w-16" referrerpolicy="no-referrer" />
+								</a>
+								<div class="my-2 flex flex-grow flex-col">
+									<a href={`/profile/${item.id}`} class="w-fit">
+										<span class="text-lg">{item.username}</span>
+									</a>
+								</div>
+							</div>
+						{/each}
+					</div>
+					<div>
+						<p>Sent friend requests</p>
+					</div>
+				{:else}
+					Testing
+				{/if}
+			</div>
+			<div class="flex-none self-start">
+				<button
+					on:click={() => (showFriendRequests = !showFriendRequests)}
+					class="flex gap-2 font-gt-walsheim-pro-thin text-sm opacity-50 hover:opacity-100"
+				>
+					{#if showFriendRequests}
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							class="self-center fill-secondary-900"
+							height="1em"
+							viewBox="0 0 320 512"
+							><path
+								d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l192 192c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L77.3 256 246.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-192 192z"
+							/></svg
+						>
+						Back to friends view
+					{:else}
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							class="self-center fill-secondary-900"
+							height="1em"
+							viewBox="0 0 640 512"
+						>
+							<path
+								d="M96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM0 482.3C0 383.8 79.8 304 178.3 304h91.4C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3zM609.3 512H471.4c5.4-9.4 8.6-20.3 8.6-32v-8c0-60.7-27.1-115.2-69.8-151.8c2.4-.1 4.7-.2 7.1-.2h61.4C567.8 320 640 392.2 640 481.3c0 17-13.8 30.7-30.7 30.7zM432 256c-31 0-59-12.6-79.3-32.9C372.4 196.5 384 163.6 384 128c0-26.8-6.6-52.1-18.3-74.3C384.3 40.1 407.2 32 432 32c61.9 0 112 50.1 112 112s-50.1 112-112 112z"
+							/></svg
+						>
+						View friend requests
+					{/if}
+				</button>
+			</div>
+		</div>
 	{:else if currentTab === 'Activity'}
 		{#if showLyrics}
 			<div class="flex-column mb-4 mt-4 overflow-auto pl-2 pr-2" in:fly={{ y: -20, duration: 400 }}>

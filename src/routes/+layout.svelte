@@ -85,7 +85,7 @@
 			<slot />
 		</main>
 		{#if session}
-			<Sidebar />
+			<Sidebar {supabase} />
 		{/if}
 	</div>
 	<Toast />
