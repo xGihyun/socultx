@@ -1,25 +1,26 @@
 <script lang="ts">
 	import { isMusicLoading, musicQueue, areSongsSelected } from '$lib/music';
-	// import { Avatar } from '@skeletonlabs/skeleton';
-	import { afterUpdate, onMount } from 'svelte';
+	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import { AudioPlayer, trackIndex } from 'svelte-mp3';
 	import { browser } from '$app/environment';
 	import { fade, fly } from 'svelte/transition';
 	import Spinner from './Spinner.svelte';
 	import Queue from './Queue.svelte';
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
-	import { receivedFriendRequests } from '$lib/store';
+	import { receivedFriendRequests, sentFriendRequests } from '$lib/store';
 	import type { SupabaseClient } from '@supabase/supabase-js';
 	import { Avatar } from '@skeletonlabs/skeleton';
 
 	export let supabase: SupabaseClient;
+	export let userId: string;
 
 	$: currentTab = 'Friends';
 	$: showLyrics = false;
 	$: nowPlayingKey = false;
 	$: showFriendRequests = false;
-	let receivedRequests: any[] = [];
-	let sentRequests = [];
+	let receivedRequests: any[];
+	let sentRequests: any[];
+	$: (receivedRequests = []), (sentRequests = []);
 
 	// Whenever the user clicks on any of the tabs, return a different classname
 	$: sidebarTabLogic = (clickedButtonName: string) => {
@@ -43,6 +44,55 @@
 		}
 	});
 
+	// This thing doesn't work like on snapshot u_u
+	// TODO Realtime tomorrow, auth guards et etc
+	const receiverSubscriber = supabase
+		.channel('friend_requests:changes')
+		.on(
+			'postgres_changes',
+			{
+				event: '*',
+				schema: 'public',
+				table: 'friend_requests',
+				filter: `receiver_id=eq.${userId}`
+			},
+			(payload) => {
+				console.log('Just in! received a new friend request from -> ', payload.new);
+				if (payload.eventType === 'INSERT') {
+					$receivedFriendRequests?.push(payload.new);
+				}
+			}
+		)
+		.subscribe();
+
+	onMount(async () => {
+		// Gather current user data information like received friend requests
+		if ($receivedFriendRequests == null) {
+			const { data, error } = await supabase
+				.from('friend_requests')
+				.select()
+				.eq('receiver_id', userId);
+			if (error) {
+				console.log(error);
+			}
+			console.log('Received friend requests: ', data);
+			receivedFriendRequests.set(data);
+		}
+
+		// Gather sent friend requests
+		if ($sentFriendRequests == null) {
+			const { data, error } = await supabase
+				.from('friend_requests')
+				.select()
+				.eq('sender_id', userId);
+			if (error) {
+				console.log(error);
+			}
+			console.log('Sent friend requests: ', data);
+			sentFriendRequests.set(data);
+		}
+	});
+
 	receivedFriendRequests.subscribe(async (list) => {
 		if (list == null) return;
 
@@ -56,12 +106,56 @@
 
 		if (error) {
 			console.log(error);
+			receivedRequests = [];
 			return;
 		}
 
 		console.log(data);
 		receivedRequests = data;
+		console.log('This is received requests -> ', receivedRequests);
 	});
+
+	/*
+	sentFriendRequests.subscribe(async (list) => {
+		if (list == null) return;
+
+		const { data, error } = await supabase
+			.from('profiles')
+			.select()
+			.in(
+				'id',
+				list.map((person) => person.receiver_id)
+			);
+
+		if (error) {
+			console.log(error);
+			sentRequests = [];
+			return;
+		}
+
+		console.log(data);
+		sentRequests = data;
+		console.log('This is sent requests -> ', sentRequests);
+	});
+	*/
+
+	async function removeRequest(sender_id: string) {
+		let row = $receivedFriendRequests?.find((item) => item.sender_id === sender_id);
+		if (row) {
+			const { error } = await supabase.from('friend_requests').delete().eq('id', row.id);
+			if (error) {
+				console.log(error);
+				return;
+			}
+			console.log(`Deleted friend request from db -> ${sender_id}`);
+		}
+		let index = receivedRequests.findIndex((item) => item.id === sender_id);
+		receivedRequests.splice(index, 1);
+		receivedRequests = receivedRequests; // This line is very important
+		console.log(`Removed from list -> ${sender_id}`);
+	}
+
+	onDestroy(() => receiverSubscriber.unsubscribe());
 </script>
 
 <ul
@@ -168,22 +262,48 @@
 			<div class="flex-grow overflow-auto">
 				{#if showFriendRequests}
 					<div>
-						<p>Pending friend requests</p>
+						<p class="my-2 font-gt-walsheim-pro-medium">Pending friend requests</p>
 						{#each receivedRequests as item}
-							<div class="card">
-								<a href={`/profile/${item.id}`}>
-									<Avatar src={item.photo_url} width="w-16" referrerpolicy="no-referrer" />
-								</a>
-								<div class="my-2 flex flex-grow flex-col">
-									<a href={`/profile/${item.id}`} class="w-fit">
-										<span class="text-lg">{item.username}</span>
+							<div class="card group p-2">
+								<div class="relative flex gap-2">
+									<a class="hover:scale-105" href={`/profile/${item.id}`}>
+										<Avatar src={item.photo_url} width="w-12" referrerpolicy="no-referrer" />
 									</a>
+									<div class="self-center group-hover:opacity-40 group-hover:blur-sm">
+										<span class="w-fit text-lg">{item.username}</span>
+									</div>
+									<button
+										class="variant-glass-primary btn absolute left-16 cursor-pointer rounded-md bg-gradient-to-br px-2 text-lg opacity-0 transition duration-300 ease-in-out hover:scale-105 group-hover:opacity-100"
+										on:click={() => {}}
+									>
+										Accept
+									</button>
+
+									<button
+										class="variant-glass-error btn absolute right-2 cursor-pointer rounded-md bg-gradient-to-br px-2 text-lg opacity-0 transition duration-300 ease-in-out hover:scale-105 group-hover:opacity-100"
+										on:click={() => removeRequest(item.id)}
+									>
+										Decline
+									</button>
 								</div>
 							</div>
 						{/each}
 					</div>
 					<div>
-						<p>Sent friend requests</p>
+						<p class="my-2 font-gt-walsheim-pro-medium">Sent friend requests</p>
+						{#each sentRequests as item}
+							<div class="card group p-2">
+								<div class="relative flex gap-2">
+									<a class="hover:scale-105" href={`/profile/${item.id}`}>
+										<Avatar src={item.photo_url} width="w-12" referrerpolicy="no-referrer" />
+									</a>
+									<div class="self-center">
+										<span class="w-fit text-lg">{item.username}</span>
+									</div>
+									<span>{item.status}</span>
+								</div>
+							</div>
+						{/each}
 					</div>
 				{:else}
 					Testing

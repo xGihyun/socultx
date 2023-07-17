@@ -14,8 +14,7 @@
 			.from('friend_requests')
 			.insert({
 				sender_id: session?.user.id,
-				receiver_id: uid,
-				status: 'Pending'
+				receiver_id: uid
 			})
 			.select();
 
@@ -35,7 +34,7 @@
 
 		const sendFriendRequestToast: ToastSettings = {
 			message: `Friend request sent to ${username}`,
-			timeout: 30000,
+			timeout: 5000,
 			background: 'variant-filled-primary',
 			action: {
 				label: 'Undo',

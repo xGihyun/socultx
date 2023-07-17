@@ -10,6 +10,7 @@ export const currentUser: Writable<UserData> = writable({
 });
 
 export const receivedFriendRequests: Writable<any[] | null> = writable(null)
+export const sentFriendRequests: Writable<any[] | null> = writable(null)
 
 export const allUsers: Writable<any> = writable([]);
 
