@@ -44,8 +44,30 @@
 		}
 	});
 
-	// This thing doesn't work like on snapshot u_u
-	// TODO Realtime tomorrow, auth guards et etc
+	// Everytime a user sends in a friend request to us, we search the user/s profiles and get info
+	receivedFriendRequests.subscribe(async (list) => {
+		if (list == null) return;
+
+		const { data, error } = await supabase
+			.from('profiles')
+			.select()
+			.in(
+				'id',
+				list.map((person) => person.sender_id)
+			);
+
+		if (error) {
+			console.log(error);
+			receivedRequests = [];
+			return;
+		}
+
+		console.log(data);
+		receivedRequests = data;
+		console.log('This is received requests -> ', receivedRequests);
+	});
+
+	// This subscribes to the database table "friend_requests" basically a watcher if someone sends us a friend request
 	const receiverSubscriber = supabase
 		.channel('friend_requests:changes')
 		.on(
@@ -57,14 +79,38 @@
 				filter: `receiver_id=eq.${userId}`
 			},
 			(payload) => {
-				console.log('Just in! received a new friend request from -> ', payload.new);
 				if (payload.eventType === 'INSERT') {
+					console.log('Just in! received a new friend request from -> ', payload.new);
 					$receivedFriendRequests?.push(payload.new);
+					$receivedFriendRequests = $receivedFriendRequests; // This line is very important! must reassign writable!
 				}
 			}
 		)
 		.subscribe();
 
+	sentFriendRequests.subscribe(async (list) => {
+		if (list == null) return;
+
+		const { data, error } = await supabase
+			.from('profiles')
+			.select()
+			.in(
+				'id',
+				list.map((person) => person.receiver_id)
+			);
+
+		if (error) {
+			console.log(error);
+			sentRequests = [];
+			return;
+		}
+
+		console.log(data);
+		sentRequests = data;
+		console.log('This is sent requests -> ', sentRequests);
+	});
+
+	// First thing to do once the sidebar mounts
 	onMount(async () => {
 		// Gather current user data information like received friend requests
 		if ($receivedFriendRequests == null) {
@@ -93,52 +139,6 @@
 		}
 	});
 
-	receivedFriendRequests.subscribe(async (list) => {
-		if (list == null) return;
-
-		const { data, error } = await supabase
-			.from('profiles')
-			.select()
-			.in(
-				'id',
-				list.map((person) => person.sender_id)
-			);
-
-		if (error) {
-			console.log(error);
-			receivedRequests = [];
-			return;
-		}
-
-		console.log(data);
-		receivedRequests = data;
-		console.log('This is received requests -> ', receivedRequests);
-	});
-
-	/*
-	sentFriendRequests.subscribe(async (list) => {
-		if (list == null) return;
-
-		const { data, error } = await supabase
-			.from('profiles')
-			.select()
-			.in(
-				'id',
-				list.map((person) => person.receiver_id)
-			);
-
-		if (error) {
-			console.log(error);
-			sentRequests = [];
-			return;
-		}
-
-		console.log(data);
-		sentRequests = data;
-		console.log('This is sent requests -> ', sentRequests);
-	});
-	*/
-
 	async function removeRequest(sender_id: string) {
 		let row = $receivedFriendRequests?.find((item) => item.sender_id === sender_id);
 		if (row) {
@@ -155,7 +155,9 @@
 		console.log(`Removed from list -> ${sender_id}`);
 	}
 
-	onDestroy(() => receiverSubscriber.unsubscribe());
+	onDestroy(() => {
+		receiverSubscriber.unsubscribe();
+	});
 </script>
 
 <ul

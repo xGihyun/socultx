@@ -1,6 +1,6 @@
 <script lang="ts">
-	// import type { DocumentData } from 'firebase/firestore';
 	import { Avatar, toastStore, type ToastSettings } from '@skeletonlabs/skeleton';
+	import { sentFriendRequests } from '$lib/store';
 	import Auth from '../components/Auth.svelte';
 
 	export let data;
@@ -30,7 +30,6 @@
 		}
 
 		console.log(`Sending friend request to ${uid}, Error: ${error}, Data: `, data);
-		console.log(data);
 
 		const sendFriendRequestToast: ToastSettings = {
 			message: `Friend request sent to ${username}`,
