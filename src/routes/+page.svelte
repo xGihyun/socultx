@@ -9,12 +9,6 @@
 	$: ({ supabase, session } = data);
 	$: searchResults = form?.results;
 	$: alreadySentRequests = $sentFriendRequests?.map((i) => i.receiver_id) ?? [];
-	// let alreadySentRequests: string[]
-	// $: alreadySentRequests = [];
-	// // $sentFriendRequests?.map((i) => i.receiver_id);
-	// sentFriendRequests.subscribe(
-	// 	(latest) => (alreadySentRequests = latest?.map((i) => i.receiver_id) ?? [])
-	// );
 
 	async function addFriend(uid: string, username: string) {
 		const { data, error } = await supabase

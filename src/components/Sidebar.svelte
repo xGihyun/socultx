@@ -19,8 +19,9 @@
 	$: nowPlayingKey = false;
 	$: showFriendRequests = false;
 	let receivedRequests: any[];
+	let friends: any[];
 	let sentRequests: any[];
-	$: (receivedRequests = []), (sentRequests = []);
+	$: (receivedRequests = []), (sentRequests = []), (friends = []);
 
 	// Whenever the user clicks on any of the tabs, return a different classname
 	$: sidebarTabLogic = (clickedButtonName: string) => {
@@ -29,13 +30,6 @@
 		}
 		return 'p-2';
 	};
-
-	// const users = getContext<Writable<UserData[]>>('users');
-
-	// const usersCollection = collection(db, 'users');
-	// const unsubUsers = onSnapshot(usersCollection, (snapshot) => {
-	// 	$users = snapshot.docs.map((doc) => doc.data() as UserData);
-	// });
 
 	afterUpdate(() => {
 		nowPlayingKey = !nowPlayingKey;
@@ -62,12 +56,26 @@
 			return;
 		}
 
-		console.log(data);
-		receivedRequests = data;
+		// Loop over 'list' then classify which is pending or accepted
+		list.forEach((item) => {
+			let selectedElement = data.find((i) => i.id === item.sender_id);
+			if (item.status === 'Pending') {
+				receivedRequests.push(selectedElement);
+			}
+			if (item.status === 'Accepted') {
+				// The user's friends
+				friends.push(selectedElement);
+			}
+		});
+
+		// Reassign both variables to achieve realtime stuff
+		receivedRequests = receivedRequests;
+		friends = friends;
 		console.log('This is received requests -> ', receivedRequests);
 	});
 
 	// This subscribes to the database table "friend_requests" basically a watcher if someone sends us a friend request
+	// TODO: Make it realtime so that whenever the user clicks "Accept" the other user will be realtime too
 	const receiverSubscriber = supabase
 		.channel('friend_requests:changes')
 		.on(
@@ -76,7 +84,7 @@
 				event: '*',
 				schema: 'public',
 				table: 'friend_requests',
-				filter: `receiver_id=eq.${userId}`
+				filter: `receiver_id=eq.${userId} or sender_id=eq.${userId}`
 			},
 			(payload) => {
 				if (payload.eventType === 'INSERT') {
@@ -88,6 +96,7 @@
 		)
 		.subscribe();
 
+	// This is pretty much the same thing but for sending friend requests
 	sentFriendRequests.subscribe(async (list) => {
 		if (list == null) return;
 
@@ -105,13 +114,29 @@
 			return;
 		}
 
-		console.log(data);
-		sentRequests = data;
+		// sentRequests = data;
+
+		// Loop over 'list' then classify which is pending or accepted
+		list.forEach((item) => {
+			let selectedElement = data.find((i) => i.id === item.receiver_id);
+			if (item.status === 'Pending') {
+				sentRequests.push(selectedElement);
+			}
+			if (item.status === 'Accepted') {
+				// The user's friends
+				friends.push(selectedElement);
+			}
+		});
+
+		// Reassign both variables to achieve realtime stuff
+		sentRequests = sentRequests;
+		friends = friends;
 		console.log('This is sent requests -> ', sentRequests);
 	});
 
 	// First thing to do once the sidebar mounts
 	onMount(async () => {
+		// NOTE: Status' of these requests can be "Pending", "Accepted", or "Declined"
 		// Gather current user data information like received friend requests
 		if ($receivedFriendRequests == null) {
 			const { data, error } = await supabase
@@ -139,20 +164,45 @@
 		}
 	});
 
-	async function removeRequest(sender_id: string) {
+	async function declineRequest(sender_id: string) {
 		let row = $receivedFriendRequests?.find((item) => item.sender_id === sender_id);
 		if (row) {
 			const { error } = await supabase.from('friend_requests').delete().eq('id', row.id);
+
 			if (error) {
 				console.log(error);
 				return;
 			}
-			console.log(`Deleted friend request from db -> ${sender_id}`);
+			console.log(`Declined friend request (will proceed to delete from db) from -> ${sender_id}`);
 		}
 		let index = receivedRequests.findIndex((item) => item.id === sender_id);
 		receivedRequests.splice(index, 1);
 		receivedRequests = receivedRequests; // This line is very important
-		console.log(`Removed from list -> ${sender_id}`);
+		console.log(`Removed from pending list -> ${sender_id}`);
+	}
+
+	async function acceptRequest(sender_id: string) {
+		let row = $receivedFriendRequests?.find((item) => item.sender_id === sender_id);
+		if (row) {
+			const { error } = await supabase
+				.from('friend_requests')
+				.update({
+					status: 'Accepted'
+				})
+				.eq('id', row.id);
+
+			if (error) {
+				console.log(error);
+				return;
+			}
+			console.log(`Friend ${sender_id} is now my bestfriend`);
+		}
+		let index = receivedRequests.findIndex((item) => item.id === sender_id);
+		// Put the supposed element into the 'accepted' array first
+		friends.push(receivedRequests[index]);
+		// Remove the element from 'pending' array
+		receivedRequests.splice(index, 1);
+		receivedRequests = receivedRequests;
 	}
 
 	onDestroy(() => {
@@ -263,52 +313,82 @@
 		<div class="flex h-full flex-col">
 			<div class="flex-grow overflow-auto">
 				{#if showFriendRequests}
-					<div>
-						<p class="my-2 font-gt-walsheim-pro-medium">Pending friend requests</p>
-						{#each receivedRequests as item}
-							<div class="card group p-2">
-								<div class="relative flex gap-2">
-									<a class="hover:scale-105" href={`/profile/${item.id}`}>
-										<Avatar src={item.photo_url} width="w-12" referrerpolicy="no-referrer" />
-									</a>
-									<div class="self-center group-hover:opacity-40 group-hover:blur-sm">
-										<span class="w-fit text-lg">{item.username}</span>
-									</div>
-									<button
-										class="variant-glass-primary btn absolute left-16 cursor-pointer rounded-md bg-gradient-to-br px-2 text-lg opacity-0 transition duration-300 ease-in-out hover:scale-105 group-hover:opacity-100"
-										on:click={() => {}}
-									>
-										Accept
-									</button>
+					{#if receivedRequests.length == 0 && sentRequests.length == 0}
+						<p in:fade={{ duration: 500 }} class="my-2 font-gt-walsheim-pro-thin">
+							Nothing here! Try adding some friends (・_・)
+						</p>
+					{/if}
+					<!-- Received friend requests -->
+					{#if receivedRequests.length >= 1}
+						<div>
+							<p class="my-2 font-gt-walsheim-pro-medium">Pending friend requests</p>
+							{#each receivedRequests as item}
+								<div class="card group p-2">
+									<div class="relative flex gap-2">
+										<a class="hover:scale-105" href={`/profile/${item.id}`}>
+											<Avatar src={item.photo_url} width="w-12" referrerpolicy="no-referrer" />
+										</a>
+										<div class="self-center group-hover:opacity-40 group-hover:blur-sm">
+											<span class="w-fit text-lg">{item.username}</span>
+										</div>
+										<button
+											class="variant-glass-primary btn absolute left-16 cursor-pointer rounded-md bg-gradient-to-br px-2 text-lg opacity-0 transition duration-300 ease-in-out hover:scale-105 group-hover:opacity-100"
+											on:click={() => acceptRequest(item.id)}
+										>
+											Accept
+										</button>
 
-									<button
-										class="variant-glass-error btn absolute right-2 cursor-pointer rounded-md bg-gradient-to-br px-2 text-lg opacity-0 transition duration-300 ease-in-out hover:scale-105 group-hover:opacity-100"
-										on:click={() => removeRequest(item.id)}
-									>
-										Decline
-									</button>
-								</div>
-							</div>
-						{/each}
-					</div>
-					<div>
-						<p class="my-2 font-gt-walsheim-pro-medium">Sent friend requests</p>
-						{#each sentRequests as item}
-							<div class="card group p-2">
-								<div class="relative flex gap-2">
-									<a class="hover:scale-105" href={`/profile/${item.id}`}>
-										<Avatar src={item.photo_url} width="w-12" referrerpolicy="no-referrer" />
-									</a>
-									<div class="self-center">
-										<span class="w-fit text-lg">{item.username}</span>
+										<button
+											class="variant-glass-error btn absolute right-2 cursor-pointer rounded-md bg-gradient-to-br px-2 text-lg opacity-0 transition duration-300 ease-in-out hover:scale-105 group-hover:opacity-100"
+											on:click={() => declineRequest(item.id)}
+										>
+											Decline
+										</button>
 									</div>
-									<span>{item.status}</span>
 								</div>
-							</div>
-						{/each}
-					</div>
+							{/each}
+						</div>
+					{/if}
+					<!-- Sent friend requests -->
+					{#if sentRequests.length >= 1}
+						<div>
+							<p class="my-2 font-gt-walsheim-pro-medium">Sent friend requests</p>
+							{#each sentRequests as item}
+								<div class="card group p-2">
+									<div class="relative flex gap-2">
+										<a class="hover:scale-105" href={`/profile/${item.id}`}>
+											<Avatar src={item.photo_url} width="w-12" referrerpolicy="no-referrer" />
+										</a>
+										<div class="self-center">
+											<span class="w-fit text-lg">{item.username}</span>
+										</div>
+									</div>
+								</div>
+							{/each}
+						</div>
+					{/if}
 				{:else}
-					Testing
+					{#each friends as friend}
+						<div
+							class="rounded-md transition-colors duration-200 hover:bg-secondary-900 hover:bg-opacity-40"
+						>
+							<!-- Add proper href later -->
+							<a href={`/`}>
+								<div class="relative h-10 w-10">
+									<Avatar src={friend.photo_url} width="w-10" referrerpolicy="no-referrer" />
+									{#if friend.is_logged_in}
+										<span
+											class="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-green-500"
+										/>
+									{/if}
+								</div>
+								<div class="flex flex-col">
+									<span class="line-clamp-1 flex-auto">{friend.username}</span>
+									<span class="text-sm opacity-75" />
+								</div>
+							</a>
+						</div>
+					{/each}
 				{/if}
 			</div>
 			<div class="flex-none self-start">
@@ -409,7 +489,9 @@
 					</svg>
 				</div>
 			{:else if $musicQueue.length == 0}
-				<div in:fade={{ duration: 500 }} class="mb-4 mt-4">Try adding some music...</div>
+				<div in:fade={{ duration: 500 }} class="mb-4 mt-4 font-gt-walsheim-pro-thin">
+					Try adding some music •ᴗ•
+				</div>
 			{/if}
 
 			{#if $isMusicLoading}
