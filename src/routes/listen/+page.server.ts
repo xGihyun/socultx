@@ -2,9 +2,9 @@ import type { AlbumDetailed, SongDetailed } from '$lib/types';
 import type { PageServerLoad } from './$types';
 import { ytm } from '$lib/music';
 import { Innertube } from 'youtubei.js';
+import type { TextRun } from 'youtubei.js/dist/src/parser/misc';
 
 export const load: PageServerLoad = async ({ url }) => {
-    // const ytm = await Innertube.create();
     if (ytm.get() == null) {
         ytm.set(await Innertube.create());
         console.log("Initializing innertube api...")
@@ -17,16 +17,22 @@ export const load: PageServerLoad = async ({ url }) => {
             didUserSearch: false,
             query: null,
             type: null,
-            results: []
+            results: {
+                songs: [],
+                albums: []
+            }
         }
     }
 
     // Use youtubei.js
+    let results: { songs: SongDetailed[], albums: AlbumDetailed[] } = {
+        songs: [],
+        albums: []
+    }
     const searchResult = await (ytm.get())?.music.search(query, { type: categoryType })
-    let results: SongDetailed[] | AlbumDetailed[] = [];
     if (categoryType == "song") {
 
-        results = searchResult?.songs?.contents.map(item => {
+        results.songs = searchResult?.songs?.contents.map(item => {
 
             let artists = item.artists?.map(i => ({ name: i.name as string, artistId: i.channel_id as string })) ?? []
 
@@ -52,12 +58,12 @@ export const load: PageServerLoad = async ({ url }) => {
         }) ?? []
 
     } else if (categoryType == "album") {
-        results = searchResult?.albums?.contents.map(item => {
+        results.albums = searchResult?.albums?.contents.map(item => {
 
-            let artists = item.flex_columns[1].title.runs?.filter(i => "endpoint" in i).map(i =>
+            let artists = (item.flex_columns[1].title.runs?.filter(i => "endpoint" in i) as TextRun[]).map((i) =>
             ({
                 name: i.text as string,
-                artistId: i.endpoint.payload.browseId as string,
+                artistId: i.endpoint?.payload.browseId as string,
             })) ?? []
 
             let playlistId = item.overlay?.content?.endpoint.payload.playlistId ?? null

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { isMusicLoading, musicQueue, areSongsSelected } from '$lib/music';
 	import { afterUpdate, onDestroy, onMount } from 'svelte';
-	import { AudioPlayer, trackIndex } from 'svelte-mp3';
+	import { AudioPlayer, isPlaying, trackIndex } from 'svelte-mp3';
 	import { browser } from '$app/environment';
 	import { fade, fly } from 'svelte/transition';
 	import Spinner from './Spinner.svelte';
@@ -21,7 +21,8 @@
 	let receivedRequests: any[];
 	let friends: any[];
 	let sentRequests: any[];
-	$: (receivedRequests = []), (sentRequests = []), (friends = []);
+	let currentUserActivity: string | null;
+	$: (receivedRequests = []), (sentRequests = []), (friends = []), (currentUserActivity = null);
 
 	// Whenever the user clicks on any of the tabs, return a different classname
 	$: sidebarTabLogic = (clickedButtonName: string) => {
@@ -35,6 +36,28 @@
 		nowPlayingKey = !nowPlayingKey;
 		if (browser) {
 			activateTextTruncateScroll();
+		}
+	});
+
+	isPlaying.subscribe(async (newState) => {
+		if (newState === true && $musicQueue[$trackIndex] && currentUserActivity == null) {
+			currentUserActivity = `♫ ${$musicQueue[$trackIndex].song} • ${$musicQueue[$trackIndex].artist}`;
+			const { error } = await supabase
+				.from('profiles')
+				.update({ activity: currentUserActivity })
+				.eq('id', userId);
+			console.log(`Action: STARTING TO LISTEN (Music), User Id: ${userId}, Error: ${error}`);
+		}
+	});
+
+	trackIndex.subscribe(async (newIndex) => {
+		if ($musicQueue[newIndex]) {
+			currentUserActivity = `♫ ${$musicQueue[newIndex].song} • ${$musicQueue[newIndex].artist}`;
+			const { error } = await supabase
+				.from('profiles')
+				.update({ activity: currentUserActivity })
+				.eq('id', userId);
+			console.log(`Action: UPDATING ACTIVITY (Music), User Id: ${userId}, Error: ${error}`);
 		}
 	});
 
@@ -134,6 +157,9 @@
 					friends[index].is_logged_in = payload.new.is_logged_in;
 					friends[index].photo_url = payload.new.photo_url;
 					friends[index].username = payload.new.username;
+					friends[index].activity = payload.new.activity;
+					// Apply update realtime
+					nowPlayingKey = !nowPlayingKey;
 				}
 			}
 		)
@@ -391,12 +417,11 @@
 				{:else}
 					<!-- Friends list -->
 					{#each friends as friend}
-						<div
-							class="rounded-md transition-colors duration-200 hover:bg-secondary-900 hover:bg-opacity-40"
-						>
-							<!-- Add proper href later -->
-							<a href={`/`}>
-								<div class="relative h-10 w-10">
+						<a href={`/`}>
+							<div
+								class="flex rounded-md p-2 transition-colors duration-200 hover:bg-secondary-900 hover:bg-opacity-40"
+							>
+								<div class="relative h-10 w-10 self-center">
 									<Avatar src={friend.photo_url} width="w-10" referrerpolicy="no-referrer" />
 									{#if friend.is_logged_in}
 										<span
@@ -404,12 +429,16 @@
 										/>
 									{/if}
 								</div>
-								<div class="flex flex-col">
+								<div class="mx-4 self-center">
 									<span class="line-clamp-1 flex-auto">{friend.username}</span>
-									<span class="text-sm opacity-75" />
+									{#if friend.activity}
+										{#key nowPlayingKey}
+											<span class="text-truncate-scroll text-sm opacity-75">{friend.activity}</span>
+										{/key}
+									{/if}
 								</div>
-							</a>
-						</div>
+							</div>
+						</a>
 					{/each}
 				{/if}
 			</div>

@@ -14,7 +14,6 @@
 		activateTextTruncateScroll();
 		hasResults = false;
 	});
-	// console.log(data);
 </script>
 
 <form action="/listen" on:submit={() => (showLoading = true)}>
@@ -46,9 +45,9 @@
 			Search results for: <span class="font-bold">{data?.query}</span>
 		</h5>
 		{#if data.type === 'song'}
-			<SongResults results={data.results} />
+			<SongResults results={data.results.songs} />
 		{:else if data.type === 'album'}
-			<AlbumResults results={data.results} />
+			<AlbumResults results={data.results.albums} />
 		{/if}
 	{/key}
 {/if}
