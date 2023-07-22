@@ -7,7 +7,7 @@
 	let upperElement: HTMLElement;
 
 	function checkIfTextOverflows() {
-		let parentElement = upperElement.parentElement;
+		let parentElement = upperElement.parentElement as HTMLElement;
 		if (upperElement.clientWidth > parentElement?.clientWidth) {
 			console.log('Overflowing element: ', upperElement);
 			setTimeout(() => {

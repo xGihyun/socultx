@@ -9,32 +9,6 @@
 
 	$: playerKeyCondition = false;
 
-	// trackIndex.subscribe(async (latestIndex) => {
-	// 	// If the actual song url is blank, just fetch it
-	// 	if ($musicQueue[latestIndex]?.url === '') {
-	// 		let song = await fetchSongAudioUrl($musicQueue[latestIndex].id);
-	// 		$musicQueue[latestIndex].url = song.url;
-	// 		$musicQueue[latestIndex].lyrics = song.lyrics;
-	// 	}
-	// });
-
-	// isPlaying.subscribe(async (state) => {
-	// 	// Only do this if the user adds a song to the queue for the first time
-	// 	if ($trackIndex == 0 && $musicQueue[0]?.url === '' && state == true) {
-	// 		let song = await fetchSongAudioUrl($musicQueue[0].id);
-	// 		$musicQueue[0].url = song.url;
-	// 		$musicQueue[0].lyrics = song.lyrics;
-	// 	}
-	// });
-
-	// function removeItemFromQueue(itemIndex: number) {
-	// 	musicQueue.update((currentQueue) => {
-	// 		currentQueue.splice(itemIndex, 1);
-	// 		if ($trackIndex > itemIndex) $trackIndex--;
-	// 		return currentQueue;
-	// 	});
-	// }
-
 	afterUpdate(() => {
 		playerKeyCondition = !playerKeyCondition;
 		if (browser) {

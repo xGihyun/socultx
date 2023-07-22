@@ -495,16 +495,6 @@
 							? 'visible mr-2 cursor-pointer fill-surface-600 transition-colors duration-300 hover:scale-105 hover:fill-error-400'
 							: 'invisible'}
 						on:click={() => {
-							// Get selected items from queue then remove one by one
-
-							// $areSongsSelected.selectedIndexes.forEach((index) => {
-							// 	musicQueue.update((currentQueue) => {
-							// 		currentQueue.splice(index, 1);
-							// 		if ($trackIndex > index) $trackIndex--;
-							// 		return currentQueue;
-							// 	});
-							// });
-
 							// Use reverse for loop
 							for (let index = $areSongsSelected.selectedIndexes.length - 1; index >= 0; index--) {
 								musicQueue.update((currentQueue) => {
@@ -514,20 +504,6 @@
 								});
 							}
 
-							// musicQueue.update((currentQueue) => {
-							// 	console.log('Current queue (old) is: ', currentQueue);
-
-							// 	let newQueue = currentQueue.filter(
-							// 		(_, index) => !$areSongsSelected.selectedIndexes.includes(index)
-							// 	);
-
-							// 	console.log('Current queue (new) is: ', newQueue);
-							// 	return newQueue;
-							// });
-
-							// Hide icon
-							// $areSongsSelected.state = false;
-							// $areSongsSelected.
 							areSongsSelected.set({ state: false, selectedIndexes: [] });
 						}}
 					>

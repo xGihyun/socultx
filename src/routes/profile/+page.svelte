@@ -4,6 +4,6 @@
 
 <div>
 	<h1 class="text-5xl text-white">
-		Hello World! Welcome {data.user?.username}
+		Hello World! Welcome {data.user.username}
 	</h1>
 </div>

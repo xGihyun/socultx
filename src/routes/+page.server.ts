@@ -1,6 +1,4 @@
-// import { db } from "$lib/client/supabase";
 import type { Actions } from "@sveltejs/kit";
-// import { collection, getDocs, limit, query, where } from "firebase/firestore";
 
 export const actions: Actions = {
 
@@ -16,8 +14,6 @@ export const actions: Actions = {
                 error: error
             }
         }
-
-        // console.log(data)
 
         return {
             results: data,
