@@ -9,8 +9,8 @@ export const currentUser: Writable<UserData> = writable({
 	photo_url: ''
 });
 
-export const receivedFriendRequests: Writable<any[] | null> = writable(null)
-export const sentFriendRequests: Writable<any[] | null> = writable(null)
+export const receivedFriendRequests: Writable<any[]> = writable([])
+export const sentFriendRequests: Writable<any[]> = writable([])
 
 export const allUsers: Writable<any> = writable([]);
 

@@ -40,6 +40,7 @@
 
 	// Everytime a user sends in a friend request to us, we search the user/s profiles and get info
 	receivedFriendRequests.subscribe(async (list) => {
+		receivedRequests = [];
 		if (list == null) return;
 
 		const { data, error } = await supabase
@@ -71,26 +72,68 @@
 		// Reassign both variables to achieve realtime stuff
 		receivedRequests = receivedRequests;
 		friends = friends;
-		console.log('This is received requests -> ', receivedRequests);
+		console.log('SIDEBAR: This is received requests -> ', receivedRequests);
 	});
 
 	// This subscribes to the database table "friend_requests" basically a watcher if someone sends us a friend request
-	// TODO: Make it realtime so that whenever the user clicks "Accept" the other user will be realtime too
 	const receiverSubscriber = supabase
 		.channel('friend_requests:changes')
 		.on(
 			'postgres_changes',
 			{
-				event: '*',
+				event: 'INSERT',
 				schema: 'public',
 				table: 'friend_requests',
-				filter: `receiver_id=eq.${userId} or sender_id=eq.${userId}`
+				filter: `receiver_id=eq.${userId}`
 			},
 			(payload) => {
-				if (payload.eventType === 'INSERT') {
-					console.log('Just in! received a new friend request from -> ', payload.new);
-					$receivedFriendRequests?.push(payload.new);
-					$receivedFriendRequests = $receivedFriendRequests; // This line is very important! must reassign writable!
+				console.log(
+					'SIDEBAR (receiverSubscriber): Just in! received a new friend request from -> ',
+					payload.new
+				);
+				$receivedFriendRequests.push(payload.new);
+				$receivedFriendRequests = $receivedFriendRequests; // This line is very important! must reassign writable!
+			}
+		)
+		.on(
+			'postgres_changes',
+			{
+				event: 'UPDATE',
+				schema: 'public',
+				table: 'friend_requests',
+				filter: `sender_id=eq.${userId}`
+			},
+			(payload) => {
+				console.log(
+					'SIDEBAR (recieverSubscriber): Just in! your friend request got accepted! -> ',
+					payload.new
+				);
+				let index = $sentFriendRequests.findIndex((obj) => obj.id == payload.new.id);
+				$sentFriendRequests[index] = payload.new;
+				// $sentFriendRequests = $sentFriendRequests;
+			}
+		)
+		.subscribe();
+
+	// I think there's a better way to watch, this watches all of the rows in `profiles` btw
+	const userStatusWatcher = supabase
+		.channel('friend_status:changes')
+		.on(
+			'postgres_changes',
+			{
+				event: 'UPDATE',
+				schema: 'public',
+				table: 'profiles'
+			},
+			(payload) => {
+				console.log('SIDEBAR (userStatusWatcher): ', payload, friends);
+				// Find the user based on his/her id in the `friends` array
+				let index = friends.findIndex((item) => item.id === payload.new.id);
+				if (index != -1) {
+					// If the found user is a friend, then reassign the variables to the newer ones
+					friends[index].is_logged_in = payload.new.is_logged_in;
+					friends[index].photo_url = payload.new.photo_url;
+					friends[index].username = payload.new.username;
 				}
 			}
 		)
@@ -98,6 +141,7 @@
 
 	// This is pretty much the same thing but for sending friend requests
 	sentFriendRequests.subscribe(async (list) => {
+		sentRequests = [];
 		if (list == null) return;
 
 		const { data, error } = await supabase
@@ -114,8 +158,6 @@
 			return;
 		}
 
-		// sentRequests = data;
-
 		// Loop over 'list' then classify which is pending or accepted
 		list.forEach((item) => {
 			let selectedElement = data.find((i) => i.id === item.receiver_id);
@@ -131,37 +173,7 @@
 		// Reassign both variables to achieve realtime stuff
 		sentRequests = sentRequests;
 		friends = friends;
-		console.log('This is sent requests -> ', sentRequests);
-	});
-
-	// First thing to do once the sidebar mounts
-	onMount(async () => {
-		// NOTE: Status' of these requests can be "Pending", "Accepted", or "Declined"
-		// Gather current user data information like received friend requests
-		if ($receivedFriendRequests == null) {
-			const { data, error } = await supabase
-				.from('friend_requests')
-				.select()
-				.eq('receiver_id', userId);
-			if (error) {
-				console.log(error);
-			}
-			console.log('Received friend requests: ', data);
-			receivedFriendRequests.set(data);
-		}
-
-		// Gather sent friend requests
-		if ($sentFriendRequests == null) {
-			const { data, error } = await supabase
-				.from('friend_requests')
-				.select()
-				.eq('sender_id', userId);
-			if (error) {
-				console.log(error);
-			}
-			console.log('Sent friend requests: ', data);
-			sentFriendRequests.set(data);
-		}
+		console.log('SIDEBAR (sentFriendRequests): This is sent requests -> ', sentRequests);
 	});
 
 	async function declineRequest(sender_id: string) {
@@ -205,8 +217,40 @@
 		receivedRequests = receivedRequests;
 	}
 
+	// First thing to do once the sidebar mounts
+	onMount(async () => {
+		// NOTE: Status' of these requests can be "Pending", "Accepted", or "Declined"
+
+		// Grabs 'receivedFriendRequests'
+		const { data: recFRequests, error: recFRequestsError } = await supabase
+			.from('friend_requests')
+			.select()
+			.eq('receiver_id', userId);
+		if (recFRequestsError) {
+			console.log(recFRequestsError);
+		}
+		if (recFRequests) {
+			console.log('ONMOUNT: receivedFriendRequests.set() => ', recFRequests);
+			receivedFriendRequests.set(recFRequests);
+		}
+
+		// Grabs 'sentFriendRequests'
+		const { data: sentFRequests, error: sentFRequestsError } = await supabase
+			.from('friend_requests')
+			.select()
+			.eq('sender_id', userId);
+		if (sentFRequestsError) {
+			console.log(sentFRequestsError);
+		}
+		if (sentFRequests) {
+			console.log('ONMOUNT: sentFriendRequests.set() => ', sentFRequests);
+			sentFriendRequests.set(sentFRequests);
+		}
+	});
+
 	onDestroy(() => {
 		receiverSubscriber.unsubscribe();
+		userStatusWatcher.unsubscribe();
 	});
 </script>
 
@@ -287,35 +331,12 @@
 	</div>
 
 	{#if currentTab === 'Friends'}
-		<!-- FRIENDS LIST -->
-		<!-- {#each $users as user, idx (idx)}
-			<a
-				href={`/chat/${user.uid}`}
-				class="rounded-md p-2 transition-colors duration-200 hover:bg-secondary-900 hover:bg-opacity-40"
-				in:fly={{ duration: 300, x: -20 }}
-			>
-				<li>
-					<div class="relative h-10 w-10">
-						<Avatar src={user.photo_url || ''} width="w-10" referrerpolicy="no-referrer" />
-						{#if user.is_logged_in}
-							<span
-								class="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-green-500"
-							/>
-						{/if}
-					</div>
-					<div class="flex flex-col">
-						<span class="line-clamp-1 flex-auto">{user.username}</span>
-						<span class="text-sm opacity-75" />
-					</div>
-				</li>
-			</a>
-		{/each} -->
 		<div class="flex h-full flex-col">
 			<div class="flex-grow overflow-auto">
 				{#if showFriendRequests}
 					{#if receivedRequests.length == 0 && sentRequests.length == 0}
 						<p in:fade={{ duration: 500 }} class="my-2 font-gt-walsheim-pro-thin">
-							Nothing here! Try adding some friends (・_・)
+							Nothing here! Try adding some friends (•_•)
 						</p>
 					{/if}
 					<!-- Received friend requests -->
@@ -368,6 +389,7 @@
 						</div>
 					{/if}
 				{:else}
+					<!-- Friends list -->
 					{#each friends as friend}
 						<div
 							class="rounded-md transition-colors duration-200 hover:bg-secondary-900 hover:bg-opacity-40"

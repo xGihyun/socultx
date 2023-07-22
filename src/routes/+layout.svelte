@@ -17,7 +17,6 @@
 	import Navbar from '../components/Navbar.svelte';
 	import Sidebar from '../components/Sidebar.svelte';
 	import type { RealtimeChannel } from '@supabase/supabase-js';
-	import { receivedFriendRequests, sentFriendRequests } from '$lib/store';
 	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
 	export let data;

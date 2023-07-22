@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Avatar, toastStore, type ToastSettings } from '@skeletonlabs/skeleton';
-	import { sentFriendRequests } from '$lib/store';
+	import { sentFriendRequests, receivedFriendRequests } from '$lib/store';
 	import Auth from '../components/Auth.svelte';
 
 	export let data;
@@ -8,7 +8,14 @@
 
 	$: ({ supabase, session } = data);
 	$: searchResults = form?.results;
-	$: alreadySentRequests = $sentFriendRequests?.map((i) => i.receiver_id) ?? [];
+
+	// Create a variable that grabs the list of 'Accepted/Pending' requests made by the user
+	// this variable is a modified array of strings, i decided to do the format `${i.id}_${i.status}` to make use of .includes
+	// As of now, this thing isn't real time, but it isn't really a big deal, all the user needs to do is reload the page and afaik it won't cause any bugs whatsoever
+	// as long as the user is unable to click the 'Add Friend' button avoiding duplicates in the database
+	$: alreadySentRequests = $sentFriendRequests
+		.map((i) => `${i.receiver_id}_${i.status}`)
+		.concat($receivedFriendRequests.map((i) => `${i.sender_id}_${i.status}`));
 
 	async function addFriend(uid: string, username: string) {
 		const { data, error } = await supabase
@@ -49,7 +56,9 @@
 		$sentFriendRequests?.push(data[0]);
 		$sentFriendRequests = $sentFriendRequests; // This line is very important! must reassign writable!
 
-		alreadySentRequests = $sentFriendRequests?.map((i) => i.receiver_id) ?? [];
+		alreadySentRequests = $sentFriendRequests
+			.map((i) => `${i.receiver_id}_${i.status}`)
+			.concat($receivedFriendRequests.map((i) => `${i.sender_id}_${i.status}`));
 	}
 </script>
 
@@ -72,8 +81,32 @@
 						</div>
 
 						<!-- Add friend button -->
-						{#if alreadySentRequests?.includes(item.id)}
-							<div class="m-auto">Waiting...</div>
+						{#if alreadySentRequests.includes(`${item.id}_Pending`)}
+							<div class="m-auto">
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									class="mr-2 h-6 w-6 fill-warning-600"
+									height="1em"
+									viewBox="0 0 640 512"
+								>
+									<path
+										d="M96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM0 482.3C0 383.8 79.8 304 178.3 304h91.4C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3zM504 312V248H440c-13.3 0-24-10.7-24-24s10.7-24 24-24h64V136c0-13.3 10.7-24 24-24s24 10.7 24 24v64h64c13.3 0 24 10.7 24 24s-10.7 24-24 24H552v64c0 13.3-10.7 24-24 24s-24-10.7-24-24z"
+									/></svg
+								>
+							</div>
+						{:else if alreadySentRequests.includes(`${item.id}_Accepted`)}
+							<div class="m-auto">
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									class="mr-2 h-6 w-6 fill-primary-600"
+									height="1em"
+									viewBox="0 0 640 512"
+								>
+									<path
+										d="M96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM0 482.3C0 383.8 79.8 304 178.3 304h91.4C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3zM504 312V248H440c-13.3 0-24-10.7-24-24s10.7-24 24-24h64V136c0-13.3 10.7-24 24-24s24 10.7 24 24v64h64c13.3 0 24 10.7 24 24s-10.7 24-24 24H552v64c0 13.3-10.7 24-24 24s-24-10.7-24-24z"
+									/></svg
+								>
+							</div>
 						{:else}
 							<div class="m-auto">
 								<button on:click={() => addFriend(item.id, item.username)}>

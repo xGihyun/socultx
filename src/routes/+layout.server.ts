@@ -16,7 +16,7 @@ export const load: LayoutServerLoad = async ({ locals: { getSession, supabase } 
 			// 	console.log('Syncing -> ', newState)
 			// })
 			?.on('presence', { event: 'leave' }, async ({ leftPresences }) => {
-				// Set the user's presence to 'true' in the database
+				// Set the user's presence to 'false' in the database
 				if (leftPresences[0].uid) {
 					const { error } = await supabase
 						.from('profiles')
