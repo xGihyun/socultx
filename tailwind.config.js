@@ -14,6 +14,24 @@ module.exports = {
 				'gt-walsheim-pro-light': ['gt-walsheim-pro-light', 'sans-serif'],
 				'gt-walsheim-pro-thin': ['gt-walsheim-pro-thin', 'sans-serif'],
 			},
+
+			animation: {
+				text: 'text 5s ease infinite',
+			},
+			keyframes: {
+				text: {
+					'0%, 100%': {
+						'background-size': '200% 200%',
+						'background-position': 'left center',
+					},
+					'50%': {
+						'background-size': '200% 200%',
+						'background-position': 'right center',
+					},
+				},
+			},
+
+
 		}
 	},
 	plugins: [

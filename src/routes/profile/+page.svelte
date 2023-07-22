@@ -1,12 +1,9 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
-	import type { Writable } from 'svelte/store';
-
-	const currentUser = getContext<Writable<any>>('user');
+	export let data;
 </script>
 
 <div>
 	<h1 class="text-5xl text-white">
-		Hello World! Welcome {$currentUser.username}
+		Hello World! Welcome {data.user?.username}
 	</h1>
 </div>

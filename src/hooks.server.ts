@@ -1,32 +1,32 @@
-
-// import { browser } from '$app/environment';
-// import { db } from '$lib/firebase/firebase';
-import { redirect } from '@sveltejs/kit';
-// import { doc, setDoc } from 'firebase/firestore';
+import { PUBLIC_SUPABASE_ANONKEY, PUBLIC_SUPABASE_URL } from '$env/static/public';
+import { createSupabaseServerClient } from '@supabase/auth-helpers-sveltekit';
 import type { Handle } from '@sveltejs/kit';
 
 export const handle = (async ({ event, resolve }) => {
-	const userStuffCookie = event.cookies.get('userStuff');
 
-	if (userStuffCookie) {
-		event.locals.userStuff = JSON.parse(userStuffCookie);
+	event.locals.supabase = createSupabaseServerClient({
+		supabaseUrl: PUBLIC_SUPABASE_URL,
+		supabaseKey: PUBLIC_SUPABASE_ANONKEY,
+		event,
+	})
+
+
+	/**
+	 * a little helper that is written for convenience so that instead
+	 * of calling `const { data: { session } } = await supabase.auth.getSession()`
+	 * you just call this `await getSession()`
+	 */
+	event.locals.getSession = async () => {
+		const {
+			data: { session },
+		} = await event.locals.supabase.auth.getSession()
+		return session
 	}
 
-	// TODO: set is_logged_in to 'false' when the app is not running in the browser (pls help)
-	// if (!browser) {
-	// 	const userRef = doc(db, 'users', event.locals.userStuff.uid || '');
+	return resolve(event, {
+		filterSerializedResponseHeaders(name) {
+			return name === 'content-range'
+		},
+	})
 
-	// 	// Set login to false in the database
-	// 	await setDoc(userRef, { is_logged_in: false }, { merge: true });
-	// }
-
-	// Redirects to login page if an unknown user tries to access other pages
-	if (event.url.pathname !== '/' && !userStuffCookie) {
-		console.log('Access Denied');
-		throw redirect(307, '/');
-	}
-
-	const response = await resolve(event);
-
-	return response;
 }) satisfies Handle;

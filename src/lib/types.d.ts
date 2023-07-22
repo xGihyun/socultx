@@ -1,10 +1,11 @@
 import type { Timestamp } from "firebase/firestore";
+import type { Thumbnail } from "youtubei.js/dist/src/parser/misc";
 
 export type UserData = {
 	username: string | null;
 	email: string | null;
 	photo_url: string | null;
-	is_logged_in: boolean;
+	// is_logged_in: boolean;
 	uid: string | null;
 };
 
@@ -38,3 +39,51 @@ export type Message = {
 	receiver_email: string;
 	timestamp: Timestamp;
 };
+
+export type Song = {
+	id: string,
+	song: string,
+	artist: string,
+	album: AlbumBasic,
+	url: string,
+	cover_art_url: string,
+	duration: string,
+	lyrics: string,
+}
+
+export type SpinnerTypes = {
+	size: string | number;
+	color: string;
+	unit: string;
+	duration: string;
+	pause: boolean;
+};
+
+export type Circle2Types = {
+	colorOuter: string;
+	colorCenter: string;
+	colorInner: string;
+	durationMultiplier: number;
+	durationOuter: string;
+	durationInner: string;
+	durationCenter: string;
+} & SpinnerTypes;
+
+export type SongDetailed = {
+	type: string,
+	videoId: string,
+	name: string,
+	artists: { name: string, artistId: string }[],
+	album: { name: string, albumId: string },
+	duration: { text: string, seconds: number },
+	thumbnails: Thumbnail[]
+}
+
+export type AlbumDetailed = {
+	albumId: string,
+	playlistId: string,
+	name: string,
+	artists: { name: string, artistId: string }[],
+	year: string,
+	thumbnails: Thumbnail[]
+}

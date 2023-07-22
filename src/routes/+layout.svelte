@@ -9,40 +9,70 @@
 	// Finally, your application's global stylesheet (sometimes labeled 'app.css')
 	import '../app.postcss';
 
-	import { allUsers, currentUser } from '$lib/store';
-	import { getContext, setContext } from 'svelte';
+	// This is needed for interactive popups
+	import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
+	import { Toast, storePopup } from '@skeletonlabs/skeleton';
+	import { onMount } from 'svelte';
+	import { invalidate } from '$app/navigation';
 	import Navbar from '../components/Navbar.svelte';
 	import Sidebar from '../components/Sidebar.svelte';
-	import type { UserData } from '$lib/types';
-	import type { Writable } from 'svelte/store';
+	import type { RealtimeChannel } from '@supabase/supabase-js';
+	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
 	export let data;
 
-	$: currentUser.set({
-		email: data.user?.username || '',
-		is_logged_in: data.user?.is_logged_in || false,
-		photo_url: data.user?.photo_url || '',
-		uid: data.user?.uid || '',
-		username: data.user?.username || ''
+	let { supabase, session } = data;
+	$: ({ supabase, session } = data);
+
+	console.log('This is from +layout.svelte: ', session);
+
+	onMount(() => {
+		let specifiedChannel: RealtimeChannel;
+		const {
+			data: { subscription }
+		} = supabase.auth.onAuthStateChange(async (event, _session) => {
+			console.log('This is `_session` inside the onAuthStateChange: ', _session);
+
+			if (_session) {
+				// Assign any channel name to connect to as long as all clients connect to the same channel
+				specifiedChannel = supabase.channel('users');
+
+				// Join the channel
+				specifiedChannel.subscribe(async (status) => {
+					if (status === 'SUBSCRIBED') {
+						const presenceTrackStatus = await specifiedChannel.track({
+							uid: _session.user.id
+						});
+						console.log(presenceTrackStatus);
+					}
+				});
+			}
+
+			if (event === 'SIGNED_OUT' && _session === null) {
+				await specifiedChannel.unsubscribe();
+			}
+
+			// If the session has expired simply log the user out
+			if (_session?.expires_at !== session?.expires_at) {
+				invalidate('supabase:auth');
+			}
+		});
+
+		return () => subscription.unsubscribe();
 	});
-
-	$: allUsers.set(data.users || []);
-
-	// This is set at the root layout
-	setContext('user', currentUser);
-	setContext('users', allUsers);
-
-	$: userContext = getContext<Writable<UserData>>('user');
 </script>
 
 <div class="flex h-screen flex-col">
-	<Navbar />
+	{#if session}
+		<Navbar picture={session.user.user_metadata.photo_url} {supabase} />
+	{/if}
 	<div class="flex w-full flex-1 overflow-hidden">
 		<main class="relative flex-1 overflow-y-auto">
 			<slot />
 		</main>
-		{#if $userContext.is_logged_in}
-			<Sidebar />
+		{#if session}
+			<Sidebar {supabase} userId={session.user.id} />
 		{/if}
 	</div>
+	<Toast />
 </div>

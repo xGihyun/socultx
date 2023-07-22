@@ -1,4 +1,3 @@
-// import { db } from '$lib/firebase/firebase';
 // import { collection, getDocs, query, where } from 'firebase/firestore';
 
 // // TODO: Make allUsers reactive, when someone logs in, the green circle appears; when a new user appears, they will appear on the sidebar, etc.
