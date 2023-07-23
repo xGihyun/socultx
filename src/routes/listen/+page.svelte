@@ -15,7 +15,6 @@
 		activateTextTruncateScroll();
 		hasResults = false;
 	});
-	// console.log(data);
 </script>
 
 <form action="/listen" on:submit={() => (showLoading = true)}>

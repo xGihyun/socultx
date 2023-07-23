@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { isMusicLoading, musicQueue, areSongsSelected } from '$lib/music';
 	import { afterUpdate, onDestroy, onMount } from 'svelte';
-	import { AudioPlayer, trackIndex } from 'svelte-mp3';
+	import { AudioPlayer, isPlaying, trackIndex } from 'svelte-mp3';
 	import { browser } from '$app/environment';
 	import { fade, fly } from 'svelte/transition';
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
@@ -20,7 +20,9 @@
 	let receivedRequests: any[];
 	let friends: any[];
 	let sentRequests: any[];
-	$: (receivedRequests = []), (sentRequests = []), (friends = []);
+	let currentUserActivity: string | null;
+	$: (receivedRequests = []), (sentRequests = []), (friends = []), (currentUserActivity = null);
+
 
 	// Whenever the user clicks on any of the tabs, return a different classname
 	$: sidebarTabLogic = (clickedButtonName: string) => {
@@ -37,6 +39,27 @@
 		}
 	});
 
+	isPlaying.subscribe(async (newState) => {
+		if (newState === true && $musicQueue[$trackIndex] && currentUserActivity == null) {
+			currentUserActivity = `♫ ${$musicQueue[$trackIndex].song} • ${$musicQueue[$trackIndex].artist}`;
+			const { error } = await supabase
+				.from('profiles')
+				.update({ activity: currentUserActivity })
+				.eq('id', userId);
+			console.log(`Action: STARTING TO LISTEN (Music), User Id: ${userId}, Error: ${error}`);
+		}
+	});
+
+	trackIndex.subscribe(async (newIndex) => {
+		if ($musicQueue[newIndex]) {
+			currentUserActivity = `♫ ${$musicQueue[newIndex].song} • ${$musicQueue[newIndex].artist}`;
+			const { error } = await supabase
+				.from('profiles')
+				.update({ activity: currentUserActivity })
+				.eq('id', userId);
+			console.log(`Action: UPDATING ACTIVITY (Music), User Id: ${userId}, Error: ${error}`);
+		}
+	});
 	// Everytime a user sends in a friend request to us, we search the user/s profiles and get info
 	receivedFriendRequests.subscribe(async (list) => {
 		receivedRequests = [];
@@ -133,6 +156,9 @@
 					friends[index].is_logged_in = payload.new.is_logged_in;
 					friends[index].photo_url = payload.new.photo_url;
 					friends[index].username = payload.new.username;
+					friends[index].activity = payload.new.activity;
+					// Apply update realtime
+					nowPlayingKey = !nowPlayingKey;
 				}
 			}
 		)
@@ -390,12 +416,11 @@
 				{:else}
 					<!-- Friends list -->
 					{#each friends as friend}
-						<div
-							class="rounded-md transition-colors duration-200 hover:bg-secondary-900 hover:bg-opacity-40 p-2"
-						>
-							<!-- Add proper href later -->
-							<a href={`/`}>
-								<div class="relative h-10 w-10">
+						<a href={`/`}>
+							<div
+								class="flex rounded-md p-2 transition-colors duration-200 hover:bg-secondary-900 hover:bg-opacity-40"
+							>
+								<div class="relative h-10 w-10 self-center">
 									<Avatar src={friend.photo_url} width="w-10" referrerpolicy="no-referrer" />
 									{#if friend.is_logged_in}
 										<span
@@ -403,12 +428,16 @@
 										/>
 									{/if}
 								</div>
-								<div class="flex flex-col">
+								<div class="mx-4 self-center">
 									<span class="line-clamp-1 flex-auto">{friend.username}</span>
-									<span class="text-sm opacity-75" />
+									{#if friend.activity}
+										{#key nowPlayingKey}
+											<span class="text-truncate-scroll text-sm opacity-75">{friend.activity}</span>
+										{/key}
+									{/if}
 								</div>
-							</a>
-						</div>
+							</div>
+						</a>
 					{/each}
 				{/if}
 			</div>
@@ -465,16 +494,6 @@
 							? 'visible mr-2 cursor-pointer fill-surface-600 transition-colors duration-300 hover:scale-105 hover:fill-error-400'
 							: 'invisible'}
 						on:click={() => {
-							// Get selected items from queue then remove one by one
-
-							// $areSongsSelected.selectedIndexes.forEach((index) => {
-							// 	musicQueue.update((currentQueue) => {
-							// 		currentQueue.splice(index, 1);
-							// 		if ($trackIndex > index) $trackIndex--;
-							// 		return currentQueue;
-							// 	});
-							// });
-
 							// Use reverse for loop
 							for (let index = $areSongsSelected.selectedIndexes.length - 1; index >= 0; index--) {
 								musicQueue.update((currentQueue) => {
@@ -483,21 +502,6 @@
 									return currentQueue;
 								});
 							}
-
-							// musicQueue.update((currentQueue) => {
-							// 	console.log('Current queue (old) is: ', currentQueue);
-
-							// 	let newQueue = currentQueue.filter(
-							// 		(_, index) => !$areSongsSelected.selectedIndexes.includes(index)
-							// 	);
-
-							// 	console.log('Current queue (new) is: ', newQueue);
-							// 	return newQueue;
-							// });
-
-							// Hide icon
-							// $areSongsSelected.state = false;
-							// $areSongsSelected.
 							areSongsSelected.set({ state: false, selectedIndexes: [] });
 						}}
 					>

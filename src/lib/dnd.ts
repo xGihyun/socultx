@@ -74,13 +74,12 @@ export function draggableContainer(node: HTMLElement) {
 
     node.addEventListener('dragend', async () => {
         let newQueue: Song[] = []
-        let indexToSet: number;
+        let indexToSet: number = 0;
 
         for (let i = 0; i < node.children.length; i++) {
             let element = node.children[i] as HTMLElement;
             if (element.dataset.now_playing as string == "true") {
                 indexToSet = i;
-                // trackIndex.set(i);
             }
             newQueue.push({
                 id: element.dataset.id as string,
@@ -107,21 +106,26 @@ export function draggableContainer(node: HTMLElement) {
 
 }
 
-function getDragAfterElement(container: HTMLElement, y: number) {
-    // grab draggable elements except the one that the user is currently holding, store into some array
-    const draggableElements = [...container.querySelectorAll('.draggable:not(.dragging)')]
 
-    return draggableElements.reduce((closest, child) => {
-        const box = child.getBoundingClientRect()
-        const offset = y - box.top - box.height / 2
+function getDragAfterElement(container: HTMLElement, y: number): Element | null {
+
+    // grab draggable elements except the one that the user is currently holding, store into some array
+    const draggableElements = [...container.querySelectorAll('.draggable:not(.dragging)')];
+
+    const closest = draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
 
         if (offset < 0 && offset > closest.offset) {
             return {
                 offset: offset,
                 element: child
-            }
+            };
         } else {
-            return closest
+            return closest;
         }
-    }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }, { offset: Number.NEGATIVE_INFINITY, element: null } as { offset: number; element: Element | null });
+
+    return closest.element;
 }
+

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { UserAvatar } from '$lib/components/user';
-import type { UserData } from '$lib/types';
+	import type { UserData } from '$lib/types';
 
 	export let data;
 
@@ -15,4 +15,5 @@ import type { UserData } from '$lib/types';
 <div class="relative h-40 w-full lg:h-80">
 	<div class="h-40 bg-surface-300-600-token lg:h-80" />
 </div>
+
 <UserAvatar {user} />

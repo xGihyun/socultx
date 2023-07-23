@@ -20,9 +20,12 @@ export const load: LayoutServerLoad = async ({ locals: { getSession, supabase } 
 				if (leftPresences[0].uid) {
 					const { error } = await supabase
 						.from('profiles')
-						.update({ is_logged_in: false })
-						.eq('id', leftPresences[0].uid);
-					console.log(`Action: LEAVE, User Id: ${leftPresences[0].uid}, Error: ${error}`);
+						.update({
+							is_logged_in: false,
+							activity: null
+						})
+						.eq('id', leftPresences[0].uid)
+					console.log(`Action: LEAVE, User Id: ${leftPresences[0].uid}, Error: ${error}`)
 				}
 			})
 			.on('presence', { event: 'join' }, async ({ newPresences }) => {
