@@ -1,4 +1,3 @@
-import type { Timestamp } from "firebase/firestore";
 import type { Thumbnail } from "youtubei.js/dist/src/parser/misc";
 
 export type UserData = {
@@ -37,14 +36,19 @@ export type Message = {
 	receiver_username: string;
 	receiver_photo_url: string;
 	receiver_email: string;
-	timestamp: Timestamp;
+	timestamp: Date;
 };
+
+export type SearchResults = {
+    songs: SongDetailed[],
+    albums: AlbumDetailed[],
+}
 
 export type Song = {
 	id: string,
 	song: string,
 	artist: string,
-	album: AlbumBasic,
+	album: any,
 	url: string,
 	cover_art_url: string,
 	duration: string,

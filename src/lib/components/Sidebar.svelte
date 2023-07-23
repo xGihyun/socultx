@@ -4,12 +4,11 @@
 	import { AudioPlayer, isPlaying, trackIndex } from 'svelte-mp3';
 	import { browser } from '$app/environment';
 	import { fade, fly } from 'svelte/transition';
-	import Spinner from './Spinner.svelte';
-	import Queue from './Queue.svelte';
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
 	import { receivedFriendRequests, sentFriendRequests } from '$lib/store';
 	import type { SupabaseClient } from '@supabase/supabase-js';
 	import { Avatar } from '@skeletonlabs/skeleton';
+	import { Spinner, Queue } from '.';
 
 	export let supabase: SupabaseClient;
 	export let userId: string;
@@ -168,7 +167,7 @@
 	// This is pretty much the same thing but for sending friend requests
 	sentFriendRequests.subscribe(async (list) => {
 		sentRequests = [];
-		if (list == null) return;
+		if (list === null) return;
 
 		const { data, error } = await supabase
 			.from('profiles')
@@ -360,7 +359,7 @@
 		<div class="flex h-full flex-col">
 			<div class="flex-grow overflow-auto">
 				{#if showFriendRequests}
-					{#if receivedRequests.length == 0 && sentRequests.length == 0}
+					{#if receivedRequests.length === 0 && sentRequests.length === 0}
 						<p in:fade={{ duration: 500 }} class="my-2 font-gt-walsheim-pro-thin">
 							Nothing here! Try adding some friends (•_•)
 						</p>

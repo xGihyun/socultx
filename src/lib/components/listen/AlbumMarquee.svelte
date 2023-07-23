@@ -3,12 +3,17 @@
 
 	export let upper: string;
 	export let lower: string;
-	$: isUpperMoving = false;
+
 	let upperElement: HTMLElement;
 
+	$: isUpperMoving = false;
+
 	function checkIfTextOverflows() {
-		let parentElement = upperElement.parentElement as HTMLElement;
-		if (upperElement.clientWidth > parentElement?.clientWidth) {
+		const { parentElement } = upperElement;
+
+		if (!parentElement) return;
+
+		if (upperElement.clientWidth > parentElement.clientWidth) {
 			console.log('Overflowing element: ', upperElement);
 			setTimeout(() => {
 				isUpperMoving = !isUpperMoving;

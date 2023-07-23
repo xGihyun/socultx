@@ -2,15 +2,15 @@ import { watcher } from '$lib/store';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ locals: { getSession, supabase } }) => {
-
 	if (watcher.get() == null) {
 		// Starting watcher
-		console.log("Starting User Presence Watcher!");
+		console.log('Starting User Presence Watcher!');
 		// Assign a value to the 'store' wherein the RealtimeChannel is 'users'
 		watcher.set(supabase.channel('users'));
 
 		// Set listener if the user leaves or joins the channel
-		(watcher.get())
+		watcher
+			.get()
 			// ?.on('presence', { event: 'sync' }, () => {
 			// 	const newState = (watcher.get())?.presenceState()
 			// 	console.log('Syncing -> ', newState)
@@ -33,16 +33,16 @@ export const load: LayoutServerLoad = async ({ locals: { getSession, supabase } 
 					const { error } = await supabase
 						.from('profiles')
 						.update({ is_logged_in: true })
-						.eq('id', newPresences[0].uid)
-					console.log(`Action: JOIN, User Id: ${newPresences[0].uid}, Error: ${error}`)
+						.eq('id', newPresences[0].uid);
+					console.log(`Action: JOIN, User Id: ${newPresences[0].uid}, Error: ${error}`);
 				}
 			})
-			.subscribe()
+			.subscribe();
 	} else {
-		console.log("User Presence Watcher is already running, skipping...")
+		console.log('User Presence Watcher is already running, skipping...');
 	}
 
 	return {
 		session: await getSession()
-	}
+	};
 };

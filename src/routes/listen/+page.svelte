@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { afterUpdate } from 'svelte';
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
-	import SongResults from './components/SongResults.svelte';
-	import AlbumResults from './components/AlbumResults.svelte';
 	import { musicQueue, currentSongInfo, isMusicLoading, fetchSongAudioUrl } from '$lib/music';
-	import Spinner from '../../components/Spinner.svelte';
-	export let data;
+	import type { PageServerData } from './$types';
+	import { Spinner } from '$lib/components';
+	import { AlbumResults, SongResults } from '$lib/components/listen';
+
+	export let data: PageServerData;
 
 	$: hasResults = data.didUserSearch;
 	$: showLoading = hasResults;
