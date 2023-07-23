@@ -1,14 +1,15 @@
 import { type Writable, writable } from 'svelte/store';
-import type { RealtimeChannel } from "@supabase/supabase-js";
-import type { UserData } from './types';
+import type { RealtimeChannel, Session, SupabaseClient } from "@supabase/supabase-js";
+// import type { UserData } from './types';
 
-export const currentUser: Writable<UserData> = writable({
-	email: '',
-	username: '',
-	uid: '',
-	photo_url: ''
-});
+// export const currentUser: Writable<UserData> = writable({
+// 	email: '',
+// 	username: '',
+// 	uid: '',
+// 	photo_url: ''
+// });
 
+export const globalContext: Writable<{ session: Session | null, supabase: SupabaseClient } | {}> = writable({})
 export const receivedFriendRequests: Writable<any[]> = writable([])
 export const sentFriendRequests: Writable<any[]> = writable([])
 

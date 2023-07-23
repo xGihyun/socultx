@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { UserAvatar } from '$lib/components/user';
-	import type { UserData } from '$lib/types';
+	// import type { UserData } from '$lib/types';
 
-	export let data;
+	// export let data;
+	// let { supabase, session } = data;
+	// $: ({ supabase, session } = data);
 
-	$: user = data.session?.user?.user_metadata as UserData;
+	// $: user = session?.user?.user_metadata as UserData;
 </script>
 
 <!-- <div>
@@ -16,4 +18,4 @@
 	<div class="h-40 bg-surface-300-600-token lg:h-80" />
 </div>
 
-<UserAvatar {user} />
+<UserAvatar />

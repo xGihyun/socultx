@@ -6,10 +6,11 @@
 	// This is needed for interactive popups
 	import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
 	import { Toast, storePopup } from '@skeletonlabs/skeleton';
-	import { onMount } from 'svelte';
+	import { onMount, setContext } from 'svelte';
 	import { invalidate } from '$app/navigation';
 	import type { RealtimeChannel } from '@supabase/supabase-js';
 	import { Navbar, Sidebar } from '$lib/components';
+	import { globalContext } from '$lib/store';
 
 	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
@@ -17,9 +18,15 @@
 
 	let { supabase, session } = data;
 	$: ({ supabase, session } = data);
+	$: globalContext.set({
+		session: session,
+		supabase: supabase
+	});
+
+	// Set context especially if the user's auth state changes
+	setContext('globalContext', globalContext);
 
 	console.log('This is from +layout.svelte: ', session);
-
 	onMount(() => {
 		let specifiedChannel: RealtimeChannel;
 		const {

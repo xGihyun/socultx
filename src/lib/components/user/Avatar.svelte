@@ -1,10 +1,14 @@
 <script lang="ts">
-	import type { UserData } from '$lib/types';
+	// import type { UserData } from '$lib/types';
 	import { Avatar, popup, type PopupSettings } from '@skeletonlabs/skeleton';
 	import { crop } from '$lib/pkg/rust_utils';
+	import { getContext } from 'svelte';
+	import type { Session, SupabaseClient } from '@supabase/supabase-js';
+	import type { Writable } from 'svelte/store';
 
-  // Use getContext() instead maybe?
-	export let user: UserData;
+	// Now using getContext
+	let globalContext: Writable<{ session: Session; supabase: SupabaseClient }> =
+		getContext('globalContext');
 
 	const AVATAR = {
 		width: 160,
@@ -36,30 +40,67 @@
 		const croppedBannerBytes = crop(bannerBytes, AVATAR.width, AVATAR.height);
 
 		// Idk how to upload files to Supabase yet
-		formData.append('blob', new Blob([croppedBannerBytes]));
+		formData.append('blob', new Blob([croppedBannerBytes], { type: 'image/jpeg' }));
 		formData.append('file_name', selectedAvatar.name);
 
 		// NOTE: Use form actions instead?
-		// const response = await fetch('./api/photo/upload', {
-		// 	method: 'POST',
-		// 	body: formData
-		// });
+		const response: { success: boolean; url: string } = await (
+			await fetch('/api/photo/upload', {
+				method: 'POST',
+				body: formData
+			})
+		).json();
 
+		console.log(response);
+
+		if (response.success) {
+			const updateAvatarForMyself = await $globalContext.supabase.auth.updateUser({
+				data: {
+					photo_url: response.url
+				}
+			});
+
+			console.log(updateAvatarForMyself.data);
+
+			if (updateAvatarForMyself.error) {
+				console.log(
+					'Error updating user profile for the current user, just reload page: ',
+					updateAvatarForMyself.error
+				);
+			}
+
+			// TODO: Make realtime change user profile for the current user to see
+			console.log(
+				"SINCE THE USER CHANGED PFP's this is now the new SESSION OBJECT ==> ",
+				updateAvatarForMyself.data
+			);
+		}
+
+		// supabase;
 		// if (response.ok) {
 		// 	console.log('Successfully changed profile picture.');
+		// 	// # UPDATE FOR THE CURRENT USER TO SEE IN THEIR NAVBAR AND PROFILE `auth` table
+		// 	const updateAvatarForMyself = await supabase.auth.updateUser({
+		// 		data: {
+		// 			photo_url: publicAvatarURL
+		// 		}
+		// 	})
+
+		// 	if (updateAvatarForMyself.error) {
+		// 		throw error(404, { message: updateAvatarForMyself.error })
+		// 	}
+
 		// } else {
 		// 	console.error('Error changing profile picture.');
 		// }
 	}
 
 	async function removeAvatar() {
-		if (!user.photo_url) return;
-
+		// if (!user.photo_url) return;
 		// NOTE: Use form actions instead?
 		// const response = await fetch('./api/photo/remove', {
 		// 	method: 'POST'
 		// });
-
 		// if (response.ok) {
 		// 	console.log('Successfully removed profile picture.');
 		// } else {
@@ -86,7 +127,7 @@
 		title="Change your avatar!"
 		use:popup={popupChangeAvatar}
 	>
-		<Avatar src={user?.photo_url || ''} width="w-20 lg:w-40" />
+		<Avatar src={$globalContext.session.user.user_metadata.photo_url} width="w-20 lg:w-40" />
 	</button>
 
 	<div
@@ -116,7 +157,7 @@
 
 	<div class="flex h-full flex-col justify-center">
 		<span class="text-base lg:text-2xl">
-			{user.username}
+			{$globalContext.session.user.user_metadata.username}
 		</span>
 	</div>
 </div>
