@@ -2,11 +2,12 @@
 	import { isPlaying, trackIndex } from 'svelte-mp3';
 	import type { PopupSettings } from '@skeletonlabs/skeleton';
 	import { popup } from '@skeletonlabs/skeleton';
-	import type { SongDetailed } from '$lib/types';
 	import { fetchSongAudioUrl, getMinAndSec, setSongInfoToStore } from '$lib/music';
 	import { musicQueue, currentSongInfo, isMusicLoading } from '$lib/music';
+	import type { SongDetailed } from '$lib/types';
 
 	export let results: SongDetailed[];
+
 	const popupConfig: PopupSettings = {
 		event: 'click',
 		target: 'threeDotsActions',

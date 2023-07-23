@@ -30,6 +30,9 @@ module.exports = {
 					},
 				},
 			},
+			padding: {
+				'resp': '5%',
+			}
 
 
 		}

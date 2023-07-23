@@ -1,12 +1,6 @@
 <script lang="ts">
-	// Your custom Skeleton theme:
 	import '../theme.postcss';
-
-	// This contains the bulk of Skeletons required styles:
-	// NOTE: this will be renamed skeleton.css in the v2.x release.
 	import '@skeletonlabs/skeleton/styles/skeleton.css';
-
-	// Finally, your application's global stylesheet (sometimes labeled 'app.css')
 	import '../app.postcss';
 
 	// This is needed for interactive popups
@@ -14,9 +8,9 @@
 	import { Toast, storePopup } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
 	import { invalidate } from '$app/navigation';
-	import Navbar from '../components/Navbar.svelte';
-	import Sidebar from '../components/Sidebar.svelte';
 	import type { RealtimeChannel } from '@supabase/supabase-js';
+	import { Navbar, Sidebar } from '$lib/components';
+
 	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
 	export let data;

@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { afterUpdate } from 'svelte';
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
-	import SongResults from './components/SongResults.svelte';
-	import AlbumResults from './components/AlbumResults.svelte';
 	import { musicQueue, currentSongInfo, isMusicLoading, fetchSongAudioUrl } from '$lib/music';
-	import Spinner from '../../components/Spinner.svelte';
-	export let data;
+	import type { PageServerData } from './$types';
+	import { Spinner } from '$lib/components';
+	import { AlbumResults, SongResults } from '$lib/components/listen';
+
+	export let data: PageServerData;
 
 	$: hasResults = data.didUserSearch;
 	$: showLoading = hasResults;
@@ -46,9 +47,9 @@
 			Search results for: <span class="font-bold">{data?.query}</span>
 		</h5>
 		{#if data.type === 'song'}
-			<SongResults results={data.results} />
+			<SongResults results={data.results.songs} />
 		{:else if data.type === 'album'}
-			<AlbumResults results={data.results} />
+			<AlbumResults results={data.results.albums} />
 		{/if}
 	{/key}
 {/if}

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Avatar, toastStore, type ToastSettings } from '@skeletonlabs/skeleton';
 	import { sentFriendRequests, receivedFriendRequests } from '$lib/store';
-	import Auth from '../components/Auth.svelte';
+	import { Auth } from '$lib/components';
 
 	export let data;
 	export let form;
