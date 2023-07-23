@@ -38,6 +38,32 @@ export const POST: RequestHandler = async ({ locals: { getSession, supabase }, r
         throw error(404, { message: updateAvatarForOthers.error })
     }
 
+
+    // const updateAvatarForMyself = await supabase.auth.updateUser({
+    //     data: {
+    //         photo_url: publicAvatarURL
+    //     }
+    // });
+
+    // console.log(updateAvatarForMyself.data);
+
+    // if (updateAvatarForMyself.error) {
+    //     console.log(
+    //         'Error updating user profile for the current user, just reload page: ',
+    //         updateAvatarForMyself.error
+    //     );
+    // }
+
+    // // TODO: Make realtime change user profile for the current user to see
+    // console.log(
+    //     "SINCE THE USER CHANGED PFP's this is now the new SESSION OBJECT ==> ",
+    //     updateAvatarForMyself.data
+    // );
+
+    // const { data, error } = await $globalContext.supabase.auth.()
+
+
+
     return json({
         success: true,
         url: publicAvatarURL

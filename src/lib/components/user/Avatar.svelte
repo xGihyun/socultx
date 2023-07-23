@@ -54,13 +54,12 @@
 		console.log(response);
 
 		if (response.success) {
+			// NEEDS TO BE CLIENT SIDE???
 			const updateAvatarForMyself = await $globalContext.supabase.auth.updateUser({
 				data: {
 					photo_url: response.url
 				}
 			});
-
-			console.log(updateAvatarForMyself.data);
 
 			if (updateAvatarForMyself.error) {
 				console.log(

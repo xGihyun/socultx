@@ -9,6 +9,23 @@ export const isMusicLoading: Writable<boolean> = writable(false);
 export const areSongsSelected: Writable<{ state: boolean, selectedIndexes: Array<number> }> = writable({ state: false, selectedIndexes: [] });
 export const ytm: Store<Innertube | null> = store(null);
 
+
+export function resetAllMusicStores() {
+    musicQueue.set([]);
+    currentSongInfo.set({
+        id: '',
+        song: '',
+        artist: '',
+        album: {},
+        url: '',
+        cover_art_url: '',
+        duration: '',
+        lyrics: '',
+    });
+    isMusicLoading.set(false);
+    areSongsSelected.set({ state: false, selectedIndexes: [] });
+}
+
 // Input (261) -> Output (4:20)
 export function getMinAndSec(seconds: number) {
     const minutes = Math.floor(seconds / 60);

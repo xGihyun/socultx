@@ -1,15 +1,26 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { invalidate } from '$app/navigation';
+	import { goto, invalidate } from '$app/navigation';
+	import { resetAllMusicStores } from '$lib/music';
+	import { resetAllUserStores } from '$lib/store';
 	import { Avatar } from '@skeletonlabs/skeleton';
-	import type { SupabaseClient } from '@supabase/supabase-js';
-	export let picture: string | undefined;
-	export let supabase: SupabaseClient;
+	import type { Session, SupabaseClient } from '@supabase/supabase-js';
+	import { getContext } from 'svelte';
+	import type { Writable } from 'svelte/store';
+	// export let picture: string | undefined;
+	// export let supabase: SupabaseClient;
+	let globalContext: Writable<{ session: Session; supabase: SupabaseClient }> =
+		getContext('globalContext');
 
 	const handleSignOut = async () => {
-		await supabase.auth.signOut();
+		await $globalContext.supabase.auth.signOut();
 		console.log('Invalidating auth cause of signout');
-		invalidate('supabase:auth');
+		await goto('/', { invalidateAll: true });
+		await invalidate('supabase:auth');
+
+		// Reset all stores
+		resetAllUserStores();
+		resetAllMusicStores();
 	};
 </script>
 
@@ -43,7 +54,7 @@
 		<a class="variant-filled-secondary rounded-md p-2" type="button" href="/chat">Chat</a>
 		<button class="variant-filled-primary rounded-md p-2" on:click={handleSignOut}>Log Out</button>
 		<a href="/profile">
-			<Avatar src={picture} width="w-10" />
+			<Avatar src={$globalContext.session.user.user_metadata.photo_url} width="w-10" />
 		</a>
 	</div>
 </nav>
