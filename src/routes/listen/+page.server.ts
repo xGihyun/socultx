@@ -5,6 +5,7 @@ import { Innertube } from 'youtubei.js';
 import type { TextRun } from 'youtubei.js/dist/src/parser/misc';
 
 export const load: PageServerLoad = async ({ url }) => {
+
 	if (ytm.get() === null) {
 		ytm.set(await Innertube.create());
 		console.log('Initializing innertube api...');
@@ -26,6 +27,7 @@ export const load: PageServerLoad = async ({ url }) => {
 
 	// Use youtubei.js
 	const searchResult = await ytm.get()?.music.search(query, { type: categoryType });
+
 	let results: SearchResults = {
 		songs: [],
 		albums: []

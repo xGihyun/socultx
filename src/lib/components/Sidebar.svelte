@@ -23,6 +23,7 @@
 	let currentUserActivity: string | null;
 	$: (receivedRequests = []), (sentRequests = []), (friends = []), (currentUserActivity = null);
 
+
 	// Whenever the user clicks on any of the tabs, return a different classname
 	$: sidebarTabLogic = (clickedButtonName: string) => {
 		if (currentTab === clickedButtonName) {
@@ -59,7 +60,6 @@
 			console.log(`Action: UPDATING ACTIVITY (Music), User Id: ${userId}, Error: ${error}`);
 		}
 	});
-
 	// Everytime a user sends in a friend request to us, we search the user/s profiles and get info
 	receivedFriendRequests.subscribe(async (list) => {
 		receivedRequests = [];
@@ -502,7 +502,6 @@
 									return currentQueue;
 								});
 							}
-
 							areSongsSelected.set({ state: false, selectedIndexes: [] });
 						}}
 					>

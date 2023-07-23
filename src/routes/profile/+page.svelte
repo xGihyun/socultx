@@ -9,10 +9,11 @@
 
 <!-- <div>
 	<h1 class="text-5xl text-white">
-		Hello World! Welcome {data.user.username}
+		Hello World! Welcome {user?.username}
 	</h1>
 </div> -->
 <div class="relative h-40 w-full lg:h-80">
 	<div class="h-40 bg-surface-300-600-token lg:h-80" />
 </div>
+
 <UserAvatar {user} />

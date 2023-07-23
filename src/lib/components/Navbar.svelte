@@ -41,7 +41,6 @@
 	<div class="flex gap-5">
 		<a class="variant-filled-secondary rounded-md p-2" type="button" href="/listen">Listen</a>
 		<a class="variant-filled-secondary rounded-md p-2" type="button" href="/chat">Chat</a>
-
 		<button class="variant-filled-primary rounded-md p-2" on:click={handleSignOut}>Log Out</button>
 		<a href="/profile">
 			<Avatar src={picture} width="w-10" />
