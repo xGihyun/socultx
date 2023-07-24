@@ -1,6 +1,6 @@
 import { PUBLIC_SUPABASE_ANONKEY, PUBLIC_SUPABASE_URL } from '$env/static/public';
 import { createSupabaseServerClient } from '@supabase/auth-helpers-sveltekit';
-import type { Handle } from '@sveltejs/kit';
+import { redirect, type Handle } from '@sveltejs/kit';
 
 export const handle = (async ({ event, resolve }) => {
 
@@ -21,6 +21,14 @@ export const handle = (async ({ event, resolve }) => {
 			data: { session },
 		} = await event.locals.supabase.auth.getSession()
 		return session
+	}
+
+	// Auth Guard
+	const session = await event.locals.getSession()
+	if (!session && event.url.pathname != '/') {
+		// the user is not signed in, just redirect to login 
+		console.log("Access denied! redirecting to '/'")
+		throw redirect(307, '/')
 	}
 
 	return resolve(event, {

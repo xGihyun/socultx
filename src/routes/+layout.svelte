@@ -6,10 +6,11 @@
 	// This is needed for interactive popups
 	import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
 	import { Toast, storePopup } from '@skeletonlabs/skeleton';
-	import { onMount } from 'svelte';
+	import { onMount, setContext } from 'svelte';
 	import { invalidate } from '$app/navigation';
 	import type { RealtimeChannel } from '@supabase/supabase-js';
 	import { Navbar, Sidebar } from '$lib/components';
+	import { globalContext } from '$lib/store';
 
 	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
@@ -17,9 +18,14 @@
 
 	let { supabase, session } = data;
 	$: ({ supabase, session } = data);
+	$: globalContext.set({
+		session: session,
+		supabase: supabase
+	});
+	// Set context especially if the user's auth state changes
+	setContext('globalContext', globalContext);
 
 	console.log('This is from +layout.svelte: ', session);
-
 	onMount(() => {
 		let specifiedChannel: RealtimeChannel;
 		const {
@@ -28,6 +34,22 @@
 			console.log('This is `_session` inside the onAuthStateChange: ', _session);
 
 			if (_session) {
+				// Update global context whenever user updates as well (e.g updating pfp)
+				console.log(event);
+				if (event === 'USER_UPDATED') {
+					console.log('User either updated the PFP or Username...');
+					globalContext.set({
+						session: _session,
+						supabase: supabase
+					});
+					// Refresh the token
+
+					const { error } = await supabase.auth.refreshSession({
+						refresh_token: _session.refresh_token
+					});
+					console.log('Are there any errors refreshing session? ==> ', error);
+				}
+
 				// Assign any channel name to connect to as long as all clients connect to the same channel
 				specifiedChannel = supabase.channel('users');
 
@@ -58,7 +80,7 @@
 
 <div class="flex h-screen flex-col">
 	{#if session}
-		<Navbar picture={session.user.user_metadata.photo_url} {supabase} />
+		<Navbar />
 	{/if}
 	<div class="flex w-full flex-1 overflow-hidden">
 		<main class="relative flex-1 overflow-y-auto">
