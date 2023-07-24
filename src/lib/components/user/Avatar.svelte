@@ -1,5 +1,4 @@
 <script lang="ts">
-	// import type { UserData } from '$lib/types';
 	import { Avatar, popup, type PopupSettings } from '@skeletonlabs/skeleton';
 	import { crop } from '$lib/pkg/rust_utils';
 	import { getContext } from 'svelte';
@@ -44,7 +43,7 @@
 		formData.append('file_name', selectedAvatar.name);
 
 		// NOTE: Use form actions instead?
-		const response: { success: boolean; url: string } = await (
+		const response: { success: boolean; url: string; path: string } = await (
 			await fetch('/api/photo/upload', {
 				method: 'POST',
 				body: formData
@@ -54,10 +53,11 @@
 		console.log(response);
 
 		if (response.success) {
-			// NEEDS TO BE CLIENT SIDE???
 			const updateAvatarForMyself = await $globalContext.supabase.auth.updateUser({
 				data: {
-					photo_url: response.url
+					// Update the 'photo_url' and create/update the 'photo_url_path' property
+					photo_url: response.url,
+					photo_url_path: response.path
 				}
 			});
 
@@ -67,45 +67,22 @@
 					updateAvatarForMyself.error
 				);
 			}
-
-			// TODO: Make realtime change user profile for the current user to see
-			console.log(
-				"SINCE THE USER CHANGED PFP's this is now the new SESSION OBJECT ==> ",
-				updateAvatarForMyself.data
-			);
+			console.log('Successfully updated profile picture!');
 		}
-
-		// supabase;
-		// if (response.ok) {
-		// 	console.log('Successfully changed profile picture.');
-		// 	// # UPDATE FOR THE CURRENT USER TO SEE IN THEIR NAVBAR AND PROFILE `auth` table
-		// 	const updateAvatarForMyself = await supabase.auth.updateUser({
-		// 		data: {
-		// 			photo_url: publicAvatarURL
-		// 		}
-		// 	})
-
-		// 	if (updateAvatarForMyself.error) {
-		// 		throw error(404, { message: updateAvatarForMyself.error })
-		// 	}
-
-		// } else {
-		// 	console.error('Error changing profile picture.');
-		// }
 	}
 
-	async function removeAvatar() {
-		// if (!user.photo_url) return;
-		// NOTE: Use form actions instead?
-		// const response = await fetch('./api/photo/remove', {
-		// 	method: 'POST'
-		// });
-		// if (response.ok) {
-		// 	console.log('Successfully removed profile picture.');
-		// } else {
-		// 	console.error('Error removing profile picture.');
-		// }
-	}
+	// async function removeAvatar() {
+	// if (!user.photo_url) return;
+	// NOTE: Use form actions instead?
+	// const response = await fetch('./api/photo/remove', {
+	// 	method: 'POST'
+	// });
+	// if (response.ok) {
+	// 	console.log('Successfully removed profile picture.');
+	// } else {
+	// 	console.error('Error removing profile picture.');
+	// }
+	// }
 
 	function handleSelectedAvatar(e: Event) {
 		const target = e.target as HTMLInputElement;
@@ -130,7 +107,7 @@
 	</button>
 
 	<div
-		class="z-20 w-40 py-2 shadow-xl transition-none duration-0 bg-surface-200-700-token"
+		class="z-20 w-40 rounded-md py-2 shadow-xl transition-none duration-0 bg-surface-200-700-token"
 		data-popup="avatar"
 	>
 		<button
@@ -139,9 +116,9 @@
 		>
 			<span class="text-base">Change avatar</span>
 		</button>
-		<button class="w-full px-2 py-1 hover:bg-surface-400-500-token" on:click={removeAvatar}>
+		<!-- <button class="w-full px-2 py-1 hover:bg-surface-400-500-token" on:click={removeAvatar}>
 			<span class="text-base">Remove avatar</span>
-		</button>
+		</button> -->
 		<div class="arrow bg-surface-200-700-token" />
 	</div>
 

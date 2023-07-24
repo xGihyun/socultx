@@ -16,9 +16,6 @@
 
 	export let data;
 
-	// Duplicate?
-	// let { supabase, session } = data;
-
 	$: ({ supabase, session } = data);
 	$: globalContext.set({
 		session,
@@ -42,12 +39,7 @@
 				console.log(event);
 				if (event === 'USER_UPDATED') {
 					console.log('User either updated the PFP or Username...');
-					globalContext.set({
-						session: _session,
-						supabase: supabase
-					});
 					// Refresh the token
-
 					const { error } = await supabase.auth.refreshSession({
 						refresh_token: _session.refresh_token
 					});
@@ -91,7 +83,7 @@
 			<slot />
 		</main>
 		{#if session}
-			<Sidebar {supabase} userId={session.user.id} />
+			<Sidebar />
 		{/if}
 	</div>
 	<Toast />
