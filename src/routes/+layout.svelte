@@ -16,16 +16,20 @@
 
 	export let data;
 
-	let { supabase, session } = data;
+	// Duplicate?
+	// let { supabase, session } = data;
+
 	$: ({ supabase, session } = data);
 	$: globalContext.set({
-		session: session,
-		supabase: supabase
+		session,
+		supabase
 	});
+
 	// Set context especially if the user's auth state changes
 	setContext('globalContext', globalContext);
 
 	console.log('This is from +layout.svelte: ', session);
+
 	onMount(() => {
 		let specifiedChannel: RealtimeChannel;
 		const {

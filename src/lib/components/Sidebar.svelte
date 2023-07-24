@@ -9,6 +9,7 @@
 	import type { SupabaseClient } from '@supabase/supabase-js';
 	import { Avatar } from '@skeletonlabs/skeleton';
 	import { Spinner, Queue } from '.';
+	import { ArrowLeft, People } from '$lib/assets/icons';
 
 	export let supabase: SupabaseClient;
 	export let userId: string;
@@ -22,7 +23,6 @@
 	let sentRequests: any[];
 	let currentUserActivity: string | null;
 	$: (receivedRequests = []), (sentRequests = []), (friends = []), (currentUserActivity = null);
-
 
 	// Whenever the user clicks on any of the tabs, return a different classname
 	$: sidebarTabLogic = (clickedButtonName: string) => {
@@ -283,16 +283,18 @@
 	class="list flex w-72 flex-col gap-2 overflow-y-auto border-l-[1px] border-neutral-800 px-5 py-8"
 >
 	<li>
-		<button class={sidebarTabLogic('Friends')} on:click={() => (currentTab = 'Friends')}
-			>Friends</button
-		>
+		<button class={sidebarTabLogic('Friends')} on:click={() => (currentTab = 'Friends')}>
+			Friends
+		</button>
 		<button
 			class={sidebarTabLogic('Activity')}
 			on:click={() => {
 				currentTab = 'Activity';
 				nowPlayingKey = !nowPlayingKey;
-			}}>Activity</button
+			}}
 		>
+			Activity
+		</button>
 	</li>
 
 	<!-- Now playing div block -->
@@ -308,25 +310,25 @@
 						class="rounded group-hover:opacity-40"
 						referrerpolicy="no-referrer"
 					/>
-
-					<!-- svelte-ignore a11y-click-events-have-key-events -->
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="32"
-						height="32"
-						fill="currentColor"
-						class="bi bi-music-note-list absolute inset-x-3 inset-y-3 cursor-pointer fill-primary-300 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-						viewBox="0 0 16 16"
-						on:click={() => (showLyrics = !showLyrics)}
-					>
-						<path d="M12 13c0 1.105-1.12 2-2.5 2S7 14.105 7 13s1.12-2 2.5-2 2.5.895 2.5 2z" />
-						<path fill-rule="evenodd" d="M12 3v10h-1V3h1z" />
-						<path d="M11 2.82a1 1 0 0 1 .804-.98l3-.6A1 1 0 0 1 16 2.22V4l-5 1V2.82z" />
-						<path
-							fill-rule="evenodd"
-							d="M0 11.5a.5.5 0 0 1 .5-.5H4a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5zm0-4A.5.5 0 0 1 .5 7H8a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5zm0-4A.5.5 0 0 1 .5 3H8a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5z"
-						/>
-					</svg>
+					<button on:click={() => (showLyrics = !showLyrics)}>
+						<!-- NOTE: put SVG in assets/icons -->
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="32"
+							height="32"
+							fill="currentColor"
+							class="bi bi-music-note-list absolute inset-x-3 inset-y-3 cursor-pointer fill-primary-300 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+							viewBox="0 0 16 16"
+						>
+							<path d="M12 13c0 1.105-1.12 2-2.5 2S7 14.105 7 13s1.12-2 2.5-2 2.5.895 2.5 2z" />
+							<path fill-rule="evenodd" d="M12 3v10h-1V3h1z" />
+							<path d="M11 2.82a1 1 0 0 1 .804-.98l3-.6A1 1 0 0 1 16 2.22V4l-5 1V2.82z" />
+							<path
+								fill-rule="evenodd"
+								d="M0 11.5a.5.5 0 0 1 .5-.5H4a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5zm0-4A.5.5 0 0 1 .5 7H8a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5zm0-4A.5.5 0 0 1 .5 3H8a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5z"
+							/>
+						</svg>
+					</button>
 				</div>
 				{#key nowPlayingKey}
 					<div class="mx-2 my-auto flex flex-col items-start">
@@ -342,6 +344,7 @@
 
 			{#if browser}
 				<!-- Check out the library I used - https://github.com/Khandakar227/svelte-mp3 -->
+				<!-- Maybe the timer problem is on the library? idk -->
 
 				<AudioPlayer
 					style="margin: 0.5em;"
@@ -446,29 +449,13 @@
 					on:click={() => (showFriendRequests = !showFriendRequests)}
 					class="flex gap-2 font-gt-walsheim-pro-thin text-sm opacity-50 hover:opacity-100"
 				>
+					<!-- NOTE: Put SVGs in assets/icons like a component and export it on index.ts for good practice -->
 					{#if showFriendRequests}
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="self-center fill-secondary-900"
-							height="1em"
-							viewBox="0 0 320 512"
-							><path
-								d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l192 192c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L77.3 256 246.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-192 192z"
-							/></svg
-						>
-						Back to friends view
+						<ArrowLeft styles="self-center fill-secondary-900" />
+						<span>Back to friends view</span>
 					{:else}
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="self-center fill-secondary-900"
-							height="1em"
-							viewBox="0 0 640 512"
-						>
-							<path
-								d="M96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM0 482.3C0 383.8 79.8 304 178.3 304h91.4C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3zM609.3 512H471.4c5.4-9.4 8.6-20.3 8.6-32v-8c0-60.7-27.1-115.2-69.8-151.8c2.4-.1 4.7-.2 7.1-.2h61.4C567.8 320 640 392.2 640 481.3c0 17-13.8 30.7-30.7 30.7zM432 256c-31 0-59-12.6-79.3-32.9C372.4 196.5 384 163.6 384 128c0-26.8-6.6-52.1-18.3-74.3C384.3 40.1 407.2 32 432 32c61.9 0 112 50.1 112 112s-50.1 112-112 112z"
-							/></svg
-						>
-						View friend requests
+						<People styles="self-center fill-secondary-900" />
+						<span>View friend requests</span>
 					{/if}
 				</button>
 			</div>
@@ -484,15 +471,8 @@
 			{#if $musicQueue.length >= 2}
 				<div class="flex items-center justify-between pt-2">
 					<p class="ml-2">Next from queue</p>
-					<!-- svelte-ignore a11y-click-events-have-key-events -->
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						viewBox="0 0 24 24"
-						height="24"
-						width="24"
-						class={$areSongsSelected.state
-							? 'visible mr-2 cursor-pointer fill-surface-600 transition-colors duration-300 hover:scale-105 hover:fill-error-400'
-							: 'invisible'}
+					<!-- Use buttons for clicks! -->
+					<button
 						on:click={() => {
 							// Use reverse for loop
 							for (let index = $areSongsSelected.selectedIndexes.length - 1; index >= 0; index--) {
@@ -505,13 +485,23 @@
 							areSongsSelected.set({ state: false, selectedIndexes: [] });
 						}}
 					>
-						<g>
-							<path fill="none" d="M0 0h24v24H0z" />
-							<path
-								d="M7 4V2h10v2h5v2h-2v15a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6H2V4h5zM6 6v14h12V6H6zm3 3h2v8H9V9zm4 0h2v8h-2V9z"
-							/>
-						</g>
-					</svg>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 24 24"
+							height="24"
+							width="24"
+							class={$areSongsSelected.state
+								? 'visible mr-2 cursor-pointer fill-surface-600 transition-colors duration-300 hover:scale-105 hover:fill-error-400'
+								: 'invisible'}
+						>
+							<g>
+								<path fill="none" d="M0 0h24v24H0z" />
+								<path
+									d="M7 4V2h10v2h5v2h-2v15a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6H2V4h5zM6 6v14h12V6H6zm3 3h2v8H9V9zm4 0h2v8h-2V9z"
+								/>
+							</g>
+						</svg>
+					</button>
 				</div>
 			{:else if $musicQueue.length == 0}
 				<div in:fade={{ duration: 500 }} class="mb-4 mt-4 font-gt-walsheim-pro-thin">

@@ -53,8 +53,13 @@
 
 		toastStore.trigger(sendFriendRequestToast);
 
-		$sentFriendRequests?.push(data[0]);
-		$sentFriendRequests = $sentFriendRequests; // This line is very important! must reassign writable!
+		// $sentFriendRequests?.push(data[0]);
+		// $sentFriendRequests = $sentFriendRequests; // This line is very important! must reassign writable!
+
+		// If something needs to be updated and reactive, just use update() on store
+		// I haven't tested it yet but I think it should work?
+		// If it does, do it for the other stores as well
+		sentFriendRequests.update((val) => [...val, data[0]]);
 
 		alreadySentRequests = $sentFriendRequests
 			.map((i) => `${i.receiver_id}_${i.status}`)
