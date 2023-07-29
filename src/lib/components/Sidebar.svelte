@@ -278,6 +278,9 @@
 	onDestroy(() => {
 		receiverSubscriber.unsubscribe();
 		userStatusWatcher.unsubscribe();
+		// Reset user stores
+		receivedFriendRequests.set([]);
+		sentFriendRequests.set([]);
 	});
 </script>
 

@@ -67,7 +67,7 @@
 		<a
 			class="hover:variant-ghost-primary variant-soft-surface flex gap-4 self-center rounded-md p-2"
 			type="button"
-			href="/chat"
+			href="/inbox"
 		>
 			<Inbox styles="fill-secondary-600 self-center" />
 			<span class="self-center"> Inbox </span>
@@ -81,8 +81,8 @@
 		<!-- Popup actions for song -->
 		<div class="card shadow-xl" data-popup="avatar">
 			<div class="btn-group-vertical">
-				<button>Profile</button>
-				<button on:click={() => goto('/profile')}>Settings</button>
+				<button on:click={() => goto('/profile')}>Profile</button>
+				<button on:click={() => goto('/settings')}>Settings</button>
 				<button on:click={handleSignOut}>Log Out</button>
 				<div class="arrow bg-surface-100-800-token" />
 			</div>

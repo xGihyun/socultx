@@ -105,7 +105,8 @@
 									/></svg
 								>
 							</div>
-						{:else}
+							<!-- Checks if the user searched himself -->
+						{:else if item.id != session.user.id}
 							<div class="m-auto">
 								<button on:click={() => addFriend(item.id, item.username)}>
 									<svg
