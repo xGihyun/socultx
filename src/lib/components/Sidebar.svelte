@@ -1,18 +1,22 @@
 <script lang="ts">
 	import { isMusicLoading, musicQueue, areSongsSelected } from '$lib/music';
-	import { afterUpdate, onDestroy, onMount } from 'svelte';
+	import { afterUpdate, getContext, onDestroy, onMount } from 'svelte';
 	import { AudioPlayer, isPlaying, trackIndex } from 'svelte-mp3';
 	import { browser } from '$app/environment';
 	import { fade, fly } from 'svelte/transition';
 	import { activateTextTruncateScroll } from 'text-truncate-scroll';
 	import { receivedFriendRequests, sentFriendRequests } from '$lib/store';
-	import type { SupabaseClient } from '@supabase/supabase-js';
+	import type { Session, SupabaseClient } from '@supabase/supabase-js';
 	import { Avatar } from '@skeletonlabs/skeleton';
 	import { Spinner, Queue } from '.';
 	import { ArrowLeft, People } from '$lib/assets/icons';
+	import type { Writable } from 'svelte/store';
 
-	export let supabase: SupabaseClient;
-	export let userId: string;
+	let globalContext: Writable<{ session: Session; supabase: SupabaseClient }> =
+		getContext('globalContext');
+
+	let supabase: SupabaseClient = $globalContext.supabase;
+	let userId: string = $globalContext.session.user.id;
 
 	$: currentTab = 'Friends';
 	$: showLyrics = false;
@@ -27,7 +31,7 @@
 	// Whenever the user clicks on any of the tabs, return a different classname
 	$: sidebarTabLogic = (clickedButtonName: string) => {
 		if (currentTab === clickedButtonName) {
-			return '!bg-primary-500 rounded-md p-2';
+			return 'variant-soft-primary rounded-md p-2';
 		}
 		return 'p-2';
 	};
@@ -113,8 +117,7 @@
 					'SIDEBAR (receiverSubscriber): Just in! received a new friend request from -> ',
 					payload.new
 				);
-				$receivedFriendRequests.push(payload.new);
-				$receivedFriendRequests = $receivedFriendRequests; // This line is very important! must reassign writable!
+				receivedFriendRequests.update((val) => [...val, payload.new]);
 			}
 		)
 		.on(
@@ -132,7 +135,6 @@
 				);
 				let index = $sentFriendRequests.findIndex((obj) => obj.id == payload.new.id);
 				$sentFriendRequests[index] = payload.new;
-				// $sentFriendRequests = $sentFriendRequests;
 			}
 		)
 		.subscribe();
@@ -276,6 +278,9 @@
 	onDestroy(() => {
 		receiverSubscriber.unsubscribe();
 		userStatusWatcher.unsubscribe();
+		// Reset user stores
+		receivedFriendRequests.set([]);
+		sentFriendRequests.set([]);
 	});
 </script>
 

@@ -1,16 +1,22 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { goto, invalidate } from '$app/navigation';
+	import { Inbox, Music } from '$lib/assets/icons';
 	import { resetAllMusicStores } from '$lib/music';
 	import { resetAllUserStores } from '$lib/store';
-	import { Avatar } from '@skeletonlabs/skeleton';
+	import { Avatar, popup, type PopupSettings } from '@skeletonlabs/skeleton';
 	import type { Session, SupabaseClient } from '@supabase/supabase-js';
 	import { getContext } from 'svelte';
 	import type { Writable } from 'svelte/store';
-	// export let picture: string | undefined;
-	// export let supabase: SupabaseClient;
+
 	let globalContext: Writable<{ session: Session; supabase: SupabaseClient }> =
 		getContext('globalContext');
+
+	const userProfilePopup: PopupSettings = {
+		event: 'click',
+		target: 'avatar',
+		placement: 'bottom'
+	};
 
 	const handleSignOut = async () => {
 		await $globalContext.supabase.auth.signOut();
@@ -50,11 +56,38 @@
 	</div>
 
 	<div class="flex gap-5">
-		<a class="variant-filled-secondary rounded-md p-2" type="button" href="/listen">Listen</a>
-		<a class="variant-filled-secondary rounded-md p-2" type="button" href="/chat">Chat</a>
-		<button class="variant-filled-primary rounded-md p-2" on:click={handleSignOut}>Log Out</button>
-		<a href="/profile">
-			<Avatar src={$globalContext.session.user.user_metadata.photo_url} width="w-10" />
+		<a
+			class="hover:variant-ghost-primary variant-soft-surface flex gap-4 self-center rounded-md p-2"
+			type="button"
+			href="/listen"
+		>
+			<Music styles="fill-secondary-600 self-center" />
+			<span class="self-center">Music</span>
 		</a>
+		<a
+			class="hover:variant-ghost-primary variant-soft-surface flex gap-4 self-center rounded-md p-2"
+			type="button"
+			href="/inbox"
+		>
+			<Inbox styles="fill-secondary-600 self-center" />
+			<span class="self-center"> Inbox </span>
+		</a>
+		<!-- <button class="variant-filled-primary rounded-md p-2" on:click={handleSignOut}>Log Out</button> -->
+		<!-- <a href="/profile"> -->
+		<button use:popup={userProfilePopup}>
+			<Avatar src={$globalContext.session.user.user_metadata.photo_url} width="w-12" />
+		</button>
+
+		<!-- Popup actions for song -->
+		<div class="card shadow-xl" data-popup="avatar">
+			<div class="btn-group-vertical">
+				<button on:click={() => goto('/profile')}>Profile</button>
+				<button on:click={() => goto('/settings')}>Settings</button>
+				<button on:click={handleSignOut}>Log Out</button>
+				<div class="arrow bg-surface-100-800-token" />
+			</div>
+		</div>
+
+		<!-- </a> -->
 	</div>
 </nav>

@@ -1,1 +1,0 @@
-<div class="text-white">chat page!</div>

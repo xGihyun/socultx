@@ -52,13 +52,6 @@
 		};
 
 		toastStore.trigger(sendFriendRequestToast);
-
-		// $sentFriendRequests?.push(data[0]);
-		// $sentFriendRequests = $sentFriendRequests; // This line is very important! must reassign writable!
-
-		// If something needs to be updated and reactive, just use update() on store
-		// I haven't tested it yet but I think it should work?
-		// If it does, do it for the other stores as well
 		sentFriendRequests.update((val) => [...val, data[0]]);
 
 		alreadySentRequests = $sentFriendRequests
@@ -112,7 +105,8 @@
 									/></svg
 								>
 							</div>
-						{:else}
+							<!-- Checks if the user searched himself -->
+						{:else if item.id != session.user.id}
 							<div class="m-auto">
 								<button on:click={() => addFriend(item.id, item.username)}>
 									<svg
